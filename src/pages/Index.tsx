@@ -1,8 +1,9 @@
-import { useMealPlan } from "@/hooks/useMealPlan";
+import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
 import { DayCard } from "@/components/DayCard";
-import { Baby, RotateCcw } from "lucide-react";
+import { Baby, RotateCcw, CalendarDays, ChevronRight } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 export default function Index() {
   const { plan, setDinner, toggleBabyDinner, toggleBabyLunch, resetPlan } = useMealPlan();

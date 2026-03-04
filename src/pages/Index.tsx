@@ -34,9 +34,31 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Stats bar */}
-      <div className="px-4 sm:px-8 py-3 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto flex items-center gap-4 text-sm">
+      {/* Week switcher + stats bar */}
+      <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
+        {/* Week tabs */}
+        <div className="max-w-2xl mx-auto flex gap-1 pt-3 pb-2">
+          {(["current", "next"] as WeekKey[]).map((week) => (
+            <button
+              key={week}
+              onClick={() => setActiveWeek(week)}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all",
+                activeWeek === week
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted"
+              )}
+            >
+              <CalendarDays size={14} />
+              {week === "current" ? "Semana actual" : "Próxima semana"}
+              {week === "next" && activeWeek !== "next" && (
+                <ChevronRight size={13} className="opacity-50" />
+              )}
+            </button>
+          ))}
+        </div>
+        {/* Stats row */}
+        <div className="max-w-2xl mx-auto flex items-center gap-4 text-sm pb-2.5">
           <span className="text-muted-foreground">
             <span className="font-semibold text-primary">{plannedDays}</span>/7 cenas planificadas
           </span>

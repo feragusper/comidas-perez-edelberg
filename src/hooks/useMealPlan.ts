@@ -10,6 +10,8 @@ export interface DayPlan {
   notes: string;
 }
 
+export type WeekKey = "current" | "next";
+
 const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
     day,
@@ -21,15 +23,14 @@ const buildInitialPlan = (): DayPlan[] => {
   }));
 };
 
-const STORAGE_KEY = "meal-plan-week";
+const storageKey = (week: WeekKey) => `meal-plan-${week}`;
 
-export function useMealPlan() {
+export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey(weekKey));
       if (stored) {
         const parsed = JSON.parse(stored) as DayPlan[];
-        // ensure sunday is always pasta
         return parsed.map((d) =>
           d.day === "Domingo" ? { ...d, dinner: SUNDAY_DINNER } : d
         );
@@ -38,6 +39,23 @@ export function useMealPlan() {
     return buildInitialPlan();
   });
 
+  // Reload when weekKey changes
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(storageKey(weekKey));
+      if (stored) {
+        const parsed = JSON.parse(stored) as DayPlan[];
+        setPlan(parsed.map((d) =>
+          d.day === "Domingo" ? { ...d, dinner: SUNDAY_DINNER } : d
+        ));
+      } else {
+        setPlan(buildInitialPlan());
+      }
+    } catch {
+      setPlan(buildInitialPlan());
+    }
+  }, [weekKey]);
+
   // Keep lunch auto-populated
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => ({
     ...dayPlan,
@@ -45,11 +63,11 @@ export function useMealPlan() {
   }));
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
-  }, [plan]);
+    localStorage.setItem(storageKey(weekKey), JSON.stringify(plan));
+  }, [plan, weekKey]);
 
   const setDinner = (dayIndex: number, meal: Meal | null) => {
-    if (plan[dayIndex].day === "Domingo") return; // locked
+    if (plan[dayIndex].day === "Domingo") return;
     setPlan((prev) =>
       prev.map((d, i) => (i === dayIndex ? { ...d, dinner: meal } : d))
     );

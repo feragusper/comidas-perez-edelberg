@@ -6,7 +6,8 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function Index() {
-  const { plan, setDinner, toggleBabyDinner, toggleBabyLunch, resetPlan } = useMealPlan();
+  const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
+  const { plan, setDinner, toggleBabyDinner, toggleBabyLunch, resetPlan } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
   const babyMeals = plan.filter((d) => d.babyEatsDinner || d.babyEatsLunch);

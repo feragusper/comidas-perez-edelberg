@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { DayPlan } from "@/hooks/useMealPlan";
-import { Meal, BabySafety } from "@/data/meals";
+import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
 import { MealPicker } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
 
 interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   onSetDinner: (meal: Meal | null) => void;
+  onSetLunch: (meal: Meal | null) => void;
+  onResetLunch: () => void;
   onSetBabyDinner: (meal: Meal | null) => void;
   onSetBabyLunch: (meal: Meal | null) => void;
 }
@@ -25,9 +27,9 @@ const safetyIcon: Record<BabySafety, string> = {
   unsafe: "✗",
 };
 
-type PickerTarget = "dinner" | "babyDinner" | "babyLunch" | null;
+type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | null;
 
-export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSetBabyLunch }: DayCardProps) {
+export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetLunch, onResetLunch, onSetBabyDinner, onSetBabyLunch }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [expanded, setExpanded] = useState(true);
   const isSunday = dayPlan.day === "Domingo";
@@ -35,12 +37,13 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
 
   const handlePickerSelect = (meal: Meal) => {
     if (pickerTarget === "dinner") onSetDinner(meal);
+    else if (pickerTarget === "lunch") onSetLunch(meal);
     else if (pickerTarget === "babyDinner") onSetBabyDinner(meal);
     else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
     setPickerTarget(null);
   };
 
-  const lunchMeal = dayPlan.lunchFromPrev;
+  const lunchMeal = dayPlan.lunch;
 
   return (
     <>
@@ -61,11 +64,6 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
               style={{ fontFamily: 'Fraunces, serif' }}>
               {dayPlan.day}
             </span>
-            {isSunday && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-sunday-accent/20 text-sunday-accent font-medium flex items-center gap-1">
-                <Lock size={10} /> Pasta fija
-              </span>
-            )}
           </div>
           {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
         </div>
@@ -73,33 +71,64 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
         {expanded && (
           <div className="p-4 space-y-3">
             {/* LUNCH row */}
-            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">☀ Almuerzo</span>
-                <span className="text-xs text-muted-foreground">(sobra de anoche)</span>
-              </div>
-
-              {/* Adults lunch */}
-              {isMonday ? (
-                <p className="text-sm text-muted-foreground italic">— Sin almuerzo planificado</p>
-              ) : lunchMeal ? (
-                <div className="flex items-start gap-2">
-                  <span className="text-xl">{lunchMeal.emoji}</span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{lunchMeal.name}</p>
-                    {lunchMeal.babySafety !== "unsafe" && (
-                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-1", safetyBg[lunchMeal.babySafety])}>
-                        {safetyIcon[lunchMeal.babySafety]} Apto bebé
-                      </span>
-                    )}
-                  </div>
+            {!isMonday && (
+              <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-secondary">☀ Almuerzo</span>
+                  {!dayPlan.lunchOverridden && lunchMeal && (
+                    <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
+                  )}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">— Sin cena planificada ayer</p>
-              )}
 
-              {/* Baby lunch */}
-              {!isMonday && (
+                {/* Adults lunch */}
+                {lunchMeal ? (
+                  <div className="flex items-start gap-2">
+                    <span className="text-xl">{lunchMeal.emoji}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">{lunchMeal.name}</p>
+                      {lunchMeal.babySafety !== "unsafe" && (
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-1", safetyBg[lunchMeal.babySafety])}>
+                          {safetyIcon[lunchMeal.babySafety]} Apto bebé
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        onClick={() => onSetLunch(null)}
+                        className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      {dayPlan.lunchOverridden && (
+                        <button
+                          onClick={onResetLunch}
+                          className="p-1 text-muted-foreground hover:text-secondary transition-colors"
+                          title="Volver a sugerencia"
+                        >
+                          <RotateCcw size={12} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setPickerTarget("lunch")}
+                    className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-secondary/30 rounded-xl p-3 hover:border-secondary/60 hover:text-secondary hover:bg-lunch-bg transition-all"
+                  >
+                    <Plus size={16} />
+                    Elegir almuerzo
+                  </button>
+                )}
+                {lunchMeal && (
+                  <button
+                    onClick={() => setPickerTarget("lunch")}
+                    className="text-xs text-secondary/70 hover:text-secondary transition-colors underline underline-offset-2"
+                  >
+                    Cambiar
+                  </button>
+                )}
+
+                {/* Baby lunch */}
                 <div className="border-t border-secondary/15 pt-2 mt-1">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <Baby size={12} className="text-baby-safe" />
@@ -132,14 +161,18 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
                     </button>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* DINNER row */}
             <div className="rounded-xl bg-dinner-bg/70 p-3 border border-primary/20 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">🌙 Cena</span>
-                {isSunday && <Lock size={11} className="text-sunday-accent" />}
+                {isSunday && !dayPlan.dinner && (
+                  <span className="text-xs text-muted-foreground italic flex items-center gap-1">
+                    <Lock size={10} /> sugerido: pasta
+                  </span>
+                )}
               </div>
 
               {/* Adults dinner */}
@@ -159,14 +192,23 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
                       </div>
                     )}
                   </div>
-                  {!isSunday && (
+                  <div className="flex flex-col items-end gap-1">
                     <button
                       onClick={() => onSetDinner(null)}
                       className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <Trash2 size={14} />
                     </button>
-                  )}
+                    {isSunday && dayPlan.dinner.id !== SUNDAY_DINNER.id && (
+                      <button
+                        onClick={() => onSetDinner(SUNDAY_DINNER)}
+                        className="p-1 text-muted-foreground hover:text-sunday-accent transition-colors"
+                        title="Volver a pasta"
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <button
@@ -174,10 +216,10 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSet
                   className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-border rounded-xl p-3 hover:border-primary/50 hover:text-primary hover:bg-dinner-bg transition-all"
                 >
                   <Plus size={16} />
-                  Elegir cena
+                  {isSunday ? "Elegir cena (sugerido: pasta)" : "Elegir cena"}
                 </button>
               )}
-              {!isSunday && dayPlan.dinner && (
+              {dayPlan.dinner && (
                 <button
                   onClick={() => setPickerTarget("dinner")}
                   className="text-xs text-primary/70 hover:text-primary transition-colors underline underline-offset-2"

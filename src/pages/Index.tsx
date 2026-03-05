@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
-  const { plan, setDinner, setBabyDinner, setBabyLunch, resetPlan } = useMealPlan(activeWeek);
+  const { plan, setDinner, setLunch, resetLunch, setBabyDinner, setBabyLunch, resetPlan } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
   const babyMeals = plan.filter((d) => d.babyDinner || d.babyLunch);
@@ -36,7 +36,6 @@ export default function Index() {
 
       {/* Week switcher + stats bar */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        {/* Week tabs */}
         <div className="max-w-2xl mx-auto flex gap-1 pt-3 pb-2">
           {(["current", "next"] as WeekKey[]).map((week) => (
             <button
@@ -57,7 +56,6 @@ export default function Index() {
             </button>
           ))}
         </div>
-        {/* Stats row */}
         <div className="max-w-2xl mx-auto flex items-center gap-4 text-sm pb-2.5">
           <span className="text-muted-foreground">
             <span className="font-semibold text-primary">{plannedDays}</span>/7 cenas planificadas
@@ -87,7 +85,6 @@ export default function Index() {
           <div className="text-xs text-foreground/80">
             <span className="font-semibold text-baby-safe">Guía para Nico (1 año):</span>
             {" "}Sin sal agregada · Sin miel · Sin leche entera en grandes cantidades · Sin nueces enteras · Texturas blandas.
-            {" "}<span className="font-medium">Los almuerzos son siempre las sobras de la cena anterior.</span>
           </div>
         </div>
       </div>
@@ -100,6 +97,8 @@ export default function Index() {
             dayPlan={dayPlan}
             dayIndex={idx}
             onSetDinner={(meal) => setDinner(idx, meal)}
+            onSetLunch={(meal) => setLunch(idx, meal)}
+            onResetLunch={() => resetLunch(idx)}
             onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
             onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
           />
@@ -115,7 +114,7 @@ export default function Index() {
               ¿Reiniciar la semana?
             </h3>
             <p className="text-sm text-muted-foreground mb-5">
-              Se borrará toda la planificación excepto la pasta del domingo.
+              Se borrará toda la planificación y los almuerzos volverán a ser sugeridos automáticamente.
             </p>
             <div className="flex gap-3">
               <button

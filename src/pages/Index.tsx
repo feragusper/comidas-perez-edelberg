@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
-  const { plan, setDinner, toggleBabyDinner, toggleBabyLunch, resetPlan } = useMealPlan(activeWeek);
+  const { plan, setDinner, setBabyDinner, setBabyLunch, resetPlan } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const babyMeals = plan.filter((d) => d.babyEatsDinner || d.babyEatsLunch);
+  const babyMeals = plan.filter((d) => d.babyDinner || d.babyLunch);
   const plannedDays = plan.filter((d) => d.dinner !== null).length;
 
   return (
@@ -66,7 +66,7 @@ export default function Index() {
           <div className="flex items-center gap-1 text-baby-safe">
             <Baby size={14} />
             <span className="font-semibold">{babyMeals.length}</span>
-            <span className="text-muted-foreground">comidas del bebé</span>
+            <span className="text-muted-foreground">días con comida de Nico</span>
           </div>
           <div className="ml-auto">
             <button
@@ -85,7 +85,7 @@ export default function Index() {
         <div className="rounded-xl bg-baby-safe-bg border border-baby-safe/25 p-3 flex items-start gap-3">
           <Baby size={18} className="text-baby-safe mt-0.5 shrink-0" />
           <div className="text-xs text-foreground/80">
-            <span className="font-semibold text-baby-safe">Guía para el bebé (1 año):</span>
+            <span className="font-semibold text-baby-safe">Guía para Nico (1 año):</span>
             {" "}Sin sal agregada · Sin miel · Sin leche entera en grandes cantidades · Sin nueces enteras · Texturas blandas.
             {" "}<span className="font-medium">Los almuerzos son siempre las sobras de la cena anterior.</span>
           </div>
@@ -100,8 +100,8 @@ export default function Index() {
             dayPlan={dayPlan}
             dayIndex={idx}
             onSetDinner={(meal) => setDinner(idx, meal)}
-            onToggleBabyDinner={() => toggleBabyDinner(idx)}
-            onToggleBabyLunch={() => toggleBabyLunch(idx)}
+            onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
+            onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
           />
         ))}
       </div>

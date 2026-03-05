@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
-import { X, Search, Baby } from "lucide-react";
+import { X, Search, Baby, ChefHat } from "lucide-react";
 
 interface MealPickerProps {
+  mode: "adult" | "baby";
+  prevDinner?: Meal | null;
   onSelect: (meal: Meal) => void;
   onClose: () => void;
 }
@@ -15,26 +17,41 @@ const safetyColors: Record<BabySafety, string> = {
 };
 
 const safetyLabel: Record<BabySafety, string> = {
-  safe: "✓ Apto bebé",
-  caution: "⚠ Con cuidado",
+  safe: "✓ Apto",
+  caution: "⚠ Cuidado",
   unsafe: "✗ No apto",
 };
 
-export function MealPicker({ onSelect, onClose }: MealPickerProps) {
+export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const filtered = MEALS.filter((m) => {
+  const baseMeals = mode === "baby"
+    ? MEALS.filter((m) => m.babySafety !== "unsafe")
+    : MEALS;
+
+  const filtered = baseMeals.filter((m) => {
     const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase());
     const matchesCat = !activeCategory || m.category === activeCategory;
     return matchesSearch && matchesCat;
   });
 
+  // "Con lo de anoche" group: same category as prevDinner (or exact meal)
+  const prevRelated: Meal[] = prevDinner
+    ? filtered.filter((m) => m.category === prevDinner.category)
+    : [];
+  const prevRelatedIds = new Set(prevRelated.map((m) => m.id));
+
+  // Rest grouped by category
+  const rest = filtered.filter((m) => !prevRelatedIds.has(m.id));
   const grouped = MEAL_CATEGORIES.reduce<Record<string, Meal[]>>((acc, cat) => {
-    const meals = filtered.filter((m) => m.category === cat);
+    const meals = rest.filter((m) => m.category === cat);
     if (meals.length) acc[cat] = meals;
     return acc;
   }, {});
+
+  const isBaby = mode === "baby";
+  const title = isBaby ? "Comida de Nico" : "Elegir comida";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
@@ -42,9 +59,15 @@ export function MealPicker({ onSelect, onClose }: MealPickerProps) {
       <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-3">
-          <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Fraunces, serif' }}>
-            Elegir comida
-          </h3>
+          <div className="flex items-center gap-2">
+            {isBaby
+              ? <Baby size={18} className="text-baby-safe" />
+              : <ChefHat size={18} className="text-primary" />
+            }
+            <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Fraunces, serif' }}>
+              {title}
+            </h3>
+          </div>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-muted transition-colors">
             <X size={18} className="text-muted-foreground" />
           </button>
@@ -91,36 +114,37 @@ export function MealPicker({ onSelect, onClose }: MealPickerProps) {
 
         {/* Meals list */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">
+          {/* Prev dinner related group */}
+          {prevRelated.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+                  {isBaby ? "🍼 Adaptado de lo de anoche" : "♻️ Con lo de anoche"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  (basado en: {prevDinner?.name})
+                </span>
+              </div>
+              <div className="space-y-2">
+                {prevRelated.map((meal) => (
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Rest by category */}
           {Object.entries(grouped).map(([cat, meals]) => (
             <div key={cat}>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
               <div className="space-y-2">
                 {meals.map((meal) => (
-                  <button
-                    key={meal.id}
-                    onClick={() => { onSelect(meal); onClose(); }}
-                    className="w-full text-left p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-dinner-bg transition-all group"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{meal.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm">{meal.name}</p>
-                        {meal.babyNote && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <Baby size={11} className="text-baby-safe shrink-0" />
-                            <p className="text-xs text-muted-foreground truncate">{meal.babyNote}</p>
-                          </div>
-                        )}
-                      </div>
-                      <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded-full border font-medium", safetyColors[meal.babySafety])}>
-                        {safetyLabel[meal.babySafety]}
-                      </span>
-                    </div>
-                  </button>
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
             </div>
           ))}
+
           {filtered.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
               <p className="text-4xl mb-2">🔍</p>
@@ -130,5 +154,37 @@ export function MealPicker({ onSelect, onClose }: MealPickerProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function MealRow({ meal, onSelect, onClose, isBaby }: {
+  meal: Meal;
+  onSelect: (m: Meal) => void;
+  onClose: () => void;
+  isBaby: boolean;
+}) {
+  return (
+    <button
+      onClick={() => { onSelect(meal); onClose(); }}
+      className="w-full text-left p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-dinner-bg transition-all"
+    >
+      <div className="flex items-start gap-3">
+        <span className="text-2xl">{meal.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground text-sm">{meal.name}</p>
+          {isBaby && meal.babyNote && (
+            <div className="flex items-center gap-1 mt-1">
+              <Baby size={11} className="text-baby-safe shrink-0" />
+              <p className="text-xs text-muted-foreground">{meal.babyNote}</p>
+            </div>
+          )}
+        </div>
+        {isBaby && (
+          <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded-full border font-medium", safetyColors[meal.babySafety])}>
+            {safetyLabel[meal.babySafety]}
+          </span>
+        )}
+      </div>
+    </button>
   );
 }

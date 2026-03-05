@@ -4,7 +4,8 @@ import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
 export interface DayPlan {
   day: string;
   dinner: Meal | null;
-  lunchFromPrev: Meal | null; // auto-populated from previous night
+  lunch: Meal | null; // editable, pre-filled from prev dinner
+  lunchOverridden: boolean; // true if user manually changed it
   babyDinner: Meal | null;
   babyLunch: Meal | null;
   notes: string;
@@ -16,60 +17,65 @@ const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
     day,
     dinner: day === "Domingo" ? SUNDAY_DINNER : null,
-    lunchFromPrev: null,
+    lunch: null,
+    lunchOverridden: false,
     babyDinner: null,
     babyLunch: null,
     notes: "",
   }));
 };
 
-const storageKey = (week: WeekKey) => `meal-plan-${week}`;
+const storageKey = (week: WeekKey) => `meal-plan-v2-${week}`;
 
 export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(() => {
     try {
       const stored = localStorage.getItem(storageKey(weekKey));
-      if (stored) {
-        const parsed = JSON.parse(stored) as DayPlan[];
-        return parsed.map((d) =>
-          d.day === "Domingo" ? { ...d, dinner: SUNDAY_DINNER } : d
-        );
-      }
+      if (stored) return JSON.parse(stored) as DayPlan[];
     } catch { }
     return buildInitialPlan();
   });
 
-  // Reload when weekKey changes
   useEffect(() => {
     try {
       const stored = localStorage.getItem(storageKey(weekKey));
-      if (stored) {
-        const parsed = JSON.parse(stored) as DayPlan[];
-        setPlan(parsed.map((d) =>
-          d.day === "Domingo" ? { ...d, dinner: SUNDAY_DINNER } : d
-        ));
-      } else {
-        setPlan(buildInitialPlan());
-      }
+      if (stored) setPlan(JSON.parse(stored) as DayPlan[]);
+      else setPlan(buildInitialPlan());
     } catch {
       setPlan(buildInitialPlan());
     }
   }, [weekKey]);
 
-  // Keep lunch auto-populated
-  const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => ({
-    ...dayPlan,
-    lunchFromPrev: idx === 0 ? null : plan[idx - 1].dinner,
-  }));
+  // Auto-populate lunch from previous dinner unless overridden
+  const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
+    if (dayPlan.lunchOverridden) return dayPlan;
+    const suggestedLunch = idx === 0 ? null : plan[idx - 1].dinner;
+    return { ...dayPlan, lunch: suggestedLunch };
+  });
 
   useEffect(() => {
     localStorage.setItem(storageKey(weekKey), JSON.stringify(plan));
   }, [plan, weekKey]);
 
   const setDinner = (dayIndex: number, meal: Meal | null) => {
-    if (plan[dayIndex].day === "Domingo") return;
     setPlan((prev) =>
       prev.map((d, i) => (i === dayIndex ? { ...d, dinner: meal } : d))
+    );
+  };
+
+  const setLunch = (dayIndex: number, meal: Meal | null) => {
+    setPlan((prev) =>
+      prev.map((d, i) =>
+        i === dayIndex ? { ...d, lunch: meal, lunchOverridden: true } : d
+      )
+    );
+  };
+
+  const resetLunch = (dayIndex: number) => {
+    setPlan((prev) =>
+      prev.map((d, i) =>
+        i === dayIndex ? { ...d, lunch: null, lunchOverridden: false } : d
+      )
     );
   };
 
@@ -95,5 +101,5 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     setPlan(buildInitialPlan());
   };
 
-  return { plan: planWithLunch, setDinner, setBabyDinner, setBabyLunch, setNotes, resetPlan };
+  return { plan: planWithLunch, setDinner, setLunch, resetLunch, setBabyDinner, setBabyLunch, setNotes, resetPlan };
 }

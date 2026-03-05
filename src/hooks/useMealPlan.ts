@@ -4,10 +4,14 @@ import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
 export interface DayPlan {
   day: string;
   dinner: Meal | null;
-  lunch: Meal | null; // editable, pre-filled from prev dinner
-  lunchOverridden: boolean; // true if user manually changed it
+  dinnerNote: string;
+  lunch: Meal | null;
+  lunchNote: string;
+  lunchOverridden: boolean;
   babyDinner: Meal | null;
+  babyDinnerNote: string;
   babyLunch: Meal | null;
+  babyLunchNote: string;
   notes: string;
 }
 
@@ -17,15 +21,19 @@ const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
     day,
     dinner: day === "Domingo" ? SUNDAY_DINNER : null,
+    dinnerNote: "",
     lunch: null,
+    lunchNote: "",
     lunchOverridden: false,
     babyDinner: null,
+    babyDinnerNote: "",
     babyLunch: null,
+    babyLunchNote: "",
     notes: "",
   }));
 };
 
-const storageKey = (week: WeekKey) => `meal-plan-v2-${week}`;
+const storageKey = (week: WeekKey) => `meal-plan-v3-${week}`;
 
 export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(() => {
@@ -57,49 +65,29 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     localStorage.setItem(storageKey(weekKey), JSON.stringify(plan));
   }, [plan, weekKey]);
 
-  const setDinner = (dayIndex: number, meal: Meal | null) => {
-    setPlan((prev) =>
-      prev.map((d, i) => (i === dayIndex ? { ...d, dinner: meal } : d))
-    );
+  const update = (dayIndex: number, patch: Partial<DayPlan>) => {
+    setPlan((prev) => prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d)));
   };
 
-  const setLunch = (dayIndex: number, meal: Meal | null) => {
-    setPlan((prev) =>
-      prev.map((d, i) =>
-        i === dayIndex ? { ...d, lunch: meal, lunchOverridden: true } : d
-      )
-    );
-  };
+  const setDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { dinner: meal });
+  const setDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { dinnerNote: note });
+  const setLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { lunch: meal, lunchOverridden: true });
+  const setLunchNote = (dayIndex: number, note: string) => update(dayIndex, { lunchNote: note });
+  const resetLunch = (dayIndex: number) => update(dayIndex, { lunch: null, lunchOverridden: false, lunchNote: "" });
+  const setBabyDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyDinner: meal });
+  const setBabyDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { babyDinnerNote: note });
+  const setBabyLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyLunch: meal });
+  const setBabyLunchNote = (dayIndex: number, note: string) => update(dayIndex, { babyLunchNote: note });
+  const setNotes = (dayIndex: number, notes: string) => update(dayIndex, { notes });
+  const resetPlan = () => setPlan(buildInitialPlan());
 
-  const resetLunch = (dayIndex: number) => {
-    setPlan((prev) =>
-      prev.map((d, i) =>
-        i === dayIndex ? { ...d, lunch: null, lunchOverridden: false } : d
-      )
-    );
+  return {
+    plan: planWithLunch,
+    setDinner, setDinnerNote,
+    setLunch, setLunchNote, resetLunch,
+    setBabyDinner, setBabyDinnerNote,
+    setBabyLunch, setBabyLunchNote,
+    setNotes,
+    resetPlan,
   };
-
-  const setBabyDinner = (dayIndex: number, meal: Meal | null) => {
-    setPlan((prev) =>
-      prev.map((d, i) => (i === dayIndex ? { ...d, babyDinner: meal } : d))
-    );
-  };
-
-  const setBabyLunch = (dayIndex: number, meal: Meal | null) => {
-    setPlan((prev) =>
-      prev.map((d, i) => (i === dayIndex ? { ...d, babyLunch: meal } : d))
-    );
-  };
-
-  const setNotes = (dayIndex: number, notes: string) => {
-    setPlan((prev) =>
-      prev.map((d, i) => (i === dayIndex ? { ...d, notes } : d))
-    );
-  };
-
-  const resetPlan = () => {
-    setPlan(buildInitialPlan());
-  };
-
-  return { plan: planWithLunch, setDinner, setLunch, resetLunch, setBabyDinner, setBabyLunch, setNotes, resetPlan };
 }

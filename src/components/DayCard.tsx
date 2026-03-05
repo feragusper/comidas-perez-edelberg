@@ -9,8 +9,8 @@ interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   onSetDinner: (meal: Meal | null) => void;
-  onToggleBabyDinner: () => void;
-  onToggleBabyLunch: () => void;
+  onSetBabyDinner: (meal: Meal | null) => void;
+  onSetBabyLunch: (meal: Meal | null) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -25,11 +25,22 @@ const safetyIcon: Record<BabySafety, string> = {
   unsafe: "✗",
 };
 
-export function DayCard({ dayPlan, dayIndex, onSetDinner, onToggleBabyDinner, onToggleBabyLunch }: DayCardProps) {
-  const [pickerOpen, setPickerOpen] = useState(false);
+type PickerTarget = "dinner" | "babyDinner" | "babyLunch" | null;
+
+export function DayCard({ dayPlan, dayIndex, onSetDinner, onSetBabyDinner, onSetBabyLunch }: DayCardProps) {
+  const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [expanded, setExpanded] = useState(true);
   const isSunday = dayPlan.day === "Domingo";
   const isMonday = dayIndex === 0;
+
+  const handlePickerSelect = (meal: Meal) => {
+    if (pickerTarget === "dinner") onSetDinner(meal);
+    else if (pickerTarget === "babyDinner") onSetBabyDinner(meal);
+    else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
+    setPickerTarget(null);
+  };
+
+  const lunchMeal = dayPlan.lunchFromPrev;
 
   return (
     <>
@@ -62,78 +73,90 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onToggleBabyDinner, on
         {expanded && (
           <div className="p-4 space-y-3">
             {/* LUNCH row */}
-            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-2">
+              <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-secondary">☀ Almuerzo</span>
                 <span className="text-xs text-muted-foreground">(sobra de anoche)</span>
               </div>
+
+              {/* Adults lunch */}
               {isMonday ? (
                 <p className="text-sm text-muted-foreground italic">— Sin almuerzo planificado</p>
-              ) : dayPlan.lunchFromPrev ? (
+              ) : lunchMeal ? (
                 <div className="flex items-start gap-2">
-                  <span className="text-xl">{dayPlan.lunchFromPrev.emoji}</span>
+                  <span className="text-xl">{lunchMeal.emoji}</span>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{dayPlan.lunchFromPrev.name}</p>
-                    {dayPlan.lunchFromPrev.babySafety !== "unsafe" && (
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", safetyBg[dayPlan.lunchFromPrev.babySafety])}>
-                          {safetyIcon[dayPlan.lunchFromPrev.babySafety]} Bebé
-                        </span>
-                        <button
-                          onClick={onToggleBabyLunch}
-                          className={cn(
-                            "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all",
-                            dayPlan.babyEatsLunch
-                              ? "bg-baby-safe text-white border-baby-safe"
-                              : "bg-transparent text-muted-foreground border-border hover:border-baby-safe/60"
-                          )}
-                        >
-                          <Baby size={11} />
-                          {dayPlan.babyEatsLunch ? "Come" : "¿Come bebé?"}
-                        </button>
-                      </div>
+                    <p className="text-sm font-medium text-foreground">{lunchMeal.name}</p>
+                    {lunchMeal.babySafety !== "unsafe" && (
+                      <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-1", safetyBg[lunchMeal.babySafety])}>
+                        {safetyIcon[lunchMeal.babySafety]} Apto bebé
+                      </span>
                     )}
                   </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground italic">— Sin cena planificada ayer</p>
               )}
+
+              {/* Baby lunch */}
+              {!isMonday && (
+                <div className="border-t border-secondary/15 pt-2 mt-1">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Baby size={12} className="text-baby-safe" />
+                    <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  </div>
+                  {dayPlan.babyLunch ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{dayPlan.babyLunch.emoji}</span>
+                      <p className="text-sm flex-1 text-foreground">{dayPlan.babyLunch.name}</p>
+                      <button
+                        onClick={() => onSetBabyLunch(null)}
+                        className="p-1 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                      <button
+                        onClick={() => setPickerTarget("babyLunch")}
+                        className="text-xs text-primary/70 hover:text-primary underline underline-offset-2 transition-colors"
+                      >
+                        Cambiar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setPickerTarget("babyLunch")}
+                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
+                    >
+                      <Plus size={13} />
+                      Elegir comida de Nico
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* DINNER row */}
-            <div className="rounded-xl bg-dinner-bg/70 p-3 border border-primary/20">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="rounded-xl bg-dinner-bg/70 p-3 border border-primary/20 space-y-2">
+              <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-primary">🌙 Cena</span>
                 {isSunday && <Lock size={11} className="text-sunday-accent" />}
               </div>
+
+              {/* Adults dinner */}
               {dayPlan.dinner ? (
                 <div className="flex items-start gap-2">
                   <span className="text-xl">{dayPlan.dinner.emoji}</span>
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">{dayPlan.dinner.name}</p>
                     {dayPlan.dinner.babySafety !== "unsafe" && (
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", safetyBg[dayPlan.dinner.babySafety])}>
-                          {safetyIcon[dayPlan.dinner.babySafety]} Bebé
+                          {safetyIcon[dayPlan.dinner.babySafety]} Apto bebé
                         </span>
                         {dayPlan.dinner.babyNote && (
                           <span className="text-xs text-muted-foreground">{dayPlan.dinner.babyNote}</span>
                         )}
                       </div>
-                    )}
-                    {dayPlan.dinner.babySafety !== "unsafe" && (
-                      <button
-                        onClick={onToggleBabyDinner}
-                        className={cn(
-                          "flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all mt-1.5",
-                          dayPlan.babyEatsDinner
-                            ? "bg-baby-safe text-white border-baby-safe"
-                            : "bg-transparent text-muted-foreground border-border hover:border-baby-safe/60"
-                        )}
-                      >
-                        <Baby size={11} />
-                        {dayPlan.babyEatsDinner ? "Come con nosotros" : "¿Come bebé?"}
-                      </button>
                     )}
                   </div>
                   {!isSunday && (
@@ -147,7 +170,7 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onToggleBabyDinner, on
                 </div>
               ) : (
                 <button
-                  onClick={() => setPickerOpen(true)}
+                  onClick={() => setPickerTarget("dinner")}
                   className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-border rounded-xl p-3 hover:border-primary/50 hover:text-primary hover:bg-dinner-bg transition-all"
                 >
                   <Plus size={16} />
@@ -156,21 +179,55 @@ export function DayCard({ dayPlan, dayIndex, onSetDinner, onToggleBabyDinner, on
               )}
               {!isSunday && dayPlan.dinner && (
                 <button
-                  onClick={() => setPickerOpen(true)}
-                  className="mt-2 text-xs text-primary/70 hover:text-primary transition-colors underline underline-offset-2"
+                  onClick={() => setPickerTarget("dinner")}
+                  className="text-xs text-primary/70 hover:text-primary transition-colors underline underline-offset-2"
                 >
                   Cambiar
                 </button>
               )}
+
+              {/* Baby dinner */}
+              <div className="border-t border-primary/15 pt-2 mt-1">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Baby size={12} className="text-baby-safe" />
+                  <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                </div>
+                {dayPlan.babyDinner ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{dayPlan.babyDinner.emoji}</span>
+                    <p className="text-sm flex-1 text-foreground">{dayPlan.babyDinner.name}</p>
+                    <button
+                      onClick={() => onSetBabyDinner(null)}
+                      className="p-1 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                    <button
+                      onClick={() => setPickerTarget("babyDinner")}
+                      className="text-xs text-primary/70 hover:text-primary underline underline-offset-2 transition-colors"
+                    >
+                      Cambiar
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setPickerTarget("babyDinner")}
+                    className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
+                  >
+                    <Plus size={13} />
+                    Elegir cena de Nico
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {pickerOpen && (
+      {pickerTarget && (
         <MealPicker
-          onSelect={(meal) => onSetDinner(meal)}
-          onClose={() => setPickerOpen(false)}
+          onSelect={handlePickerSelect}
+          onClose={() => setPickerTarget(null)}
         />
       )}
     </>

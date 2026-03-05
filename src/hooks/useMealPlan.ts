@@ -5,8 +5,8 @@ export interface DayPlan {
   day: string;
   dinner: Meal | null;
   lunchFromPrev: Meal | null; // auto-populated from previous night
-  babyEatsDinner: boolean;
-  babyEatsLunch: boolean;
+  babyDinner: Meal | null;
+  babyLunch: Meal | null;
   notes: string;
 }
 
@@ -17,8 +17,8 @@ const buildInitialPlan = (): DayPlan[] => {
     day,
     dinner: day === "Domingo" ? SUNDAY_DINNER : null,
     lunchFromPrev: null,
-    babyEatsDinner: false,
-    babyEatsLunch: false,
+    babyDinner: null,
+    babyLunch: null,
     notes: "",
   }));
 };
@@ -73,19 +73,15 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     );
   };
 
-  const toggleBabyDinner = (dayIndex: number) => {
+  const setBabyDinner = (dayIndex: number, meal: Meal | null) => {
     setPlan((prev) =>
-      prev.map((d, i) =>
-        i === dayIndex ? { ...d, babyEatsDinner: !d.babyEatsDinner } : d
-      )
+      prev.map((d, i) => (i === dayIndex ? { ...d, babyDinner: meal } : d))
     );
   };
 
-  const toggleBabyLunch = (dayIndex: number) => {
+  const setBabyLunch = (dayIndex: number, meal: Meal | null) => {
     setPlan((prev) =>
-      prev.map((d, i) =>
-        i === dayIndex ? { ...d, babyEatsLunch: !d.babyEatsLunch } : d
-      )
+      prev.map((d, i) => (i === dayIndex ? { ...d, babyLunch: meal } : d))
     );
   };
 
@@ -99,5 +95,5 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     setPlan(buildInitialPlan());
   };
 
-  return { plan: planWithLunch, setDinner, toggleBabyDinner, toggleBabyLunch, setNotes, resetPlan };
+  return { plan: planWithLunch, setDinner, setBabyDinner, setBabyLunch, setNotes, resetPlan };
 }

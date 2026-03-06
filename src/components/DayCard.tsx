@@ -134,7 +134,7 @@ export function DayCard({
         {expanded && (
           <div className="p-4 space-y-3">
             {/* ── LUNCH ── */}
-            {!isMonday && (
+            {(
               <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold uppercase tracking-wider text-secondary">☀ Almuerzo</span>

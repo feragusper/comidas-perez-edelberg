@@ -1,13 +1,19 @@
 import { useState } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
-import { X, Search, Baby, ChefHat } from "lucide-react";
+import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
+
+export type PickerMode = "adult" | "baby";
+export type PickerStep = "main" | "side";
+export type DietFilter = "all" | "keto";
 
 interface MealPickerProps {
-  mode: "adult" | "baby";
+  mode: PickerMode;
+  step: PickerStep;
   prevDinner?: Meal | null;
   onSelect: (meal: Meal) => void;
   onClose: () => void;
+  onSkipSide?: () => void; // only relevant when step=side
 }
 
 const safetyColors: Record<BabySafety, string> = {
@@ -22,22 +28,32 @@ const safetyLabel: Record<BabySafety, string> = {
   unsafe: "✗ No apto",
 };
 
-export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [dietFilter, setDietFilter] = useState<DietFilter>("all");
 
-  const baseMeals = mode === "baby"
-    ? MEALS.filter((m) => m.babySafety !== "unsafe")
-    : MEALS;
+  const isBaby = mode === "baby";
+  const isSide = step === "side";
 
-  const filtered = baseMeals.filter((m) => {
+  // Pool of meals depending on step
+  const pool = MEALS.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
+
+  // Filter by mode
+  const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
+
+  // Apply diet filter
+  const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
+
+  // Apply search + category
+  const filtered = dietFiltered.filter((m) => {
     const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase());
     const matchesCat = !activeCategory || m.category === activeCategory;
     return matchesSearch && matchesCat;
   });
 
-  // "Con lo de anoche" group: same category as prevDinner (or exact meal)
-  const prevRelated: Meal[] = prevDinner
+  // "Con lo de anoche" group (only for main meals)
+  const prevRelated: Meal[] = (!isSide && prevDinner)
     ? filtered.filter((m) => m.category === prevDinner.category)
     : [];
   const prevRelatedIds = new Set(prevRelated.map((m) => m.id));
@@ -50,18 +66,33 @@ export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerPr
     return acc;
   }, {});
 
-  const isBaby = mode === "baby";
-  const title = isBaby ? "Comida de Nico" : "Elegir comida";
+  // Side categories (just "Guarniciones")
+  const sideGrouped: Record<string, Meal[]> = {};
+  if (isSide) {
+    const sidesFiltered = rest; // all sides in rest after prev-related
+    if (sidesFiltered.length) sideGrouped["Guarniciones"] = sidesFiltered;
+  }
+
+  const title = isSide
+    ? "Elegir guarnición"
+    : isBaby ? "Comida de Nico" : "Elegir comida principal";
+
+  const availableCategories = isSide
+    ? []
+    : MEAL_CATEGORIES.filter((cat) => dietFiltered.some((m) => m.category === cat));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
+
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-3">
           <div className="flex items-center gap-2">
             {isBaby
               ? <Baby size={18} className="text-baby-safe" />
+              : isSide
+              ? <span className="text-base">🥗</span>
               : <ChefHat size={18} className="text-primary" />
             }
             <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Fraunces, serif' }}>
@@ -73,13 +104,42 @@ export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerPr
           </button>
         </div>
 
+        {/* Diet + Mode filters (only for main/adult) */}
+        {!isBaby && !isSide && (
+          <div className="px-5 pb-3 flex gap-2">
+            <button
+              onClick={() => setDietFilter("all")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                dietFilter === "all"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-muted text-muted-foreground border-transparent hover:bg-muted/70"
+              )}
+            >
+              Todos
+            </button>
+            <button
+              onClick={() => setDietFilter("keto")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                dietFilter === "keto"
+                  ? "bg-secondary text-secondary-foreground border-secondary"
+                  : "bg-muted text-muted-foreground border-transparent hover:bg-muted/70"
+              )}
+            >
+              <Leaf size={12} />
+              Keto
+            </button>
+          </div>
+        )}
+
         {/* Search */}
         <div className="px-5 pb-3">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
-              placeholder="Buscar comida..."
+              placeholder={isSide ? "Buscar guarnición..." : "Buscar comida..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoFocus
@@ -87,34 +147,46 @@ export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerPr
           </div>
         </div>
 
-        {/* Category filters */}
-        <div className="px-5 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-              !activeCategory ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
-            )}
-          >
-            Todas
-          </button>
-          {MEAL_CATEGORIES.map((cat) => (
+        {/* Category filters (main meals only) */}
+        {!isSide && availableCategories.length > 0 && (
+          <div className="px-5 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
             <button
-              key={cat}
-              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              onClick={() => setActiveCategory(null)}
               className={cn(
                 "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                !activeCategory ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
               )}
             >
-              {cat}
+              Todas
             </button>
-          ))}
-        </div>
+            {availableCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                className={cn(
+                  "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Meals list */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">
-          {/* Prev dinner related group */}
+          {/* Skip side button */}
+          {isSide && onSkipSide && (
+            <button
+              onClick={onSkipSide}
+              className="w-full text-xs text-muted-foreground border border-dashed border-border rounded-xl px-3 py-2.5 hover:bg-muted transition-all"
+            >
+              Sin guarnición
+            </button>
+          )}
+
+          {/* Prev dinner related group (main only) */}
           {prevRelated.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -133,8 +205,8 @@ export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerPr
             </div>
           )}
 
-          {/* Rest by category */}
-          {Object.entries(grouped).map(([cat, meals]) => (
+          {/* Main meals by category */}
+          {!isSide && Object.entries(grouped).map(([cat, meals]) => (
             <div key={cat}>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
               <div className="space-y-2">
@@ -144,6 +216,18 @@ export function MealPicker({ mode, prevDinner, onSelect, onClose }: MealPickerPr
               </div>
             </div>
           ))}
+
+          {/* Sides list */}
+          {isSide && filtered.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Guarniciones</p>
+              <div className="space-y-2">
+                {filtered.map((meal) => (
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {filtered.length === 0 && (
             <div className="text-center py-10 text-muted-foreground">
@@ -171,7 +255,14 @@ function MealRow({ meal, onSelect, onClose, isBaby }: {
       <div className="flex items-start gap-3">
         <span className="text-2xl">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground text-sm">{meal.name}</p>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="font-medium text-foreground text-sm">{meal.name}</p>
+            {meal.isKeto && (
+              <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-medium">
+                <Leaf size={10} /> keto
+              </span>
+            )}
+          </div>
           {isBaby && meal.babyNote && (
             <div className="flex items-center gap-1 mt-1">
               <Baby size={11} className="text-baby-safe shrink-0" />

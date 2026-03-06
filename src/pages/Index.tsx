@@ -9,8 +9,8 @@ export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
   const {
     plan,
-    setDinner, setDinnerNote,
-    setLunch, setLunchNote, resetLunch,
+    setDinner, setDinnerSide, setDinnerNote,
+    setLunch, setLunchSide, setLunchNote, resetLunch,
     setBabyDinner, setBabyDinnerNote,
     setBabyLunch, setBabyLunchNote,
     resetPlan,
@@ -88,8 +88,10 @@ export default function Index() {
             dayIndex={idx}
             prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
             onSetDinner={(meal) => setDinner(idx, meal)}
+            onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
             onSetDinnerNote={(note) => setDinnerNote(idx, note)}
             onSetLunch={(meal) => setLunch(idx, meal)}
+            onSetLunchSide={(meal) => setLunchSide(idx, meal)}
             onSetLunchNote={(note) => setLunchNote(idx, note)}
             onResetLunch={() => resetLunch(idx)}
             onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}

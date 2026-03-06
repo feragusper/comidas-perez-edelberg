@@ -11,8 +11,10 @@ export interface DayPlan {
   lunchNote: string;
   lunchOverridden: boolean;
   babyDinner: Meal | null;
+  babyDinnerSide: Meal | null;
   babyDinnerNote: string;
   babyLunch: Meal | null;
+  babyLunchSide: Meal | null;
   babyLunchNote: string;
   notes: string;
 }
@@ -30,14 +32,16 @@ const buildInitialPlan = (): DayPlan[] => {
     lunchNote: "",
     lunchOverridden: false,
     babyDinner: null,
+    babyDinnerSide: null,
     babyDinnerNote: "",
     babyLunch: null,
+    babyLunchSide: null,
     babyLunchNote: "",
     notes: "",
   }));
 };
 
-const storageKey = (week: WeekKey) => `meal-plan-v4-${week}`;
+const storageKey = (week: WeekKey) => `meal-plan-v5-${week}`;
 
 export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(() => {
@@ -58,7 +62,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     }
   }, [weekKey]);
 
-  // Auto-populate lunch from previous dinner unless overridden
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     if (dayPlan.lunchOverridden) return dayPlan;
     const suggestedLunch = idx === 0 ? null : plan[idx - 1].dinner;
@@ -73,26 +76,28 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     setPlan((prev) => prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d)));
   };
 
-  const setDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { dinner: meal });
-  const setDinnerSide = (dayIndex: number, meal: Meal | null) => update(dayIndex, { dinnerSide: meal });
-  const setDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { dinnerNote: note });
-  const setLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { lunch: meal, lunchOverridden: true });
-  const setLunchSide = (dayIndex: number, meal: Meal | null) => update(dayIndex, { lunchSide: meal });
-  const setLunchNote = (dayIndex: number, note: string) => update(dayIndex, { lunchNote: note });
-  const resetLunch = (dayIndex: number) => update(dayIndex, { lunch: null, lunchSide: null, lunchOverridden: false, lunchNote: "" });
-  const setBabyDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyDinner: meal });
-  const setBabyDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { babyDinnerNote: note });
-  const setBabyLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyLunch: meal });
-  const setBabyLunchNote = (dayIndex: number, note: string) => update(dayIndex, { babyLunchNote: note });
-  const setNotes = (dayIndex: number, notes: string) => update(dayIndex, { notes });
+  const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
+  const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
+  const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
+  const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true });
+  const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
+  const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
+  const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchNote: "" });
+  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal });
+  const setBabyDinnerSide = (i: number, meal: Meal | null) => update(i, { babyDinnerSide: meal });
+  const setBabyDinnerNote = (i: number, note: string) => update(i, { babyDinnerNote: note });
+  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal });
+  const setBabyLunchSide = (i: number, meal: Meal | null) => update(i, { babyLunchSide: meal });
+  const setBabyLunchNote = (i: number, note: string) => update(i, { babyLunchNote: note });
+  const setNotes = (i: number, notes: string) => update(i, { notes });
   const resetPlan = () => setPlan(buildInitialPlan());
 
   return {
     plan: planWithLunch,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, resetLunch,
-    setBabyDinner, setBabyDinnerNote,
-    setBabyLunch, setBabyLunchNote,
+    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote,
+    setBabyLunch, setBabyLunchSide, setBabyLunchNote,
     setNotes,
     resetPlan,
   };

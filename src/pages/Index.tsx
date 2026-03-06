@@ -11,8 +11,8 @@ export default function Index() {
     plan,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, resetLunch,
-    setBabyDinner, setBabyDinnerNote,
-    setBabyLunch, setBabyLunchNote,
+    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote,
+    setBabyLunch, setBabyLunchSide, setBabyLunchNote,
     resetPlan,
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);

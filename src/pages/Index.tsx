@@ -9,8 +9,8 @@ export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
   const {
     plan,
-    setDinner, setDinnerNote,
-    setLunch, setLunchNote, resetLunch,
+    setDinner, setDinnerSide, setDinnerNote,
+    setLunch, setLunchSide, setLunchNote, resetLunch,
     setBabyDinner, setBabyDinnerNote,
     setBabyLunch, setBabyLunchNote,
     resetPlan,

@@ -4,8 +4,10 @@ import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
 export interface DayPlan {
   day: string;
   dinner: Meal | null;
+  dinnerSide: Meal | null;
   dinnerNote: string;
   lunch: Meal | null;
+  lunchSide: Meal | null;
   lunchNote: string;
   lunchOverridden: boolean;
   babyDinner: Meal | null;
@@ -21,8 +23,10 @@ const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
     day,
     dinner: day === "Domingo" ? SUNDAY_DINNER : null,
+    dinnerSide: null,
     dinnerNote: "",
     lunch: null,
+    lunchSide: null,
     lunchNote: "",
     lunchOverridden: false,
     babyDinner: null,
@@ -33,7 +37,7 @@ const buildInitialPlan = (): DayPlan[] => {
   }));
 };
 
-const storageKey = (week: WeekKey) => `meal-plan-v3-${week}`;
+const storageKey = (week: WeekKey) => `meal-plan-v4-${week}`;
 
 export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(() => {
@@ -70,10 +74,12 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   };
 
   const setDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { dinner: meal });
+  const setDinnerSide = (dayIndex: number, meal: Meal | null) => update(dayIndex, { dinnerSide: meal });
   const setDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { dinnerNote: note });
   const setLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { lunch: meal, lunchOverridden: true });
+  const setLunchSide = (dayIndex: number, meal: Meal | null) => update(dayIndex, { lunchSide: meal });
   const setLunchNote = (dayIndex: number, note: string) => update(dayIndex, { lunchNote: note });
-  const resetLunch = (dayIndex: number) => update(dayIndex, { lunch: null, lunchOverridden: false, lunchNote: "" });
+  const resetLunch = (dayIndex: number) => update(dayIndex, { lunch: null, lunchSide: null, lunchOverridden: false, lunchNote: "" });
   const setBabyDinner = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyDinner: meal });
   const setBabyDinnerNote = (dayIndex: number, note: string) => update(dayIndex, { babyDinnerNote: note });
   const setBabyLunch = (dayIndex: number, meal: Meal | null) => update(dayIndex, { babyLunch: meal });
@@ -83,8 +89,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
 
   return {
     plan: planWithLunch,
-    setDinner, setDinnerNote,
-    setLunch, setLunchNote, resetLunch,
+    setDinner, setDinnerSide, setDinnerNote,
+    setLunch, setLunchSide, setLunchNote, resetLunch,
     setBabyDinner, setBabyDinnerNote,
     setBabyLunch, setBabyLunchNote,
     setNotes,

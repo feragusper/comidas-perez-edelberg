@@ -1,0 +1,1 @@
+CREATE POLICY "Public insert meal_plan" ON public.meal_plan FOR INSERT WITH CHECK (true);

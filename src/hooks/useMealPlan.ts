@@ -62,7 +62,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         if (cancelled) return;
         if (error) {
           console.error("Error loading meal plan:", error);
-        } else if (data?.plan) {
+          setPlan(buildInitialPlan());
+        } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
           setPlan(data.plan as unknown as DayPlan[]);
         } else {
           setPlan(buildInitialPlan());

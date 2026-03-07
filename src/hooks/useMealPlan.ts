@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface DayPlan {
   day: string;
@@ -41,25 +42,103 @@ const buildInitialPlan = (): DayPlan[] => {
   }));
 };
 
-const storageKey = (week: WeekKey) => `meal-plan-v5-${week}`;
-
 export function useMealPlan(weekKey: WeekKey = "current") {
-  const [plan, setPlan] = useState<DayPlan[]>(() => {
-    try {
-      const stored = localStorage.getItem(storageKey(weekKey));
-      if (stored) return JSON.parse(stored) as DayPlan[];
-    } catch { }
-    return buildInitialPlan();
-  });
+  const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
+  const [loading, setLoading] = useState(true);
+  // Ref to avoid re-saving what we just received from realtime
+  const skipNextSave = useRef(false);
 
+  // Load initial data from DB
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(storageKey(weekKey));
-      if (stored) setPlan(JSON.parse(stored) as DayPlan[]);
-      else setPlan(buildInitialPlan());
-    } catch {
-      setPlan(buildInitialPlan());
+    let cancelled = false;
+    setLoading(true);
+
+    supabase
+      .from("meal_plan")
+      .select("plan")
+      .eq("week_key", weekKey)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error("Error loading meal plan:", error);
+        } else if (data?.plan) {
+          setPlan(data.plan as unknown as DayPlan[]);
+        } else {
+          setPlan(buildInitialPlan());
+        }
+        setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [weekKey]);
+
+  // Real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel(`meal_plan_${weekKey}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "meal_plan",
+          filter: `week_key=eq.${weekKey}`,
+        },
+        (payload) => {
+          if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
+            const newPlan = (payload.new as { plan: DayPlan[] }).plan;
+            if (newPlan) {
+              skipNextSave.current = true;
+              setPlan(newPlan as DayPlan[]);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [weekKey]);
+
+  // Debounced save to DB
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const savePlan = useCallback(
+    (newPlan: DayPlan[]) => {
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      saveTimeout.current = setTimeout(async () => {
+        if (skipNextSave.current) {
+          skipNextSave.current = false;
+          return;
+        }
+        const { error } = await supabase
+          .from("meal_plan")
+          .upsert(
+            { week_key: weekKey, plan: newPlan as unknown as never[] },
+            { onConflict: "week_key" }
+          );
+        if (error) console.error("Error saving meal plan:", error);
+      }, 500);
+    },
+    [weekKey]
+  );
+
+  // Every time plan changes (from local updates), save it
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (loading) return;
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
+    savePlan(plan);
+  }, [plan, loading, savePlan]);
+
+  // Reset isFirstRender when weekKey changes
+  useEffect(() => {
+    isFirstRender.current = true;
   }, [weekKey]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
@@ -67,10 +146,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     const suggestedLunch = idx === 0 ? null : plan[idx - 1].dinner;
     return { ...dayPlan, lunch: suggestedLunch };
   });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey(weekKey), JSON.stringify(plan));
-  }, [plan, weekKey]);
 
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
     setPlan((prev) => prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d)));
@@ -94,6 +169,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
 
   return {
     plan: planWithLunch,
+    loading,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote,

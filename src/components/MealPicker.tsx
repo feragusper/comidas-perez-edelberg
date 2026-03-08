@@ -42,6 +42,9 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
     m.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const hasSearch = search.trim().length > 0;
+  const noResults = hasSearch && filtered.length === 0;
+
   // "Con lo de anoche" group (only for main meals)
   const prevRelated: Meal[] = (!isSide && prevDinner)
     ? filtered.filter((m) => m.category === prevDinner.category)
@@ -59,6 +62,17 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
   const title = isSide
     ? "Elegir guarnición"
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
+
+  const handleSelectFreeText = () => {
+    onSelect({
+      id: `custom-${Date.now()}`,
+      name: search.trim(),
+      emoji: "🍽️",
+      babySafety: "caution",
+      category: "Otro",
+    });
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
@@ -128,6 +142,7 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
 
         {/* Meals list */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">
+
           {/* Skip side button */}
           {isSide && onSkipSide && (
             <button
@@ -138,22 +153,15 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
             </button>
           )}
 
-          {/* Free-text "Otro" option when search has text but no results */}
-          {search.trim().length > 0 && filtered.length === 0 && (
+          {/* No results → free text option */}
+          {noResults && (
             <div className="text-center py-6">
               <p className="text-3xl mb-2">🍽️</p>
-              <p className="text-sm text-muted-foreground mb-3">No encontramos esa comida</p>
+              <p className="text-sm text-muted-foreground mb-3">
+                No encontramos esa comida
+              </p>
               <button
-                onClick={() => {
-                  onSelect({
-                    id: `custom-${Date.now()}`,
-                    name: search.trim(),
-                    emoji: "🍽️",
-                    babySafety: "caution",
-                    category: "Otro",
-                  });
-                  onClose();
-                }}
+                onClick={handleSelectFreeText}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
               >
                 Usar &ldquo;{search.trim()}&rdquo;
@@ -161,8 +169,22 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
             </div>
           )}
 
+          {/* Also show free-text option when there are partial results */}
+          {hasSearch && !noResults && (
+            <button
+              onClick={handleSelectFreeText}
+              className="w-full text-left px-3 py-2.5 rounded-xl border border-dashed border-border hover:bg-muted transition-all flex items-center gap-3"
+            >
+              <span className="text-2xl">🍽️</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">Usar &ldquo;{search.trim()}&rdquo;</p>
+                <p className="text-xs text-muted-foreground">Agregar como comida libre</p>
+              </div>
+            </button>
+          )}
+
           {/* Prev dinner related group (main only) */}
-          {search.trim().length === 0 || filtered.length > 0 ? prevRelated.length > 0 && (
+          {!noResults && prevRelated.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
@@ -181,7 +203,7 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
           )}
 
           {/* Main meals by category */}
-          {!isSide && Object.entries(grouped).map(([cat, meals]) => (
+          {!isSide && !noResults && Object.entries(grouped).map(([cat, meals]) => (
             <div key={cat}>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
               <div className="space-y-2">
@@ -193,7 +215,7 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
           ))}
 
           {/* Sides list */}
-          {isSide && filtered.length > 0 && (
+          {isSide && !noResults && filtered.length > 0 && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Guarniciones</p>
               <div className="space-y-2">
@@ -204,12 +226,6 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
             </div>
           )}
 
-          {filtered.length === 0 && (
-            <div className="text-center py-10 text-muted-foreground">
-              <p className="text-4xl mb-2">🔍</p>
-              <p className="text-sm">No encontramos comidas con esa búsqueda</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

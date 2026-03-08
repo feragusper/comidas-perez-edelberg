@@ -44,6 +44,7 @@ function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
   let sideIdx = 0;
   return plan.map((dayPlan) => {
     if (dayPlan.day === "Domingo") return null;
+    if (dayPlan.isDelivery) return null;
     if (dayPlan.dinner !== null) return null;
     const meal = mealPool[mealIdx++] ?? null;
     if (!meal) return null;
@@ -76,7 +77,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
   const [loadingDayIndex, setLoadingDayIndex] = useState<number | null>(null);
   const lastSignatureRef = useRef<string>("");
 
-  const dinnerSignature = plan.map((d) => d.dinner?.id ?? "null").join(",");
+  const dinnerSignature = plan.map((d) => `${d.dinner?.id ?? "null"}:${d.isDelivery ? "del" : ""}`).join(",");
 
   // Reset dismissed & AI suggestions when plan changes
   useEffect(() => {
@@ -104,6 +105,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
 
       const mapped: (DinnerSuggestion | null)[] = plan.map((dayPlan, idx) => {
         if (dayPlan.dinner !== null) return null;
+        if (dayPlan.isDelivery) return null;
         if (dayPlan.day === "Domingo") return null;
         const raw = data.suggestions[idx];
         if (!raw) return null;

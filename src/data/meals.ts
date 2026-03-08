@@ -136,3 +136,21 @@ export const SUNDAY_DINNER: Meal = {
   babyNote: "Clásico familiar, apto bebé sin sal",
   category: "Pastas",
 };
+
+export const DELIVERY_DINNER: Meal = {
+  id: "delivery",
+  name: "Delivery 🛵",
+  emoji: "🛵",
+  babySafety: "caution",
+  babyNote: "Comida de pedido, adaptar para bebé",
+  category: "Especiales",
+};
+
+export const DELIVERY_LEFTOVERS: Meal = {
+  id: "delivery-sobras",
+  name: "Sobras del delivery",
+  emoji: "📦",
+  babySafety: "caution",
+  babyNote: "Adaptar según lo que sobró",
+  category: "Especiales",
+};

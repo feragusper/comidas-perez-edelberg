@@ -10,6 +10,8 @@ interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   prevDinner: Meal | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   dinnerSuggestion?: DinnerSuggestion | null;
   onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
   onDismissSuggestion?: () => void;

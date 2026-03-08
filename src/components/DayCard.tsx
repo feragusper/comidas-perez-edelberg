@@ -4,7 +4,7 @@ import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles } from "lucide-react";
+import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2 } from "lucide-react";
 
 interface DayCardProps {
   dayPlan: DayPlan;

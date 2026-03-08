@@ -167,27 +167,26 @@ export function useMealPlan(weekKey: WeekKey = "current") {
       lunchNote: prevDay?.dinnerNote ?? "",
     };
 
-    // Baby dinner ← current day's adult dinner (if baby-safe and not overridden)
-    const isBabySafeDinner = dayPlan.dinner?.babySafety !== "unsafe";
+    // Prev day dinner safety check (used for Nico suggestions)
+    const prevDinner = prevDay?.dinner ?? null;
+    const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
+
+    // Baby dinner ← previous day's adult dinner (if baby-safe and not overridden)
     const babyDinnerSuggested = !dayPlan.babyDinnerOverridden ? {
-      babyDinner: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinner : null,
-      babyDinnerSide: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinnerSide : null,
-      babyDinnerNote: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinnerNote : "",
+      babyDinner: (prevDinner && isPrevBabySafe) ? prevDinner : null,
+      babyDinnerSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
+      babyDinnerNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
     } : {
       babyDinner: dayPlan.babyDinner,
       babyDinnerSide: dayPlan.babyDinnerSide,
       babyDinnerNote: dayPlan.babyDinnerNote,
     };
 
-    // Baby lunch ← previous day's baby dinner (if not overridden)
-    const prevBabyDinnerComputed = prevDay && !prevDay.babyDinnerOverridden
-      ? { meal: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinner : null, side: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinnerSide : null, note: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinnerNote : "" }
-      : { meal: prevDay?.babyDinner ?? null, side: prevDay?.babyDinnerSide ?? null, note: prevDay?.babyDinnerNote ?? "" };
-
+    // Baby lunch ← previous day's adult dinner (if baby-safe and not overridden)
     const babyLunchSuggested = !dayPlan.babyLunchOverridden ? {
-      babyLunch: prevBabyDinnerComputed.meal,
-      babyLunchSide: prevBabyDinnerComputed.side,
-      babyLunchNote: prevBabyDinnerComputed.note,
+      babyLunch: (prevDinner && isPrevBabySafe) ? prevDinner : null,
+      babyLunchSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
+      babyLunchNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
     } : {
       babyLunch: dayPlan.babyLunch,
       babyLunchSide: dayPlan.babyLunchSide,

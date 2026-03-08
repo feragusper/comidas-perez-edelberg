@@ -312,7 +312,7 @@ export function DayCard({
                   <Baby size={12} className="text-baby-safe" />
                   <span className="text-xs font-semibold text-baby-safe">Nico</span>
                   {!dayPlan.babyDinnerOverridden && dayPlan.babyDinner && (
-                    <span className="text-xs text-muted-foreground italic">sugerido de la cena</span>
+                    <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
                 {dayPlan.babyDinner ? (

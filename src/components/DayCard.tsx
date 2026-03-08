@@ -20,6 +20,7 @@ interface DayCardProps {
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;
+  onToggleDelivery: () => void;
   onSetLunch: (meal: Meal | null) => void;
   onSetLunchSide: (meal: Meal | null) => void;
   onSetLunchNote: (note: string) => void;

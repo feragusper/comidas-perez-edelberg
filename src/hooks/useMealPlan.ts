@@ -159,10 +159,23 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         }
         // Safety guard: never save if the loaded weekKey doesn't match current
         if (loadedWeekKey.current !== weekKey) return;
+        // Strip computed fields before saving — only persist raw/manual state
+        const rawPlan = newPlan.map((day) => ({
+          ...day,
+          lunch: day.lunchOverridden ? day.lunch : null,
+          lunchSide: day.lunchOverridden ? day.lunchSide : null,
+          lunchNote: day.lunchOverridden ? day.lunchNote : "",
+          babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
+          babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
+          babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
+          babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
+          babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
+          babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
+        }));
         const { error } = await supabase
           .from("meal_plan")
           .upsert(
-            { week_key: weekKey, plan: newPlan as unknown as never[] },
+            { week_key: weekKey, plan: rawPlan as unknown as never[] },
             { onConflict: "week_key" }
           );
         if (error) console.error("Error saving meal plan:", error);

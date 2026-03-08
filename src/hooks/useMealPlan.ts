@@ -172,50 +172,52 @@ export function useMealPlan(weekKey: WeekKey = "current") {
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     const prevDay = idx === 0 ? null : plan[idx - 1];
-
-    // Adults lunch ← previous day's adult dinner
-    const adultLunch = dayPlan.lunchOverridden ? {
-      lunch: dayPlan.lunch,
-      lunchSide: dayPlan.lunchSide,
-      lunchNote: dayPlan.lunchNote,
-    } : {
-      lunch: prevDay?.dinner ?? null,
-      lunchSide: prevDay?.dinnerSide ?? null,
-      lunchNote: prevDay?.dinnerNote ?? "",
-    };
-
-    // Prev day dinner safety check (used for Nico suggestions)
     const prevDinner = prevDay?.dinner ?? null;
     const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
 
-    // Baby dinner ← previous day's adult dinner (if baby-safe and not overridden)
-    const babyDinnerSuggested = !dayPlan.babyDinnerOverridden ? {
-      babyDinner: (prevDinner && isPrevBabySafe) ? prevDinner : null,
-      babyDinnerSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
-      babyDinnerNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
-    } : {
-      babyDinner: dayPlan.babyDinner,
-      babyDinnerSide: dayPlan.babyDinnerSide,
-      babyDinnerNote: dayPlan.babyDinnerNote,
-    };
+    // Adults lunch ← previous day's adult dinner (unless manually overridden or hidden)
+    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
+    if (dayPlan.lunchOverridden) {
+      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchNote: dayPlan.lunchNote };
+    } else if (dayPlan.lunchHidden) {
+      adultLunch = { lunch: null, lunchSide: null, lunchNote: "" };
+    } else {
+      adultLunch = {
+        lunch: prevDinner ?? null,
+        lunchSide: prevDinner ? (prevDay?.dinnerSide ?? null) : null,
+        lunchNote: prevDinner ? (prevDay?.dinnerNote ?? "") : "",
+      };
+    }
 
-    // Baby lunch ← previous day's adult dinner (if baby-safe and not overridden)
-    const babyLunchSuggested = !dayPlan.babyLunchOverridden ? {
-      babyLunch: (prevDinner && isPrevBabySafe) ? prevDinner : null,
-      babyLunchSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
-      babyLunchNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
-    } : {
-      babyLunch: dayPlan.babyLunch,
-      babyLunchSide: dayPlan.babyLunchSide,
-      babyLunchNote: dayPlan.babyLunchNote,
-    };
+    // Baby dinner ← previous day's adult dinner (if baby-safe, not overridden, not hidden)
+    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerNote">;
+    if (dayPlan.babyDinnerOverridden) {
+      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerNote: dayPlan.babyDinnerNote };
+    } else if (dayPlan.babyDinnerHidden) {
+      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
+    } else {
+      babyDinnerSuggested = {
+        babyDinner: (prevDinner && isPrevBabySafe) ? prevDinner : null,
+        babyDinnerSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
+        babyDinnerNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
+      };
+    }
 
-    return {
-      ...dayPlan,
-      ...adultLunch,
-      ...babyDinnerSuggested,
-      ...babyLunchSuggested,
-    };
+    // Baby lunch ← previous day's adult dinner (if baby-safe, not overridden, not hidden)
+    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchNote">;
+    if (dayPlan.babyLunchOverridden) {
+      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchNote: dayPlan.babyLunchNote };
+    } else if (dayPlan.babyLunchHidden) {
+      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchNote: "" };
+    } else {
+      babyLunchSuggested = {
+        babyLunch: (prevDinner && isPrevBabySafe) ? prevDinner : null,
+        babyLunchSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
+        babyLunchNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
+      };
+    }
+
+    return { ...dayPlan, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
   });
 
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
@@ -225,18 +227,24 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
-  const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true });
+  // Manual lunch pick
+  const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
   const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
-  const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchNote: "" });
-  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true });
+  // Hide suggestion (trash on a suggested meal) — no override, just hidden
+  const hideLunch = (i: number) => update(i, { lunchHidden: true });
+  // Restore suggestion
+  const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchHidden: false, lunchNote: "" });
+  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true, babyDinnerHidden: false });
   const setBabyDinnerSide = (i: number, meal: Meal | null) => update(i, { babyDinnerSide: meal });
   const setBabyDinnerNote = (i: number, note: string) => update(i, { babyDinnerNote: note });
-  const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "", babyDinnerOverridden: false });
-  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, babyLunchOverridden: true });
+  const hideBabyDinner = (i: number) => update(i, { babyDinnerHidden: true });
+  const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "", babyDinnerOverridden: false, babyDinnerHidden: false });
+  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, babyLunchOverridden: true, babyLunchHidden: false });
   const setBabyLunchSide = (i: number, meal: Meal | null) => update(i, { babyLunchSide: meal });
   const setBabyLunchNote = (i: number, note: string) => update(i, { babyLunchNote: note });
-  const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false });
+  const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
+  const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
   const resetPlan = () => setPlan(buildInitialPlan());
 

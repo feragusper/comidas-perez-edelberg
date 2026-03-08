@@ -89,6 +89,7 @@ export function useMealPlan(weekKey: WeekKey) {
           const raw = data.plan as unknown as DayPlan[];
           const migrated = raw.map((day) => ({
             ...day,
+            isDelivery: day.isDelivery ?? false,
             lunchOverridden: (day.lunchOverridden ?? false) && day.lunch != null,
             lunchHidden: day.lunchHidden ?? false,
             babyDinnerOverridden: (day.babyDinnerOverridden ?? false) && day.babyDinner != null,

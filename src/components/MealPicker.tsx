@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
@@ -31,6 +31,12 @@ const safetyLabel: Record<BabySafety, string> = {
 export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
   const isBaby = mode === "baby";
   const isSide = step === "side";

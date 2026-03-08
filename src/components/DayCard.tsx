@@ -206,7 +206,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.lunch} side={dayPlan.lunchSide} note={dayPlan.lunchNote}
                       onChangeNote={onSetLunchNote}
-                      onRemove={() => { onSetLunch(null); onSetLunchSide(null); }}
+                      onRemove={() => dayPlan.lunchOverridden ? onResetLunch() : onSetLunch(null)}
                       onChangeMeal={() => openMainPicker("lunch")}
                       onChangeSide={() => openSidePicker("lunch")}
                       onRemoveSide={() => onSetLunchSide(null)}
@@ -242,7 +242,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
                       onChangeNote={onSetBabyLunchNote}
-                      onRemove={() => onResetBabyLunch()}
+                      onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onSetBabyLunch(null)}
                       onChangeMeal={() => openMainPicker("babyLunch")}
                       onChangeSide={() => openSidePicker("babyLunch")}
                       onRemoveSide={() => onSetBabyLunchSide(null)}
@@ -320,7 +320,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
                       onChangeNote={onSetBabyDinnerNote}
-                      onRemove={() => onResetBabyDinner()}
+                      onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onSetBabyDinner(null)}
                       onChangeMeal={() => openMainPicker("babyDinner")}
                       onChangeSide={() => openSidePicker("babyDinner")}
                       onRemoveSide={() => onSetBabyDinnerSide(null)}

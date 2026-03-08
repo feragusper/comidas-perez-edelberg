@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Meal, MEALS, BabySafety } from "@/data/meals";
+import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
@@ -13,7 +13,7 @@ interface MealPickerProps {
   prevDinner?: Meal | null;
   onSelect: (meal: Meal) => void;
   onClose: () => void;
-  onSkipSide?: () => void; // only relevant when step=side
+  onSkipSide?: () => void;
 }
 
 const safetyColors: Record<BabySafety, string> = {
@@ -35,16 +35,9 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
   const isBaby = mode === "baby";
   const isSide = step === "side";
 
-  // Pool of meals depending on step
   const pool = MEALS.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
-
-  // Filter by mode
   const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
-
-  // Apply diet filter
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
-
-  // Apply search
   const filtered = dietFiltered.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -63,20 +56,9 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
     return acc;
   }, {});
 
-  // Side categories (just "Guarniciones")
-  const sideGrouped: Record<string, Meal[]> = {};
-  if (isSide) {
-    const sidesFiltered = rest; // all sides in rest after prev-related
-    if (sidesFiltered.length) sideGrouped["Guarniciones"] = sidesFiltered;
-  }
-
   const title = isSide
     ? "Elegir guarnición"
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
-
-  const availableCategories = isSide
-    ? []
-    : MEAL_CATEGORIES.filter((cat) => dietFiltered.some((m) => m.category === cat));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
@@ -101,7 +83,7 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
           </button>
         </div>
 
-        {/* Diet + Mode filters (only for main/adult) */}
+        {/* Diet filter (only for main/adult) */}
         {!isBaby && !isSide && (
           <div className="px-5 pb-3 flex gap-2">
             <button
@@ -143,7 +125,6 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
             />
           </div>
         </div>
-
 
         {/* Meals list */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">

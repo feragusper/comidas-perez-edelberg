@@ -166,7 +166,7 @@ export default function Index() {
 
       {/* Stage badge — fixed top-right corner */}
       {isStage && (
-        <div className="fixed top-2 right-2 z-50 flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning/15 border border-warning/30 text-warning text-[10px] font-semibold opacity-60 pointer-events-none select-none">
+        <div className="fixed top-2 right-2 z-50 flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning/30 border border-warning/60 text-warning text-[10px] font-semibold pointer-events-none select-none">
           <FlaskConical size={10} />
           STAGE
         </div>

@@ -15,14 +15,17 @@ interface DayCardProps {
   onSetLunch: (meal: Meal | null) => void;
   onSetLunchSide: (meal: Meal | null) => void;
   onSetLunchNote: (note: string) => void;
+  onHideLunch: () => void;
   onResetLunch: () => void;
   onSetBabyDinner: (meal: Meal | null) => void;
   onSetBabyDinnerSide: (meal: Meal | null) => void;
   onSetBabyDinnerNote: (note: string) => void;
+  onHideBabyDinner: () => void;
   onResetBabyDinner: () => void;
   onSetBabyLunch: (meal: Meal | null) => void;
   onSetBabyLunchSide: (meal: Meal | null) => void;
   onSetBabyLunchNote: (note: string) => void;
+  onHideBabyLunch: () => void;
   onResetBabyLunch: () => void;
 }
 
@@ -125,9 +128,9 @@ function MealDisplay({
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
-  onSetLunch, onSetLunchSide, onSetLunchNote, onResetLunch,
-  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onResetBabyDinner,
-  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onResetBabyLunch,
+  onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
+  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
+  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
@@ -206,7 +209,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.lunch} side={dayPlan.lunchSide} note={dayPlan.lunchNote}
                       onChangeNote={onSetLunchNote}
-                      onRemove={() => dayPlan.lunchOverridden ? onResetLunch() : onSetLunch(null)}
+                      onRemove={() => dayPlan.lunchOverridden ? onResetLunch() : onHideLunch()}
                       onChangeMeal={() => openMainPicker("lunch")}
                       onChangeSide={() => openSidePicker("lunch")}
                       onRemoveSide={() => onSetLunchSide(null)}
@@ -242,7 +245,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
                       onChangeNote={onSetBabyLunchNote}
-                      onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onSetBabyLunch(null)}
+                      onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
                       onChangeMeal={() => openMainPicker("babyLunch")}
                       onChangeSide={() => openSidePicker("babyLunch")}
                       onRemoveSide={() => onSetBabyLunchSide(null)}
@@ -320,7 +323,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
                       onChangeNote={onSetBabyDinnerNote}
-                      onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onSetBabyDinner(null)}
+                      onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onHideBabyDinner()}
                       onChangeMeal={() => openMainPicker("babyDinner")}
                       onChangeSide={() => openSidePicker("babyDinner")}
                       onRemoveSide={() => onSetBabyDinnerSide(null)}

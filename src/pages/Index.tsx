@@ -45,7 +45,7 @@ export default function Index() {
 
       {/* Week navigator + controls */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className={cn("mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className="mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center max-w-5xl">
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
@@ -83,7 +83,7 @@ export default function Index() {
         </div>
 
         {/* Stats bar */}
-        <div className={cn("mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className="mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap max-w-5xl">
           {/* Nosotros */}
           <span className="text-muted-foreground font-medium">Nosotros:</span>
           <span className="text-muted-foreground">
@@ -114,7 +114,7 @@ export default function Index() {
 
       {/* Days / Table */}
       {viewMode === "cards" ? (
-        <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
+        <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-3 pb-20">
           {plan.map((dayPlan, idx) => (
             <DayCard
               key={dayPlan.day}
@@ -148,7 +148,7 @@ export default function Index() {
           ))}
         </div>
       ) : (
-        <div className="px-4 sm:px-6 py-4 pb-20">
+        <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto pb-20">
           <WeekTableView
             plan={plan}
             onSetDinner={setDinner}

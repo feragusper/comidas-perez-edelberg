@@ -48,13 +48,7 @@ export default function Index() {
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
-          {/* Stage badge */}
-          {isStage && (
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-warning/15 border border-warning/30 text-warning text-xs font-semibold">
-              <FlaskConical size={12} />
-              STAGE
-            </div>
-          )}
+          {/* Stage badge — now rendered as fixed corner chip below */}
 
           {/* Suggestions toggle */}
           <button

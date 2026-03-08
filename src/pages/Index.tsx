@@ -3,11 +3,12 @@ import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles } from "lucide-react";
+import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey } from "@/lib/env";
+
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());

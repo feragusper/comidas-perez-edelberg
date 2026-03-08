@@ -138,8 +138,31 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
             </button>
           )}
 
+          {/* Free-text "Otro" option when search has text but no results */}
+          {search.trim().length > 0 && filtered.length === 0 && (
+            <div className="text-center py-6">
+              <p className="text-3xl mb-2">🍽️</p>
+              <p className="text-sm text-muted-foreground mb-3">No encontramos esa comida</p>
+              <button
+                onClick={() => {
+                  onSelect({
+                    id: `custom-${Date.now()}`,
+                    name: search.trim(),
+                    emoji: "🍽️",
+                    babySafety: "caution",
+                    category: "Otro",
+                  });
+                  onClose();
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+              >
+                Usar &ldquo;{search.trim()}&rdquo;
+              </button>
+            </div>
+          )}
+
           {/* Prev dinner related group (main only) */}
-          {prevRelated.length > 0 && (
+          {search.trim().length === 0 || filtered.length > 0 ? prevRelated.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-secondary">

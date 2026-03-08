@@ -114,7 +114,7 @@ export default function Index() {
 
       {/* Days / Table */}
       {viewMode === "cards" ? (
-        <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
+        <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-3 pb-20">
           {plan.map((dayPlan, idx) => (
             <DayCard
               key={dayPlan.day}

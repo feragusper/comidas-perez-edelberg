@@ -49,6 +49,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   const skipNextSave = useRef(false);
   // Track the weekKey for which data was last loaded to prevent stale saves
   const loadedWeekKey = useRef<WeekKey | null>(null);
+  // Debounced save timer — declared early so the load effect can cancel it
+  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {

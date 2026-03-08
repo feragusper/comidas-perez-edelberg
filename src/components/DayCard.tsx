@@ -280,17 +280,57 @@ export function DayCard({
             </div>
 
             {/* ── DINNER ── */}
-            <div className="rounded-xl bg-dinner-bg/70 p-3 border border-primary/20 space-y-3">
+            <div className={cn(
+              "rounded-xl p-3 border space-y-3",
+              isDelivery ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
+            )}>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">🌙 Cena</span>
-                {isSunday && (
+                <span className={cn("text-xs font-semibold uppercase tracking-wider", isDelivery ? "text-warning" : "text-primary")}>
+                  {isDelivery ? "🛵 Delivery" : "🌙 Cena"}
+                </span>
+                {isSunday && !isDelivery && (
                   <span className="text-xs text-muted-foreground italic flex items-center gap-1">
                     <Lock size={10} /> sugerido: pasta
                   </span>
                 )}
+                {/* Delivery toggle */}
+                {!isSunday && (
+                  <button
+                    onClick={onToggleDelivery}
+                    className={cn(
+                      "ml-auto flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all",
+                      isDelivery
+                        ? "bg-warning/20 border-warning/50 text-warning font-medium"
+                        : "border-dashed border-muted-foreground/30 text-muted-foreground hover:border-warning/50 hover:text-warning"
+                    )}
+                    title={isDelivery ? "Quitar delivery" : "Marcar como noche de delivery"}
+                  >
+                    🛵 {isDelivery ? "Quitar delivery" : "Delivery"}
+                  </button>
+                )}
               </div>
 
-              {/* Adults dinner */}
+              {/* Delivery mode: simple display */}
+              {isDelivery ? (
+                <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🛵</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-warning">Noche de delivery</p>
+                      <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
+                    </div>
+                    <button
+                      onClick={onToggleDelivery}
+                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Cancelar delivery"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                  <NoteInput value={dayPlan.dinnerNote} onChange={onSetDinnerNote} placeholder="¿Qué vas a pedir?" />
+                </div>
+              ) : (
+              /* Adults dinner */
               <div>
                 {dayPlan.dinner ? (
                   <div className="space-y-1">
@@ -375,6 +415,7 @@ export function DayCard({
                   </button>
                 )}
               </div>
+              )}
 
               {/* Nico dinner */}
               <div className="border-t border-primary/15 pt-2">

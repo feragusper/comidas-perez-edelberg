@@ -130,6 +130,7 @@ function MealDisplay({
 
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
+  dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,

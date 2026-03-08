@@ -30,7 +30,6 @@ const safetyLabel: Record<BabySafety, string> = {
 
 export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
 
   const isBaby = mode === "baby";

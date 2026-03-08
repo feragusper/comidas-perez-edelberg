@@ -136,7 +136,7 @@ export default function Index() {
               dayIndex={idx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
               dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
-              onAcceptSuggestion={(meal) => setDinner(idx, meal)}
+              onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
               onDismissSuggestion={() => dismissSuggestion(idx)}
               onSetDinner={(meal) => setDinner(idx, meal)}
               onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}

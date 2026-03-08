@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
+import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
 import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles } from "lucide-react";
@@ -9,8 +10,8 @@ interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   prevDinner: Meal | null;
-  dinnerSuggestion?: Meal | null;
-  onAcceptSuggestion?: (meal: Meal) => void;
+  dinnerSuggestion?: DinnerSuggestion | null;
+  onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
   onDismissSuggestion?: () => void;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;

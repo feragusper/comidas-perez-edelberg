@@ -252,6 +252,11 @@ export function useMealPlan(weekKey: WeekKey) {
   const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
+  const toggleDelivery = (i: number) => {
+    setPlan((prev) => prev.map((d, idx) =>
+      idx === i ? { ...d, isDelivery: !d.isDelivery, dinner: !d.isDelivery ? null : d.dinner, dinnerSide: !d.isDelivery ? null : d.dinnerSide } : d
+    ));
+  };
   const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
   const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });

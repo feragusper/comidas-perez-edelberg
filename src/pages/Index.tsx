@@ -70,13 +70,13 @@ export default function Index() {
               onClick={() => setViewMode("cards")}
               className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "cards" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              <LayoutList size={13} /> Tarjetas
+              <LayoutList size={13} /> Lista
             </button>
             <button
               onClick={() => setViewMode("table")}
               className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              <Table2 size={13} /> Resumen
+              <Table2 size={13} /> Tabla
             </button>
           </div>
         </div>

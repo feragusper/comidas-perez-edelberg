@@ -77,7 +77,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
   const [loadingDayIndex, setLoadingDayIndex] = useState<number | null>(null);
   const lastSignatureRef = useRef<string>("");
 
-  const dinnerSignature = plan.map((d) => d.dinner?.id ?? "null").join(",");
+  const dinnerSignature = plan.map((d) => `${d.dinner?.id ?? "null"}:${d.isDelivery ? "del" : ""}`).join(",");
 
   // Reset dismissed & AI suggestions when plan changes
   useEffect(() => {

@@ -129,6 +129,8 @@ export default function Index() {
               dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
               onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
               onDismissSuggestion={() => dismissSuggestion(idx)}
+              onRegenerateSuggestion={() => regenerateDay(idx)}
+              loadingSuggestion={loadingDayIndex === idx}
               onSetDinner={(meal) => setDinner(idx, meal)}
               onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
               onSetDinnerNote={(note) => setDinnerNote(idx, note)}

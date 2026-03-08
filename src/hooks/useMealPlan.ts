@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
+import { envWeekKey } from "@/lib/env";
 
 export interface DayPlan {
   day: string;

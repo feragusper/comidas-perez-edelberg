@@ -8,6 +8,7 @@ export interface DayPlan {
   dinner: Meal | null;
   dinnerSide: Meal | null;
   dinnerNote: string;
+  isDelivery: boolean;        // true = delivery/cheat night
   lunch: Meal | null;
   lunchSide: Meal | null;
   lunchNote: string;

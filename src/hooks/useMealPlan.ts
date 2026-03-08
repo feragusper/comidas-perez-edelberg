@@ -124,14 +124,14 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
-      .channel(`meal_plan_${weekKey}`)
+      .channel(`meal_plan_${envWeekKey(weekKey)}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "meal_plan",
-          filter: `week_key=eq.${weekKey}`,
+          filter: `week_key=eq.${envWeekKey(weekKey)}`,
         },
         (payload) => {
           if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {

@@ -44,6 +44,7 @@ function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
   let sideIdx = 0;
   return plan.map((dayPlan) => {
     if (dayPlan.day === "Domingo") return null;
+    if (dayPlan.isDelivery) return null;
     if (dayPlan.dinner !== null) return null;
     const meal = mealPool[mealIdx++] ?? null;
     if (!meal) return null;

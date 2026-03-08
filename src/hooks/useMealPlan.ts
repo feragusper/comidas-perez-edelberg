@@ -229,8 +229,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     loading,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, resetLunch,
-    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote,
-    setBabyLunch, setBabyLunchSide, setBabyLunchNote,
+    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, resetBabyDinner,
+    setBabyLunch, setBabyLunchSide, setBabyLunchNote, resetBabyLunch,
     setNotes,
     resetPlan,
   };

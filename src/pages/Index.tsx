@@ -1,15 +1,16 @@
-import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
+import { useMealPlan } from "@/hooks/useMealPlan";
 import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
-import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2, FlaskConical, Sparkles } from "lucide-react";
+import { WeekNavigator } from "@/components/WeekNavigator";
+import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { isStageEnv } from "@/lib/env";
+import { isStageEnv, currentWeekKey } from "@/lib/env";
 
 export default function Index() {
-  const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
+  const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const isStage = isStageEnv();
   const {
@@ -41,23 +42,11 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Week switcher + stats */}
+      {/* Week navigator + controls */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className={cn("mx-auto flex gap-1 pt-3 pb-2 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
-          {(["current", "next"] as WeekKey[]).map((week) => (
-            <button
-              key={week}
-              onClick={() => setActiveWeek(week)}
-              className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all",
-                activeWeek === week ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
-              )}
-            >
-              <CalendarDays size={14} />
-              {week === "current" ? "Semana actual" : "Próxima semana"}
-              {week === "next" && activeWeek !== "next" && <ChevronRight size={13} className="opacity-50" />}
-            </button>
-          ))}
+        <div className={cn("mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+          {/* Week navigator */}
+          <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
           {/* Stage badge */}
           {isStage && (
@@ -97,6 +86,8 @@ export default function Index() {
             </button>
           </div>
         </div>
+
+        {/* Stats bar */}
         <div className={cn("mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
           {/* Nosotros */}
           <span className="text-muted-foreground font-medium">Nosotros:</span>

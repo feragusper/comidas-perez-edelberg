@@ -79,7 +79,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     supabase
       .from("meal_plan")
       .select("plan")
-      .eq("week_key", weekKey)
+      .eq("week_key", envWeekKey(weekKey))
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;

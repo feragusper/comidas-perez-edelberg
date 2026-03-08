@@ -53,14 +53,14 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
         <PopoverTrigger asChild>
           <button
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all",
+              "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all w-44",
               isCurrentWeek
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted/60 text-foreground hover:bg-muted"
             )}
           >
-            <CalendarDays size={14} />
-            {label}
+            <CalendarDays size={14} className="shrink-0" />
+            <span className="truncate">{label}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

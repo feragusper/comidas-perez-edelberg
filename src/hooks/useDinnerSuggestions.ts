@@ -104,6 +104,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
 
       const mapped: (DinnerSuggestion | null)[] = plan.map((dayPlan, idx) => {
         if (dayPlan.dinner !== null) return null;
+        if (dayPlan.isDelivery) return null;
         if (dayPlan.day === "Domingo") return null;
         const raw = data.suggestions[idx];
         if (!raw) return null;

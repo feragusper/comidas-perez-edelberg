@@ -17,7 +17,7 @@ export default function Index() {
   const isStage = isStageEnv();
   const {
     plan,
-    setDinner, setDinnerSide, setDinnerNote,
+    setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,

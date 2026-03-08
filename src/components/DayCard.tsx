@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { DayPlan } from "@/hooks/useMealPlan";
-import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
+import { Meal, BabySafety, SUNDAY_DINNER, DELIVERY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";

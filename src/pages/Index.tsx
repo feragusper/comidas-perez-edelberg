@@ -21,8 +21,10 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const babyMeals = plan.filter((d) => d.babyDinner || d.babyLunch);
-  const plannedDays = plan.filter((d) => d.dinner !== null).length;
+  const adultDinners = plan.filter((d) => d.dinner !== null).length;
+  const adultLunches = plan.filter((d) => d.lunch !== null).length;
+  const babyDinners = plan.filter((d) => d.babyDinner !== null).length;
+  const babyLunches = plan.filter((d) => d.babyLunch !== null).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -31,8 +33,7 @@ export default function Index() {
         <img src={heroFood} alt="Cocina familiar" className="w-full h-48 sm:h-64 object-cover" style={{ objectPosition: "center 60%" }} />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 sm:px-8 sm:pb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Menú de la semana 🍽️</h1>
-          <p className="text-muted-foreground text-sm mt-1">Cenas para los dos · Almuerzos de sobras · Adaptado para bebé</p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Menú de la semana 🍽️</h1>
         </div>
       </div>
 
@@ -76,32 +77,32 @@ export default function Index() {
             </button>
           </div>
         </div>
-        <div className={cn("mx-auto flex items-center gap-4 text-sm pb-2.5", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className={cn("mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+          {/* Nosotros */}
+          <span className="text-muted-foreground font-medium">Nosotros:</span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-primary">{plannedDays}</span>/7 cenas
+            <span className="font-semibold text-foreground">{adultDinners}</span>/7 cenas
           </span>
           <span className="text-muted-foreground">·</span>
-          <div className="flex items-center gap-1 text-baby-safe">
-            <Baby size={14} />
-            <span className="font-semibold">{babyMeals.length}</span>
-            <span className="text-muted-foreground">días con comida de Nico</span>
-          </div>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{adultLunches}</span>/7 almuerzos
+          </span>
+          <span className="text-muted-foreground mx-1">|</span>
+          {/* Nico */}
+          <Baby size={13} className="text-baby-safe" />
+          <span className="text-muted-foreground font-medium">Nico:</span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-baby-safe">{babyDinners}</span>/7 cenas
+          </span>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-muted-foreground">
+            <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
+          </span>
           <div className="ml-auto">
             <button onClick={() => setShowReset(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors">
               <RotateCcw size={13} /> Reiniciar
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Baby banner */}
-      <div className="px-4 sm:px-8 pt-4 max-w-2xl mx-auto">
-        <div className="rounded-xl bg-baby-safe-bg border border-baby-safe/25 p-3 flex items-start gap-3">
-          <Baby size={18} className="text-baby-safe mt-0.5 shrink-0" />
-          <p className="text-xs text-foreground/80">
-            <span className="font-semibold text-baby-safe">Guía para Nico (1 año):</span>
-            {" "}Sin sal · Sin miel · Sin nueces enteras · Texturas blandas · Leche entera con moderación.
-          </p>
         </div>
       </div>
 

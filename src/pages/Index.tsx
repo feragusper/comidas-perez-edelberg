@@ -1,12 +1,14 @@
 import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
 import { DayCard } from "@/components/DayCard";
-import { Baby, RotateCcw, CalendarDays, ChevronRight } from "lucide-react";
+import { WeekTableView } from "@/components/WeekTableView";
+import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2 } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote,
@@ -34,7 +36,7 @@ export default function Index() {
 
       {/* Week switcher + stats */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto flex gap-1 pt-3 pb-2">
+        <div className={cn("mx-auto flex gap-1 pt-3 pb-2", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
           {(["current", "next"] as WeekKey[]).map((week) => (
             <button
               key={week}
@@ -49,8 +51,23 @@ export default function Index() {
               {week === "next" && activeWeek !== "next" && <ChevronRight size={13} className="opacity-50" />}
             </button>
           ))}
+          {/* View toggle */}
+          <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "cards" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              <LayoutList size={13} /> Tarjetas
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              <Table2 size={13} /> Resumen
+            </button>
+          </div>
         </div>
-        <div className="max-w-2xl mx-auto flex items-center gap-4 text-sm pb-2.5">
+        <div className={cn("mx-auto flex items-center gap-4 text-sm pb-2.5", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
           <span className="text-muted-foreground">
             <span className="font-semibold text-primary">{plannedDays}</span>/7 cenas
           </span>
@@ -79,30 +96,36 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Days */}
-      <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
-        {plan.map((dayPlan, idx) => (
-          <DayCard
-            key={dayPlan.day}
-            dayPlan={dayPlan}
-            dayIndex={idx}
-            prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
-            onSetDinner={(meal) => setDinner(idx, meal)}
-            onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
-            onSetDinnerNote={(note) => setDinnerNote(idx, note)}
-            onSetLunch={(meal) => setLunch(idx, meal)}
-            onSetLunchSide={(meal) => setLunchSide(idx, meal)}
-            onSetLunchNote={(note) => setLunchNote(idx, note)}
-            onResetLunch={() => resetLunch(idx)}
-            onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
-            onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
-            onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
-            onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
-            onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
-            onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
-          />
-        ))}
-      </div>
+      {/* Days / Table */}
+      {viewMode === "cards" ? (
+        <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
+          {plan.map((dayPlan, idx) => (
+            <DayCard
+              key={dayPlan.day}
+              dayPlan={dayPlan}
+              dayIndex={idx}
+              prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
+              onSetDinner={(meal) => setDinner(idx, meal)}
+              onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
+              onSetDinnerNote={(note) => setDinnerNote(idx, note)}
+              onSetLunch={(meal) => setLunch(idx, meal)}
+              onSetLunchSide={(meal) => setLunchSide(idx, meal)}
+              onSetLunchNote={(note) => setLunchNote(idx, note)}
+              onResetLunch={() => resetLunch(idx)}
+              onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
+              onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
+              onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
+              onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
+              onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
+              onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="px-4 sm:px-6 py-4 pb-20">
+          <WeekTableView plan={plan} />
+        </div>
+      )}
 
       {/* Reset dialog */}
       {showReset && (

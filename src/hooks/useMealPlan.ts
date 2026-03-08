@@ -36,6 +36,7 @@ const buildInitialPlan = (): DayPlan[] => {
     dinner: day === "Domingo" ? SUNDAY_DINNER : null,
     dinnerSide: null,
     dinnerNote: "",
+    isDelivery: false,
     lunch: null,
     lunchSide: null,
     lunchNote: "",

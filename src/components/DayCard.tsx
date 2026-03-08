@@ -311,17 +311,27 @@ export function DayCard({
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Baby size={12} className="text-baby-safe" />
                   <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  {!dayPlan.babyDinnerOverridden && dayPlan.babyDinner && (
+                    <span className="text-xs text-muted-foreground italic">sugerido de la cena</span>
+                  )}
                 </div>
                 {dayPlan.babyDinner ? (
-                  <MealDisplay
-                    meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
-                    onChangeNote={onSetBabyDinnerNote}
-                    onRemove={() => { onSetBabyDinner(null); onSetBabyDinnerSide(null); }}
-                    onChangeMeal={() => openMainPicker("babyDinner")}
-                    onChangeSide={() => openSidePicker("babyDinner")}
-                    onRemoveSide={() => onSetBabyDinnerSide(null)}
-                    isBaby showSide
-                  />
+                  <div className="space-y-1">
+                    <MealDisplay
+                      meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
+                      onChangeNote={onSetBabyDinnerNote}
+                      onRemove={() => { onSetBabyDinner(null); onSetBabyDinnerSide(null); }}
+                      onChangeMeal={() => openMainPicker("babyDinner")}
+                      onChangeSide={() => openSidePicker("babyDinner")}
+                      onRemoveSide={() => onSetBabyDinnerSide(null)}
+                      isBaby showSide
+                    />
+                    {dayPlan.babyDinnerOverridden && (
+                      <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
+                        <RotateCcw size={11} /> Restaurar sugerencia
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button
                     onClick={() => openMainPicker("babyDinner")}

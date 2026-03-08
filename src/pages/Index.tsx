@@ -134,6 +134,7 @@ export default function Index() {
               onSetDinner={(meal) => setDinner(idx, meal)}
               onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
               onSetDinnerNote={(note) => setDinnerNote(idx, note)}
+              onToggleDelivery={() => toggleDelivery(idx)}
               onSetLunch={(meal) => setLunch(idx, meal)}
               onSetLunchSide={(meal) => setLunchSide(idx, meal)}
               onSetLunchNote={(note) => setLunchNote(idx, note)}

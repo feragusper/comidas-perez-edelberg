@@ -191,7 +191,14 @@ export function useMealPlan(weekKey: WeekKey) {
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     const prevDay = idx === 0 ? null : plan[idx - 1];
     const prevDinner = prevDay?.dinner ?? null;
+    const isPrevDelivery = prevDay?.isDelivery ?? false;
     const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
+
+    // For delivery nights, treat dinner as the DELIVERY_DINNER sentinel
+    const effectiveDinner = dayPlan.isDelivery ? DELIVERY_DINNER : dayPlan.dinner;
+    const effectivePrevDinner = isPrevDelivery ? DELIVERY_LEFTOVERS : prevDinner;
+    const effectivePrevSide = isPrevDelivery ? null : (prevDay?.dinnerSide ?? null);
+    const effectivePrevNote = isPrevDelivery ? "" : (prevDay?.dinnerNote ?? "");
 
     let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
     if (dayPlan.lunchOverridden) {
@@ -200,9 +207,9 @@ export function useMealPlan(weekKey: WeekKey) {
       adultLunch = { lunch: null, lunchSide: null, lunchNote: "" };
     } else {
       adultLunch = {
-        lunch: prevDinner ?? null,
-        lunchSide: prevDinner ? (prevDay?.dinnerSide ?? null) : null,
-        lunchNote: prevDinner ? (prevDay?.dinnerNote ?? "") : "",
+        lunch: effectivePrevDinner ?? null,
+        lunchSide: effectivePrevDinner ? effectivePrevSide : null,
+        lunchNote: effectivePrevDinner ? effectivePrevNote : "",
       };
     }
 
@@ -212,10 +219,12 @@ export function useMealPlan(weekKey: WeekKey) {
     } else if (dayPlan.babyDinnerHidden) {
       babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
     } else {
+      // Don't suggest delivery leftovers for baby — skip if delivery
+      const babyPrev = (prevDinner && !isPrevDelivery && isPrevBabySafe) ? prevDinner : null;
       babyDinnerSuggested = {
-        babyDinner: (prevDinner && isPrevBabySafe) ? prevDinner : null,
-        babyDinnerSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
-        babyDinnerNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
+        babyDinner: babyPrev,
+        babyDinnerSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyDinnerNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }
 
@@ -225,14 +234,15 @@ export function useMealPlan(weekKey: WeekKey) {
     } else if (dayPlan.babyLunchHidden) {
       babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchNote: "" };
     } else {
+      const babyPrev = (prevDinner && !isPrevDelivery && isPrevBabySafe) ? prevDinner : null;
       babyLunchSuggested = {
-        babyLunch: (prevDinner && isPrevBabySafe) ? prevDinner : null,
-        babyLunchSide: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerSide ?? null) : null,
-        babyLunchNote: (prevDinner && isPrevBabySafe) ? (prevDay?.dinnerNote ?? "") : "",
+        babyLunch: babyPrev,
+        babyLunchSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyLunchNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }
 
-    return { ...dayPlan, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
+    return { ...dayPlan, dinner: effectiveDinner, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
   });
 
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {

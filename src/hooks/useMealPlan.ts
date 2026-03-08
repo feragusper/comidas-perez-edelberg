@@ -117,9 +117,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     };
   }, [weekKey]);
 
-  // Debounced save to DB
-  const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   const savePlan = useCallback(
     (newPlan: DayPlan[]) => {
       if (saveTimeout.current) clearTimeout(saveTimeout.current);

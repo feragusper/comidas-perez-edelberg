@@ -164,7 +164,7 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
                 key={cat}
                 onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
                 className={cn(
-                  "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                  "shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all",
                   activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
                 )}
               >

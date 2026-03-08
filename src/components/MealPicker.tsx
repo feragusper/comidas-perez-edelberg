@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
+import { Meal, MEALS, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 

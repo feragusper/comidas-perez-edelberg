@@ -10,6 +10,8 @@ interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   prevDinner: Meal | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   dinnerSuggestion?: DinnerSuggestion | null;
   onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
   onDismissSuggestion?: () => void;
@@ -131,6 +133,7 @@ function MealDisplay({
 
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
+  expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
@@ -139,7 +142,6 @@ export function DayCard({
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
-  const [expanded, setExpanded] = useState(true);
   const isSunday = dayPlan.day === "Domingo";
 
   const handlePickerSelect = (meal: Meal) => {
@@ -187,7 +189,7 @@ export function DayCard({
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
             isSunday ? "bg-sunday-accent/10" : "bg-muted/40"
           )}
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => onToggleExpanded()}
         >
           <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : "text-foreground")}
             style={{ fontFamily: 'Fraunces, serif' }}>

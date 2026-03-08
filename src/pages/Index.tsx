@@ -12,6 +12,7 @@ import { isStageEnv, currentWeekKey } from "@/lib/env";
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [expandedDays, setExpandedDays] = useState<boolean[]>(Array(7).fill(true));
   const isStage = isStageEnv();
   const {
     plan,
@@ -120,6 +121,8 @@ export default function Index() {
               dayPlan={dayPlan}
               dayIndex={idx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
+              expanded={expandedDays[idx]}
+              onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
               dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
               onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
               onDismissSuggestion={() => dismissSuggestion(idx)}

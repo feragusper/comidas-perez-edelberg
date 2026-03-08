@@ -19,9 +19,11 @@ interface DayCardProps {
   onSetBabyDinner: (meal: Meal | null) => void;
   onSetBabyDinnerSide: (meal: Meal | null) => void;
   onSetBabyDinnerNote: (note: string) => void;
+  onResetBabyDinner: () => void;
   onSetBabyLunch: (meal: Meal | null) => void;
   onSetBabyLunchSide: (meal: Meal | null) => void;
   onSetBabyLunchNote: (note: string) => void;
+  onResetBabyLunch: () => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {

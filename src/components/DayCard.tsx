@@ -128,9 +128,9 @@ function MealDisplay({
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
-  onSetLunch, onSetLunchSide, onSetLunchNote, onResetLunch,
-  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onResetBabyDinner,
-  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onResetBabyLunch,
+  onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
+  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
+  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");

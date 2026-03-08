@@ -3,11 +3,12 @@ import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles } from "lucide-react";
+import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey } from "@/lib/env";
+
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
@@ -24,8 +25,9 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion } =
+  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, loadingAI } =
     useDinnerSuggestions(plan);
+
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;
@@ -49,8 +51,6 @@ export default function Index() {
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
-          {/* Stage badge — now rendered as fixed corner chip below */}
-
           {/* Suggestions toggle */}
           <button
             onClick={toggleSuggestions}
@@ -61,8 +61,11 @@ export default function Index() {
                 : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            <Sparkles size={12} />
-            Sugerencias {suggestionsEnabled ? "on" : "off"}
+            {loadingAI
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Sparkles size={12} />
+            }
+            {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
           </button>
 
           {/* View toggle */}

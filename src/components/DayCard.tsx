@@ -310,7 +310,9 @@ export function DayCard({
                   <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
                     <div className="flex items-center gap-1.5">
                       <Sparkles size={12} className="text-primary/60" />
-                      <span className="text-xs text-primary/70 font-medium italic">Sugerencia</span>
+                      <span className="text-xs text-primary/70 font-medium italic">
+                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA" : "Sugerencia"}
+                      </span>
                     </div>
                     {/* Meal row */}
                     <div className="flex items-center gap-2">

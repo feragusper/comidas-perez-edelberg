@@ -1,10 +1,11 @@
 import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
-import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2 } from "lucide-react";
+import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2, FlaskConical } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { isStageEnv } from "@/lib/env";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");

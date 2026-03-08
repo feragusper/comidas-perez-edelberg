@@ -12,6 +12,7 @@ import { isStageEnv, currentWeekKey } from "@/lib/env";
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [expandedDays, setExpandedDays] = useState<boolean[]>(Array(7).fill(true));
   const isStage = isStageEnv();
   const {
     plan,

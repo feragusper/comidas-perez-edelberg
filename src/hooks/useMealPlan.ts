@@ -91,12 +91,23 @@ export function useMealPlan(weekKey: WeekKey = "current") {
           const raw = data.plan as unknown as DayPlan[];
           const migrated = raw.map((day) => ({
             ...day,
-            lunchOverridden: day.lunchOverridden ?? false,
+            // If overridden but meal is null, that's corrupt state — reset it
+            lunchOverridden: (day.lunchOverridden ?? false) && day.lunch != null,
             lunchHidden: day.lunchHidden ?? false,
-            babyDinnerOverridden: day.babyDinnerOverridden ?? false,
+            babyDinnerOverridden: (day.babyDinnerOverridden ?? false) && day.babyDinner != null,
             babyDinnerHidden: day.babyDinnerHidden ?? false,
-            babyLunchOverridden: day.babyLunchOverridden ?? false,
+            babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
             babyLunchHidden: day.babyLunchHidden ?? false,
+            // Strip computed fields that shouldn't be persisted — they'll be recomputed
+            lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
+            lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
+            lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
+            babyDinner: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinner : null,
+            babyDinnerSide: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerSide : null,
+            babyDinnerNote: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerNote : "",
+            babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
+            babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
+            babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
           }));
           setPlan(migrated);
         } else {

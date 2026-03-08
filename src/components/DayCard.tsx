@@ -15,14 +15,17 @@ interface DayCardProps {
   onSetLunch: (meal: Meal | null) => void;
   onSetLunchSide: (meal: Meal | null) => void;
   onSetLunchNote: (note: string) => void;
+  onHideLunch: () => void;
   onResetLunch: () => void;
   onSetBabyDinner: (meal: Meal | null) => void;
   onSetBabyDinnerSide: (meal: Meal | null) => void;
   onSetBabyDinnerNote: (note: string) => void;
+  onHideBabyDinner: () => void;
   onResetBabyDinner: () => void;
   onSetBabyLunch: (meal: Meal | null) => void;
   onSetBabyLunchSide: (meal: Meal | null) => void;
   onSetBabyLunchNote: (note: string) => void;
+  onHideBabyLunch: () => void;
   onResetBabyLunch: () => void;
 }
 

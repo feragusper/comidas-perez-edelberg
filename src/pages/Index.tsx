@@ -115,9 +115,11 @@ export default function Index() {
               onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
               onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
               onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
+              onResetBabyDinner={() => resetBabyDinner(idx)}
               onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
               onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
               onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
+              onResetBabyLunch={() => resetBabyLunch(idx)}
             />
           ))}
         </div>

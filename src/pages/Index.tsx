@@ -123,7 +123,21 @@ export default function Index() {
         </div>
       ) : (
         <div className="px-4 sm:px-6 py-4 pb-20">
-          <WeekTableView plan={plan} />
+          <WeekTableView
+            plan={plan}
+            onSetDinner={setDinner}
+            onSetDinnerSide={setDinnerSide}
+            onSetDinnerNote={setDinnerNote}
+            onSetLunch={setLunch}
+            onSetLunchSide={setLunchSide}
+            onSetLunchNote={setLunchNote}
+            onSetBabyDinner={setBabyDinner}
+            onSetBabyDinnerSide={setBabyDinnerSide}
+            onSetBabyDinnerNote={setBabyDinnerNote}
+            onSetBabyLunch={setBabyLunch}
+            onSetBabyLunchSide={setBabyLunchSide}
+            onSetBabyLunchNote={setBabyLunchNote}
+          />
         </div>
       )}
 

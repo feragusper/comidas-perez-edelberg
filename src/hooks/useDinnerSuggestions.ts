@@ -35,9 +35,11 @@ function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
   const usedSideIds = new Set(
     plan.filter((d) => d.dinnerSide !== null).map((d) => d.dinnerSide!.id)
   );
+  const ketoMeals = MAIN_MEALS.filter((m) => m.isKeto);
+  const ketoSides = SIDE_MEALS.filter((m) => m.isKeto);
   const seed = [...usedDinnerIds].sort().join(",") || "empty";
-  const mealPool = seededShuffle(MAIN_MEALS.filter((m) => !usedDinnerIds.has(m.id)), seed);
-  const sidePool = seededShuffle(SIDE_MEALS.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
+  const mealPool = seededShuffle(ketoMeals.filter((m) => !usedDinnerIds.has(m.id)), seed);
+  const sidePool = seededShuffle(ketoSides.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
   let mealIdx = 0;
   let sideIdx = 0;
   return plan.map((dayPlan) => {
@@ -55,7 +57,9 @@ export interface UseDinnerSuggestionsResult {
   toggle: () => void;
   suggestions: (DinnerSuggestion | null)[];
   dismiss: (dayIndex: number) => void;
+  regenerateDay: (dayIndex: number) => void;
   loadingAI: boolean;
+  loadingDayIndex: number | null;
 }
 
 export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResult {
@@ -69,6 +73,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
   const [aiSuggestions, setAiSuggestions] = useState<(DinnerSuggestion | null)[] | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingDayIndex, setLoadingDayIndex] = useState<number | null>(null);
   const lastSignatureRef = useRef<string>("");
 
   const dinnerSignature = plan.map((d) => d.dinner?.id ?? "null").join(",");
@@ -77,29 +82,19 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
   useEffect(() => {
     setDismissed(new Set());
     setAiSuggestions(null);
+    lastSignatureRef.current = "";
   }, [dinnerSignature]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchAISuggestions = useCallback(async () => {
+  const fetchAllAISuggestions = useCallback(async () => {
     if (!enabled) return;
     if (lastSignatureRef.current === dinnerSignature && aiSuggestions !== null) return;
     lastSignatureRef.current = dinnerSignature;
 
     setLoadingAI(true);
     try {
-      const currentMeals = plan
-        .filter((d) => d.dinner !== null)
-        .map((d) => d.dinner!.name);
-
-      const mealCatalog = MAIN_MEALS.map((m) => ({
-        id: m.id,
-        name: m.name,
-        category: m.category,
-      }));
-
-      const sideCatalog = SIDE_MEALS.map((m) => ({
-        id: m.id,
-        name: m.name,
-      }));
+      const currentMeals = plan.filter((d) => d.dinner !== null).map((d) => d.dinner!.name);
+      const mealCatalog = MAIN_MEALS.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
+      const sideCatalog = SIDE_MEALS.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
 
       const { data, error } = await supabase.functions.invoke("suggest-meals", {
         body: { currentMeals, mealCatalog, sideCatalog },
@@ -130,12 +125,54 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
   // Fetch AI suggestions when enabled and plan changes
   useEffect(() => {
     if (enabled) {
-      fetchAISuggestions();
+      fetchAllAISuggestions();
     }
   }, [enabled, dinnerSignature]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const localSuggestions = useMemo(() => buildLocalSuggestions(plan), [plan]);
+  // Regenerate a single day's suggestion
+  const regenerateDay = useCallback(async (dayIndex: number) => {
+    if (!enabled) return;
+    setLoadingDayIndex(dayIndex);
+    try {
+      const currentMeals = plan.filter((d) => d.dinner !== null).map((d) => d.dinner!.name);
+      const mealCatalog = MAIN_MEALS.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
+      const sideCatalog = SIDE_MEALS.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
 
+      // Build existing suggestions to avoid duplicates
+      const existingSuggestions = (aiSuggestions ?? [])
+        .map((s, i) => s && i !== dayIndex ? { dayIndex: i, mealId: s.meal.id, sideId: s.side?.id ?? "" } : null)
+        .filter(Boolean);
+
+      const { data, error } = await supabase.functions.invoke("suggest-meals", {
+        body: { currentMeals, mealCatalog, sideCatalog, targetDayIndex: dayIndex, existingSuggestions },
+      });
+
+      if (error || !data?.suggestion) throw new Error(error?.message ?? "No suggestion");
+
+      const raw = data.suggestion;
+      const meal = MEALS.find((m) => m.id === raw.mealId) ?? null;
+      const side = MEALS.find((m) => m.id === raw.sideId) ?? null;
+      if (!meal) return;
+
+      setAiSuggestions((prev) => {
+        const next = prev ? [...prev] : plan.map(() => null);
+        next[dayIndex] = { meal, side, isAI: true };
+        return next;
+      });
+      // Remove from dismissed if it was dismissed
+      setDismissed((prev) => {
+        const next = new Set(prev);
+        next.delete(dayIndex);
+        return next;
+      });
+    } catch (err) {
+      console.error("AI single-day regen failed:", err);
+    } finally {
+      setLoadingDayIndex(null);
+    }
+  }, [enabled, plan, aiSuggestions]);
+
+  const localSuggestions = useMemo(() => buildLocalSuggestions(plan), [plan]);
   const baseSuggestions = aiSuggestions ?? localSuggestions;
 
   const suggestions = useMemo(
@@ -148,7 +185,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
       const next = !prev;
       try { localStorage.setItem(STORAGE_KEY, String(next)); } catch {}
       if (next) {
-        setAiSuggestions(null); // force re-fetch
+        setAiSuggestions(null);
         lastSignatureRef.current = "";
       }
       return next;
@@ -159,5 +196,5 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
     setDismissed((prev) => new Set([...prev, dayIndex]));
   };
 
-  return { enabled, toggle, suggestions, dismiss, loadingAI };
+  return { enabled, toggle, suggestions, dismiss, regenerateDay, loadingAI, loadingDayIndex };
 }

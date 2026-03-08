@@ -4,7 +4,7 @@ import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles } from "lucide-react";
+import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2 } from "lucide-react";
 
 interface DayCardProps {
   dayPlan: DayPlan;
@@ -15,6 +15,8 @@ interface DayCardProps {
   dinnerSuggestion?: DinnerSuggestion | null;
   onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
   onDismissSuggestion?: () => void;
+  onRegenerateSuggestion?: () => void;
+  loadingSuggestion?: boolean;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;
@@ -134,7 +136,7 @@ function MealDisplay({
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
   expanded, onToggleExpanded,
-  dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion,
+  dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
@@ -311,8 +313,21 @@ export function DayCard({
                     <div className="flex items-center gap-1.5">
                       <Sparkles size={12} className="text-primary/60" />
                       <span className="text-xs text-primary/70 font-medium italic">
-                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA" : "Sugerencia"}
+                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA keto" : "Sugerencia"}
                       </span>
+                      {/* Regenerate button */}
+                      <button
+                        onClick={() => onRegenerateSuggestion?.()}
+                        disabled={loadingSuggestion}
+                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                        title="Otra sugerencia"
+                      >
+                        {loadingSuggestion
+                          ? <Loader2 size={11} className="animate-spin" />
+                          : <RefreshCw size={11} />
+                        }
+                        Otra
+                      </button>
                     </div>
                     {/* Meal row */}
                     <div className="flex items-center gap-2">

@@ -25,7 +25,7 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, loadingAI } =
+  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
 
 
@@ -129,6 +129,8 @@ export default function Index() {
               dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
               onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
               onDismissSuggestion={() => dismissSuggestion(idx)}
+              onRegenerateSuggestion={() => regenerateDay(idx)}
+              loadingSuggestion={loadingDayIndex === idx}
               onSetDinner={(meal) => setDinner(idx, meal)}
               onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
               onSetDinnerNote={(note) => setDinnerNote(idx, note)}

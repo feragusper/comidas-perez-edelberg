@@ -148,7 +148,7 @@ export default function Index() {
           ))}
         </div>
       ) : (
-        <div className="px-4 sm:px-6 py-4 pb-20">
+        <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto pb-20">
           <WeekTableView
             plan={plan}
             onSetDinner={setDinner}

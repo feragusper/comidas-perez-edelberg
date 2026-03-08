@@ -1,7 +1,8 @@
 import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
+import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
-import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2, FlaskConical } from "lucide-react";
+import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2, FlaskConical, Sparkles } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,9 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
+  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion } =
+    useDinnerSuggestions(plan);
+
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;
   const babyDinners = plan.filter((d) => d.babyDinner !== null).length;
@@ -33,13 +37,13 @@ export default function Index() {
         <img src={heroFood} alt="Cocina familiar" className="w-full h-48 sm:h-64 object-cover" style={{ objectPosition: "center 60%" }} />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 sm:px-8 sm:pb-6">
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Menú de la semana 🍽️</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Menú de la semana 🍽️</h1>
         </div>
       </div>
 
       {/* Week switcher + stats */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className={cn("mx-auto flex gap-1 pt-3 pb-2", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className={cn("mx-auto flex gap-1 pt-3 pb-2 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
           {(["current", "next"] as WeekKey[]).map((week) => (
             <button
               key={week}
@@ -49,11 +53,12 @@ export default function Index() {
                 activeWeek === week ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
               )}
             >
-          <CalendarDays size={14} />
+              <CalendarDays size={14} />
               {week === "current" ? "Semana actual" : "Próxima semana"}
               {week === "next" && activeWeek !== "next" && <ChevronRight size={13} className="opacity-50" />}
             </button>
           ))}
+
           {/* Stage badge */}
           {isStage && (
             <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-warning/15 border border-warning/30 text-warning text-xs font-semibold">
@@ -61,6 +66,21 @@ export default function Index() {
               STAGE
             </div>
           )}
+
+          {/* Suggestions toggle */}
+          <button
+            onClick={toggleSuggestions}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
+              suggestionsEnabled
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Sparkles size={12} />
+            Sugerencias {suggestionsEnabled ? "on" : "off"}
+          </button>
+
           {/* View toggle */}
           <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
             <button
@@ -115,6 +135,9 @@ export default function Index() {
               dayPlan={dayPlan}
               dayIndex={idx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
+              dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
+              onAcceptSuggestion={(meal) => setDinner(idx, meal)}
+              onDismissSuggestion={() => dismissSuggestion(idx)}
               onSetDinner={(meal) => setDinner(idx, meal)}
               onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
               onSetDinnerNote={(note) => setDinnerNote(idx, note)}

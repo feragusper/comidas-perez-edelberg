@@ -278,7 +278,7 @@ export function useMealPlan(weekKey: WeekKey) {
   return {
     plan: planWithLunch,
     loading,
-    setDinner, setDinnerSide, setDinnerNote,
+    setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,

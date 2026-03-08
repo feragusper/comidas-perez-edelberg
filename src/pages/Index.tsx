@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote,

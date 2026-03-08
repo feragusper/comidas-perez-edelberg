@@ -21,8 +21,10 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const babyMeals = plan.filter((d) => d.babyDinner || d.babyLunch);
-  const plannedDays = plan.filter((d) => d.dinner !== null).length;
+  const adultDinners = plan.filter((d) => d.dinner !== null).length;
+  const adultLunches = plan.filter((d) => d.lunch !== null).length;
+  const babyDinners = plan.filter((d) => d.babyDinner !== null).length;
+  const babyLunches = plan.filter((d) => d.babyLunch !== null).length;
 
   return (
     <div className="min-h-screen bg-background">

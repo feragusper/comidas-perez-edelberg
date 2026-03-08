@@ -45,7 +45,7 @@ export default function Index() {
 
       {/* Week navigator + controls */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className={cn("mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className="mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center max-w-5xl">
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 

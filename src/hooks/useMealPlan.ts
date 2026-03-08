@@ -45,13 +45,23 @@ const buildInitialPlan = (): DayPlan[] => {
 export function useMealPlan(weekKey: WeekKey = "current") {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
-  // Ref to avoid re-saving what we just received from realtime
+  // Ref to avoid re-saving what we just received from realtime or from loading
   const skipNextSave = useRef(false);
+  // Track the weekKey for which data was last loaded to prevent stale saves
+  const loadedWeekKey = useRef<WeekKey | null>(null);
 
-  // Load initial data from DB
+  // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    // Reset plan immediately so stale data from the previous week isn't shown
+    setPlan(buildInitialPlan());
+    // Cancel any pending debounced save from the previous week
+    if (saveTimeout.current) {
+      clearTimeout(saveTimeout.current);
+      saveTimeout.current = null;
+    }
+    skipNextSave.current = true;
 
     supabase
       .from("meal_plan")
@@ -60,6 +70,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
+        skipNextSave.current = true;
         if (error) {
           console.error("Error loading meal plan:", error);
           setPlan(buildInitialPlan());
@@ -68,6 +79,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         } else {
           setPlan(buildInitialPlan());
         }
+        loadedWeekKey.current = weekKey;
         setLoading(false);
       });
 
@@ -114,6 +126,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
           skipNextSave.current = false;
           return;
         }
+        // Safety guard: never save if the loaded weekKey doesn't match current
+        if (loadedWeekKey.current !== weekKey) return;
         const { error } = await supabase
           .from("meal_plan")
           .upsert(
@@ -121,26 +135,20 @@ export function useMealPlan(weekKey: WeekKey = "current") {
             { onConflict: "week_key" }
           );
         if (error) console.error("Error saving meal plan:", error);
-      }, 500);
+      }, 600);
     },
     [weekKey]
   );
 
-  // Every time plan changes (from local updates), save it
-  const isFirstRender = useRef(true);
+  // Only save when plan changes due to local user edits (not loading/realtime)
   useEffect(() => {
     if (loading) return;
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    if (skipNextSave.current) {
+      skipNextSave.current = false;
       return;
     }
     savePlan(plan);
   }, [plan, loading, savePlan]);
-
-  // Reset isFirstRender when weekKey changes
-  useEffect(() => {
-    isFirstRender.current = true;
-  }, [weekKey]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     if (dayPlan.lunchOverridden) return dayPlan;

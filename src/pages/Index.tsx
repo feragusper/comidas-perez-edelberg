@@ -51,8 +51,6 @@ export default function Index() {
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
-          {/* Stage badge — now rendered as fixed corner chip below */}
-
           {/* Suggestions toggle */}
           <button
             onClick={toggleSuggestions}
@@ -63,8 +61,11 @@ export default function Index() {
                 : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
-            <Sparkles size={12} />
-            Sugerencias {suggestionsEnabled ? "on" : "off"}
+            {loadingAI
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Sparkles size={12} />
+            }
+            {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
           </button>
 
           {/* View toggle */}

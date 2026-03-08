@@ -313,8 +313,21 @@ export function DayCard({
                     <div className="flex items-center gap-1.5">
                       <Sparkles size={12} className="text-primary/60" />
                       <span className="text-xs text-primary/70 font-medium italic">
-                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA" : "Sugerencia"}
+                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA keto" : "Sugerencia"}
                       </span>
+                      {/* Regenerate button */}
+                      <button
+                        onClick={() => onRegenerateSuggestion?.()}
+                        disabled={loadingSuggestion}
+                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                        title="Otra sugerencia"
+                      >
+                        {loadingSuggestion
+                          ? <Loader2 size={11} className="animate-spin" />
+                          : <RefreshCw size={11} />
+                        }
+                        Otra
+                      </button>
                     </div>
                     {/* Meal row */}
                     <div className="flex items-center gap-2">

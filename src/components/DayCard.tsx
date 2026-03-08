@@ -126,8 +126,8 @@ export function DayCard({
   dayPlan, dayIndex, prevDinner,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onResetLunch,
-  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
-  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
+  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onResetBabyDinner,
+  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onResetBabyLunch,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");

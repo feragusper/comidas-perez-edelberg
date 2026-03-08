@@ -8,7 +8,8 @@ export function isStageEnv(): boolean {
   return (
     host === "localhost" ||
     host === "127.0.0.1" ||
-    host.includes("id-preview--")
+    host.includes("id-preview--") ||
+    host.includes("lovableproject.com")
   );
 }
 

@@ -10,6 +10,7 @@ import { isStageEnv } from "@/lib/env";
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const isStage = isStageEnv();
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote,

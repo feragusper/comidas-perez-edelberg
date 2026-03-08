@@ -96,30 +96,36 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Days */}
-      <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
-        {plan.map((dayPlan, idx) => (
-          <DayCard
-            key={dayPlan.day}
-            dayPlan={dayPlan}
-            dayIndex={idx}
-            prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
-            onSetDinner={(meal) => setDinner(idx, meal)}
-            onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
-            onSetDinnerNote={(note) => setDinnerNote(idx, note)}
-            onSetLunch={(meal) => setLunch(idx, meal)}
-            onSetLunchSide={(meal) => setLunchSide(idx, meal)}
-            onSetLunchNote={(note) => setLunchNote(idx, note)}
-            onResetLunch={() => resetLunch(idx)}
-            onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
-            onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
-            onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
-            onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
-            onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
-            onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
-          />
-        ))}
-      </div>
+      {/* Days / Table */}
+      {viewMode === "cards" ? (
+        <div className="px-4 sm:px-8 py-4 max-w-2xl mx-auto space-y-3 pb-20">
+          {plan.map((dayPlan, idx) => (
+            <DayCard
+              key={dayPlan.day}
+              dayPlan={dayPlan}
+              dayIndex={idx}
+              prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
+              onSetDinner={(meal) => setDinner(idx, meal)}
+              onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
+              onSetDinnerNote={(note) => setDinnerNote(idx, note)}
+              onSetLunch={(meal) => setLunch(idx, meal)}
+              onSetLunchSide={(meal) => setLunchSide(idx, meal)}
+              onSetLunchNote={(note) => setLunchNote(idx, note)}
+              onResetLunch={() => resetLunch(idx)}
+              onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
+              onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
+              onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
+              onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
+              onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
+              onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="px-4 sm:px-6 py-4 pb-20">
+          <WeekTableView plan={plan} />
+        </div>
+      )}
 
       {/* Reset dialog */}
       {showReset && (

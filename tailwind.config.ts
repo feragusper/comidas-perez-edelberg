@@ -55,6 +55,7 @@ export default {
         "lunch-bg": "hsl(var(--lunch-bg))",
         "sunday-bg": "hsl(var(--sunday-bg))",
         "sunday-accent": "hsl(var(--sunday-accent))",
+        warning: "hsl(var(--warning))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

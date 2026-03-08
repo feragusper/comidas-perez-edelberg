@@ -1,14 +1,16 @@
 import { useMealPlan, WeekKey } from "@/hooks/useMealPlan";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
-import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2 } from "lucide-react";
+import { Baby, RotateCcw, CalendarDays, ChevronRight, LayoutList, Table2, FlaskConical } from "lucide-react";
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { isStageEnv } from "@/lib/env";
 
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<WeekKey>("current");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const isStage = isStageEnv();
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote,
@@ -46,11 +48,18 @@ export default function Index() {
                 activeWeek === week ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <CalendarDays size={14} />
+          <CalendarDays size={14} />
               {week === "current" ? "Semana actual" : "Próxima semana"}
               {week === "next" && activeWeek !== "next" && <ChevronRight size={13} className="opacity-50" />}
             </button>
           ))}
+          {/* Stage badge */}
+          {isStage && (
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-warning/15 border border-warning/30 text-warning text-xs font-semibold">
+              <FlaskConical size={12} />
+              STAGE
+            </div>
+          )}
           {/* View toggle */}
           <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
             <button

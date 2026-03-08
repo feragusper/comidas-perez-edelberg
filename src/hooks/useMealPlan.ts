@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Meal, DAYS, SUNDAY_DINNER } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
+import { envWeekKey } from "@/lib/env";
 
 export interface DayPlan {
   day: string;
@@ -78,7 +79,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     supabase
       .from("meal_plan")
       .select("plan")
-      .eq("week_key", weekKey)
+      .eq("week_key", envWeekKey(weekKey))
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -123,14 +124,14 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
-      .channel(`meal_plan_${weekKey}`)
+      .channel(`meal_plan_${envWeekKey(weekKey)}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "meal_plan",
-          filter: `week_key=eq.${weekKey}`,
+          filter: `week_key=eq.${envWeekKey(weekKey)}`,
         },
         (payload) => {
           if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
@@ -175,7 +176,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         const { error } = await supabase
           .from("meal_plan")
           .upsert(
-            { week_key: weekKey, plan: rawPlan as unknown as never[] },
+            { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
             { onConflict: "week_key" }
           );
         if (error) console.error("Error saving meal plan:", error);

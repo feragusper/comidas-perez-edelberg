@@ -25,8 +25,9 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
-  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion } =
+  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, loadingAI } =
     useDinnerSuggestions(plan);
+
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;

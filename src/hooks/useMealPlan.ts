@@ -89,16 +89,15 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
           // Migrate legacy data: if lunchOverridden is true but lunch matches prev dinner, reset it
           const raw = data.plan as unknown as DayPlan[];
-          const migrated = raw.map((day, idx) => {
-            const prevDinner = idx === 0 ? null : raw[idx - 1].dinner;
-            const lunchMatchesPrev = prevDinner && day.lunch && day.lunch.id === prevDinner.id;
-            return {
-              ...day,
-              lunchOverridden: lunchMatchesPrev ? false : (day.lunchOverridden ?? false),
-              babyDinnerOverridden: day.babyDinnerOverridden ?? false,
-              babyLunchOverridden: day.babyLunchOverridden ?? false,
-            };
-          });
+          const migrated = raw.map((day) => ({
+            ...day,
+            lunchOverridden: day.lunchOverridden ?? false,
+            lunchHidden: day.lunchHidden ?? false,
+            babyDinnerOverridden: day.babyDinnerOverridden ?? false,
+            babyDinnerHidden: day.babyDinnerHidden ?? false,
+            babyLunchOverridden: day.babyLunchOverridden ?? false,
+            babyLunchHidden: day.babyLunchHidden ?? false,
+          }));
           setPlan(migrated);
         } else {
           setPlan(buildInitialPlan());

@@ -206,7 +206,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.lunch} side={dayPlan.lunchSide} note={dayPlan.lunchNote}
                       onChangeNote={onSetLunchNote}
-                      onRemove={() => { onSetLunch(null); onSetLunchSide(null); }}
+                      onRemove={() => dayPlan.lunchOverridden ? onResetLunch() : onSetLunch(null)}
                       onChangeMeal={() => openMainPicker("lunch")}
                       onChangeSide={() => openSidePicker("lunch")}
                       onRemoveSide={() => onSetLunchSide(null)}

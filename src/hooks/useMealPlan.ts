@@ -37,14 +37,17 @@ const buildInitialPlan = (): DayPlan[] => {
     lunchSide: null,
     lunchNote: "",
     lunchOverridden: false,
+    lunchHidden: false,
     babyDinner: null,
     babyDinnerSide: null,
     babyDinnerNote: "",
     babyDinnerOverridden: false,
+    babyDinnerHidden: false,
     babyLunch: null,
     babyLunchSide: null,
     babyLunchNote: "",
     babyLunchOverridden: false,
+    babyLunchHidden: false,
     notes: "",
   }));
 };

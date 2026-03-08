@@ -111,14 +111,17 @@ export default function Index() {
               onSetLunch={(meal) => setLunch(idx, meal)}
               onSetLunchSide={(meal) => setLunchSide(idx, meal)}
               onSetLunchNote={(note) => setLunchNote(idx, note)}
+              onHideLunch={() => hideLunch(idx)}
               onResetLunch={() => resetLunch(idx)}
               onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
               onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
               onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
+              onHideBabyDinner={() => hideBabyDinner(idx)}
               onResetBabyDinner={() => resetBabyDinner(idx)}
               onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
               onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
               onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
+              onHideBabyLunch={() => hideBabyLunch(idx)}
               onResetBabyLunch={() => resetBabyLunch(idx)}
             />
           ))}

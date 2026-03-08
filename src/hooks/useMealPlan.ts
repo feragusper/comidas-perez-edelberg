@@ -26,7 +26,8 @@ export interface DayPlan {
   notes: string;
 }
 
-export type WeekKey = "current" | "next";
+// weekKey is now an ISO week string like "2025-W12"
+export type WeekKey = string;
 
 const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
@@ -53,23 +54,18 @@ const buildInitialPlan = (): DayPlan[] => {
   }));
 };
 
-export function useMealPlan(weekKey: WeekKey = "current") {
+export function useMealPlan(weekKey: WeekKey) {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
-  // Ref to avoid re-saving what we just received from realtime or from loading
   const skipNextSave = useRef(false);
-  // Track the weekKey for which data was last loaded to prevent stale saves
   const loadedWeekKey = useRef<WeekKey | null>(null);
-  // Debounced save timer — declared early so the load effect can cancel it
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    // Reset plan immediately so stale data from the previous week isn't shown
     setPlan(buildInitialPlan());
-    // Cancel any pending debounced save from the previous week
     if (saveTimeout.current) {
       clearTimeout(saveTimeout.current);
       saveTimeout.current = null;
@@ -88,18 +84,15 @@ export function useMealPlan(weekKey: WeekKey = "current") {
           console.error("Error loading meal plan:", error);
           setPlan(buildInitialPlan());
         } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
-          // Migrate legacy data: if lunchOverridden is true but lunch matches prev dinner, reset it
           const raw = data.plan as unknown as DayPlan[];
           const migrated = raw.map((day) => ({
             ...day,
-            // If overridden but meal is null, that's corrupt state — reset it
             lunchOverridden: (day.lunchOverridden ?? false) && day.lunch != null,
             lunchHidden: day.lunchHidden ?? false,
             babyDinnerOverridden: (day.babyDinnerOverridden ?? false) && day.babyDinner != null,
             babyDinnerHidden: day.babyDinnerHidden ?? false,
             babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
             babyLunchHidden: day.babyLunchHidden ?? false,
-            // Strip computed fields that shouldn't be persisted — they'll be recomputed
             lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
             lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
             lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
@@ -158,9 +151,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
           skipNextSave.current = false;
           return;
         }
-        // Safety guard: never save if the loaded weekKey doesn't match current
         if (loadedWeekKey.current !== weekKey) return;
-        // Strip computed fields before saving — only persist raw/manual state
         const rawPlan = newPlan.map((day) => ({
           ...day,
           lunch: day.lunchOverridden ? day.lunch : null,
@@ -185,7 +176,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     [weekKey]
   );
 
-  // Only save when plan changes due to local user edits (not loading/realtime)
   useEffect(() => {
     if (loading) return;
     if (skipNextSave.current) {
@@ -200,7 +190,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     const prevDinner = prevDay?.dinner ?? null;
     const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
 
-    // Adults lunch ← previous day's adult dinner (unless manually overridden or hidden)
     let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
     if (dayPlan.lunchOverridden) {
       adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchNote: dayPlan.lunchNote };
@@ -214,7 +203,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
       };
     }
 
-    // Baby dinner ← previous day's adult dinner (if baby-safe, not overridden, not hidden)
     let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerNote">;
     if (dayPlan.babyDinnerOverridden) {
       babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerNote: dayPlan.babyDinnerNote };
@@ -228,7 +216,6 @@ export function useMealPlan(weekKey: WeekKey = "current") {
       };
     }
 
-    // Baby lunch ← previous day's adult dinner (if baby-safe, not overridden, not hidden)
     let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchNote">;
     if (dayPlan.babyLunchOverridden) {
       babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchNote: dayPlan.babyLunchNote };
@@ -252,13 +239,10 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
-  // Manual lunch pick
   const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
   const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
-  // Hide suggestion (trash on a suggested meal) — no override, just hidden
   const hideLunch = (i: number) => update(i, { lunchHidden: true });
-  // Restore suggestion
   const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchHidden: false, lunchNote: "" });
   const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true, babyDinnerHidden: false });
   const setBabyDinnerSide = (i: number, meal: Meal | null) => update(i, { babyDinnerSide: meal });

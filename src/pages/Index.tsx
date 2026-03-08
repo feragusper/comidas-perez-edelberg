@@ -83,7 +83,7 @@ export default function Index() {
         </div>
 
         {/* Stats bar */}
-        <div className={cn("mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap", viewMode === "table" ? "max-w-full" : "max-w-2xl")}>
+        <div className="mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap max-w-5xl">
           {/* Nosotros */}
           <span className="text-muted-foreground font-medium">Nosotros:</span>
           <span className="text-muted-foreground">

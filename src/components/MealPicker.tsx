@@ -32,6 +32,12 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   const isBaby = mode === "baby";
   const isSide = step === "side";
 

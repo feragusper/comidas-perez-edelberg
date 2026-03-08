@@ -302,6 +302,38 @@ export function DayCard({
                       </button>
                     )}
                   </div>
+                ) : dinnerSuggestion ? (
+                  /* ── Suggested dinner chip ── */
+                  <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Sparkles size={12} className="text-primary/60" />
+                      <span className="text-xs text-primary/70 font-medium italic">Sugerencia</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{dinnerSuggestion.emoji}</span>
+                      <p className="text-sm font-medium text-foreground/80 flex-1">{dinnerSuggestion.name}</p>
+                      <button
+                        onClick={() => onDismissSuggestion?.()}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        title="Descartar sugerencia"
+                      >
+                        <X size={13} />
+                      </button>
+                      <button
+                        onClick={() => onAcceptSuggestion?.(dinnerSuggestion)}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+                        title="Aceptar sugerencia"
+                      >
+                        <Check size={12} /> Aceptar
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => openMainPicker("dinner")}
+                      className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors"
+                    >
+                      Elegir otra cena
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() => openMainPicker("dinner")}

@@ -147,32 +147,6 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
           </div>
         </div>
 
-        {/* Category filters (main meals only) */}
-        {!isSide && availableCategories.length > 0 && (
-          <div className="px-5 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={cn(
-                "shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                !activeCategory ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
-              )}
-            >
-              Todas
-            </button>
-            {availableCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                className={cn(
-                  "shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all",
-                  activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
-                )}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Meals list */}
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-4">

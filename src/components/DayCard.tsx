@@ -142,7 +142,6 @@ export function DayCard({
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
-  const [expanded, setExpanded] = useState(true);
   const isSunday = dayPlan.day === "Domingo";
 
   const handlePickerSelect = (meal: Meal) => {

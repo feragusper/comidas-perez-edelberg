@@ -19,9 +19,11 @@ interface DayCardProps {
   onSetBabyDinner: (meal: Meal | null) => void;
   onSetBabyDinnerSide: (meal: Meal | null) => void;
   onSetBabyDinnerNote: (note: string) => void;
+  onResetBabyDinner: () => void;
   onSetBabyLunch: (meal: Meal | null) => void;
   onSetBabyLunchSide: (meal: Meal | null) => void;
   onSetBabyLunchNote: (note: string) => void;
+  onResetBabyLunch: () => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -124,8 +126,8 @@ export function DayCard({
   dayPlan, dayIndex, prevDinner,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onResetLunch,
-  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
-  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
+  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onResetBabyDinner,
+  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onResetBabyLunch,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
@@ -231,17 +233,27 @@ export function DayCard({
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Baby size={12} className="text-baby-safe" />
                   <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  {!dayPlan.babyLunchOverridden && dayPlan.babyLunch && (
+                    <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
+                  )}
                 </div>
                 {dayPlan.babyLunch ? (
-                  <MealDisplay
-                    meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
-                    onChangeNote={onSetBabyLunchNote}
-                    onRemove={() => { onSetBabyLunch(null); onSetBabyLunchSide(null); }}
-                    onChangeMeal={() => openMainPicker("babyLunch")}
-                    onChangeSide={() => openSidePicker("babyLunch")}
-                    onRemoveSide={() => onSetBabyLunchSide(null)}
-                    isBaby showSide
-                  />
+                  <div className="space-y-1">
+                    <MealDisplay
+                      meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
+                      onChangeNote={onSetBabyLunchNote}
+                      onRemove={() => { onSetBabyLunch(null); onSetBabyLunchSide(null); }}
+                      onChangeMeal={() => openMainPicker("babyLunch")}
+                      onChangeSide={() => openSidePicker("babyLunch")}
+                      onRemoveSide={() => onSetBabyLunchSide(null)}
+                      isBaby showSide
+                    />
+                    {dayPlan.babyLunchOverridden && (
+                      <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
+                        <RotateCcw size={11} /> Restaurar sugerencia
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button
                     onClick={() => openMainPicker("babyLunch")}
@@ -299,17 +311,27 @@ export function DayCard({
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Baby size={12} className="text-baby-safe" />
                   <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  {!dayPlan.babyDinnerOverridden && dayPlan.babyDinner && (
+                    <span className="text-xs text-muted-foreground italic">sugerido de la cena</span>
+                  )}
                 </div>
                 {dayPlan.babyDinner ? (
-                  <MealDisplay
-                    meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
-                    onChangeNote={onSetBabyDinnerNote}
-                    onRemove={() => { onSetBabyDinner(null); onSetBabyDinnerSide(null); }}
-                    onChangeMeal={() => openMainPicker("babyDinner")}
-                    onChangeSide={() => openSidePicker("babyDinner")}
-                    onRemoveSide={() => onSetBabyDinnerSide(null)}
-                    isBaby showSide
-                  />
+                  <div className="space-y-1">
+                    <MealDisplay
+                      meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
+                      onChangeNote={onSetBabyDinnerNote}
+                      onRemove={() => { onSetBabyDinner(null); onSetBabyDinnerSide(null); }}
+                      onChangeMeal={() => openMainPicker("babyDinner")}
+                      onChangeSide={() => openSidePicker("babyDinner")}
+                      onRemoveSide={() => onSetBabyDinnerSide(null)}
+                      isBaby showSide
+                    />
+                    {dayPlan.babyDinnerOverridden && (
+                      <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
+                        <RotateCcw size={11} /> Restaurar sugerencia
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button
                     onClick={() => openMainPicker("babyDinner")}

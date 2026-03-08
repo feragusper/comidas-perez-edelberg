@@ -14,9 +14,11 @@ export interface DayPlan {
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
   babyDinnerNote: string;
+  babyDinnerOverridden: boolean;
   babyLunch: Meal | null;
   babyLunchSide: Meal | null;
   babyLunchNote: string;
+  babyLunchOverridden: boolean;
   notes: string;
 }
 
@@ -35,9 +37,11 @@ const buildInitialPlan = (): DayPlan[] => {
     babyDinner: null,
     babyDinnerSide: null,
     babyDinnerNote: "",
+    babyDinnerOverridden: false,
     babyLunch: null,
     babyLunchSide: null,
     babyLunchNote: "",
+    babyLunchOverridden: false,
     notes: "",
   }));
 };
@@ -150,13 +154,51 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   }, [plan, loading, savePlan]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
-    if (dayPlan.lunchOverridden) return dayPlan;
     const prevDay = idx === 0 ? null : plan[idx - 1];
-    return {
-      ...dayPlan,
+
+    // Adults lunch ← previous day's adult dinner
+    const adultLunch = dayPlan.lunchOverridden ? {
+      lunch: dayPlan.lunch,
+      lunchSide: dayPlan.lunchSide,
+      lunchNote: dayPlan.lunchNote,
+    } : {
       lunch: prevDay?.dinner ?? null,
       lunchSide: prevDay?.dinnerSide ?? null,
       lunchNote: prevDay?.dinnerNote ?? "",
+    };
+
+    // Baby dinner ← current day's adult dinner (if baby-safe and not overridden)
+    const isBabySafeDinner = dayPlan.dinner?.babySafety !== "unsafe";
+    const babyDinnerSuggested = !dayPlan.babyDinnerOverridden ? {
+      babyDinner: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinner : null,
+      babyDinnerSide: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinnerSide : null,
+      babyDinnerNote: (dayPlan.dinner && isBabySafeDinner) ? dayPlan.dinnerNote : "",
+    } : {
+      babyDinner: dayPlan.babyDinner,
+      babyDinnerSide: dayPlan.babyDinnerSide,
+      babyDinnerNote: dayPlan.babyDinnerNote,
+    };
+
+    // Baby lunch ← previous day's baby dinner (if not overridden)
+    const prevBabyDinnerComputed = prevDay && !prevDay.babyDinnerOverridden
+      ? { meal: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinner : null, side: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinnerSide : null, note: prevDay.dinner?.babySafety !== "unsafe" ? prevDay.dinnerNote : "" }
+      : { meal: prevDay?.babyDinner ?? null, side: prevDay?.babyDinnerSide ?? null, note: prevDay?.babyDinnerNote ?? "" };
+
+    const babyLunchSuggested = !dayPlan.babyLunchOverridden ? {
+      babyLunch: prevBabyDinnerComputed.meal,
+      babyLunchSide: prevBabyDinnerComputed.side,
+      babyLunchNote: prevBabyDinnerComputed.note,
+    } : {
+      babyLunch: dayPlan.babyLunch,
+      babyLunchSide: dayPlan.babyLunchSide,
+      babyLunchNote: dayPlan.babyLunchNote,
+    };
+
+    return {
+      ...dayPlan,
+      ...adultLunch,
+      ...babyDinnerSuggested,
+      ...babyLunchSuggested,
     };
   });
 
@@ -171,12 +213,14 @@ export function useMealPlan(weekKey: WeekKey = "current") {
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
   const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
   const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchNote: "" });
-  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal });
+  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true });
   const setBabyDinnerSide = (i: number, meal: Meal | null) => update(i, { babyDinnerSide: meal });
   const setBabyDinnerNote = (i: number, note: string) => update(i, { babyDinnerNote: note });
-  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal });
+  const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "", babyDinnerOverridden: false });
+  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, babyLunchOverridden: true });
   const setBabyLunchSide = (i: number, meal: Meal | null) => update(i, { babyLunchSide: meal });
   const setBabyLunchNote = (i: number, note: string) => update(i, { babyLunchNote: note });
+  const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
   const resetPlan = () => setPlan(buildInitialPlan());
 
@@ -185,8 +229,8 @@ export function useMealPlan(weekKey: WeekKey = "current") {
     loading,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, resetLunch,
-    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote,
-    setBabyLunch, setBabyLunchSide, setBabyLunchNote,
+    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, resetBabyDinner,
+    setBabyLunch, setBabyLunchSide, setBabyLunchNote, resetBabyLunch,
     setNotes,
     resetPlan,
   };

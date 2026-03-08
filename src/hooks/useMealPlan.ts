@@ -10,15 +10,18 @@ export interface DayPlan {
   lunch: Meal | null;
   lunchSide: Meal | null;
   lunchNote: string;
-  lunchOverridden: boolean;
+  lunchOverridden: boolean;  // true = user manually picked a lunch
+  lunchHidden: boolean;       // true = user dismissed the suggestion
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
   babyDinnerNote: string;
   babyDinnerOverridden: boolean;
+  babyDinnerHidden: boolean;
   babyLunch: Meal | null;
   babyLunchSide: Meal | null;
   babyLunchNote: string;
   babyLunchOverridden: boolean;
+  babyLunchHidden: boolean;
   notes: string;
 }
 

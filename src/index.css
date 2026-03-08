@@ -39,6 +39,9 @@
 
     --radius: 0.75rem;
 
+    /* Warning / stage badge */
+    --warning: 38 92% 45%;
+
     /* Custom tokens */
     --baby-safe: 142 52% 46%;
     --baby-safe-bg: 142 52% 96%;

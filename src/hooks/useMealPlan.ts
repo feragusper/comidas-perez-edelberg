@@ -14,9 +14,11 @@ export interface DayPlan {
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
   babyDinnerNote: string;
+  babyDinnerOverridden: boolean;
   babyLunch: Meal | null;
   babyLunchSide: Meal | null;
   babyLunchNote: string;
+  babyLunchOverridden: boolean;
   notes: string;
 }
 

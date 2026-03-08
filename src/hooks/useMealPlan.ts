@@ -176,7 +176,7 @@ export function useMealPlan(weekKey: WeekKey = "current") {
         const { error } = await supabase
           .from("meal_plan")
           .upsert(
-            { week_key: weekKey, plan: rawPlan as unknown as never[] },
+            { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
             { onConflict: "week_key" }
           );
         if (error) console.error("Error saving meal plan:", error);

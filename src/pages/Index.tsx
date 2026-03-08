@@ -121,7 +121,8 @@ export default function Index() {
               dayPlan={dayPlan}
               dayIndex={idx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
-              dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
+              expanded={expandedDays[idx]}
+              onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
               onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
               onDismissSuggestion={() => dismissSuggestion(idx)}
               onSetDinner={(meal) => setDinner(idx, meal)}

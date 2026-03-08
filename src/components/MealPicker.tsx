@@ -44,12 +44,10 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
   // Apply diet filter
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
 
-  // Apply search + category
-  const filtered = dietFiltered.filter((m) => {
-    const matchesSearch = m.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = !activeCategory || m.category === activeCategory;
-    return matchesSearch && matchesCat;
-  });
+  // Apply search
+  const filtered = dietFiltered.filter((m) =>
+    m.name.toLowerCase().includes(search.toLowerCase())
+  );
 
   // "Con lo de anoche" group (only for main meals)
   const prevRelated: Meal[] = (!isSide && prevDinner)

@@ -144,8 +144,13 @@ export function useMealPlan(weekKey: WeekKey = "current") {
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     if (dayPlan.lunchOverridden) return dayPlan;
-    const suggestedLunch = idx === 0 ? null : plan[idx - 1].dinner;
-    return { ...dayPlan, lunch: suggestedLunch };
+    const prevDay = idx === 0 ? null : plan[idx - 1];
+    return {
+      ...dayPlan,
+      lunch: prevDay?.dinner ?? null,
+      lunchSide: prevDay?.dinnerSide ?? null,
+      lunchNote: prevDay?.dinnerNote ?? "",
+    };
   });
 
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {

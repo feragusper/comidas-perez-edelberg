@@ -185,19 +185,19 @@ export function DayCard({
     <>
       <div className={cn(
         "rounded-2xl border overflow-hidden shadow-card transition-all",
-        isSunday ? "border-sunday-accent/40 bg-sunday-bg" : "border-border bg-card"
+        isSunday ? "border-sunday-accent/40 bg-sunday-bg" : isDelivery ? "border-warning/40 bg-warning/5" : "border-border bg-card"
       )}>
         {/* Header */}
         <div
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
-            isSunday ? "bg-sunday-accent/10" : "bg-muted/40"
+            isSunday ? "bg-sunday-accent/10" : isDelivery ? "bg-warning/10" : "bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
-          <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : "text-foreground")}
+          <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : isDelivery ? "text-warning" : "text-foreground")}
             style={{ fontFamily: 'Fraunces, serif' }}>
-            {dayPlan.day}
+            {dayPlan.day} {isDelivery && "🛵"}
           </span>
           {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
         </div>

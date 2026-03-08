@@ -242,7 +242,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
                       onChangeNote={onSetBabyLunchNote}
-                      onRemove={() => { onSetBabyLunch(null); onSetBabyLunchSide(null); }}
+                      onRemove={() => onResetBabyLunch()}
                       onChangeMeal={() => openMainPicker("babyLunch")}
                       onChangeSide={() => openSidePicker("babyLunch")}
                       onRemoveSide={() => onSetBabyLunchSide(null)}
@@ -320,7 +320,7 @@ export function DayCard({
                     <MealDisplay
                       meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
                       onChangeNote={onSetBabyDinnerNote}
-                      onRemove={() => { onSetBabyDinner(null); onSetBabyDinnerSide(null); }}
+                      onRemove={() => onResetBabyDinner()}
                       onChangeMeal={() => openMainPicker("babyDinner")}
                       onChangeSide={() => openSidePicker("babyDinner")}
                       onRemoveSide={() => onSetBabyDinnerSide(null)}

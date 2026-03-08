@@ -48,11 +48,18 @@ export default function Index() {
                 activeWeek === week ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-muted"
               )}
             >
-              <CalendarDays size={14} />
+          <CalendarDays size={14} />
               {week === "current" ? "Semana actual" : "Próxima semana"}
               {week === "next" && activeWeek !== "next" && <ChevronRight size={13} className="opacity-50" />}
             </button>
           ))}
+          {/* Stage badge */}
+          {isStage && (
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-semibold">
+              <FlaskConical size={12} />
+              STAGE
+            </div>
+          )}
           {/* View toggle */}
           <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
             <button

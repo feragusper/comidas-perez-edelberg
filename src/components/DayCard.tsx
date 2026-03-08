@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
+import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
 import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles } from "lucide-react";
@@ -9,8 +10,8 @@ interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
   prevDinner: Meal | null;
-  dinnerSuggestion?: Meal | null;
-  onAcceptSuggestion?: (meal: Meal) => void;
+  dinnerSuggestion?: DinnerSuggestion | null;
+  onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
   onDismissSuggestion?: () => void;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
@@ -303,15 +304,24 @@ export function DayCard({
                     )}
                   </div>
                 ) : dinnerSuggestion ? (
-                  /* ── Suggested dinner chip ── */
+                  /* ── Suggested dinner + side chip ── */
                   <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <div className="flex items-center gap-1.5">
                       <Sparkles size={12} className="text-primary/60" />
                       <span className="text-xs text-primary/70 font-medium italic">Sugerencia</span>
                     </div>
+                    {/* Meal row */}
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{dinnerSuggestion.emoji}</span>
-                      <p className="text-sm font-medium text-foreground/80 flex-1">{dinnerSuggestion.name}</p>
+                      <span className="text-xl">{dinnerSuggestion.meal.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground/80">{dinnerSuggestion.meal.name}</p>
+                        {/* Side suggestion inline */}
+                        {dinnerSuggestion.side && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            + {dinnerSuggestion.side.emoji} {dinnerSuggestion.side.name}
+                          </p>
+                        )}
+                      </div>
                       <button
                         onClick={() => onDismissSuggestion?.()}
                         className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

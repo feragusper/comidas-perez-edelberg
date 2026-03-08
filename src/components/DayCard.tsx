@@ -138,7 +138,7 @@ export function DayCard({
   dayPlan, dayIndex, prevDinner,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
-  onSetDinner, onSetDinnerSide, onSetDinnerNote,
+  onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
@@ -146,6 +146,7 @@ export function DayCard({
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
   const isSunday = dayPlan.day === "Domingo";
+  const isDelivery = dayPlan.isDelivery;
 
   const handlePickerSelect = (meal: Meal) => {
     if (pickerStep === "main") {

@@ -138,6 +138,7 @@ function MealDisplay({
 
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
+  isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
   onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,

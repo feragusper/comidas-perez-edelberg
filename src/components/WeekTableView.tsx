@@ -9,6 +9,7 @@ type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
 
 interface WeekTableViewProps {
   plan: DayPlan[];
+  todayIdx?: number;
   onSetDinner: (i: number, meal: Meal | null) => void;
   onSetDinnerSide: (i: number, meal: Meal | null) => void;
   onSetDinnerNote: (i: number, note: string) => void;

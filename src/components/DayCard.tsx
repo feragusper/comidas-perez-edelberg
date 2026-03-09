@@ -189,8 +189,7 @@ export function DayCard({
       <div className={cn(
         "rounded-2xl border overflow-hidden shadow-card transition-all",
         isPast && "opacity-50",
-        isSunday ? "border-sunday-accent/40 bg-sunday-bg"
-          : isDelivery ? "border-warning/40 bg-warning/5"
+        isDelivery ? "border-warning/40 bg-warning/5"
           : isToday ? "border-primary/50 bg-card ring-2 ring-primary/20"
           : "border-border bg-card"
       )}>
@@ -198,18 +197,22 @@ export function DayCard({
         <div
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
-            isSunday ? "bg-sunday-accent/10"
-              : isDelivery ? "bg-warning/10"
+            isDelivery ? "bg-warning/10"
               : isToday ? "bg-primary/8"
               : "bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
           <div className="flex items-center gap-2">
-            <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : isDelivery ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
+            <span className={cn("text-base font-bold", isDelivery ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
               style={{ fontFamily: 'Fraunces, serif' }}>
-              {dayPlan.day} {isDelivery && "🛵"}
+              {dayPlan.day}
             </span>
+            {/* Day type indicators */}
+            {isDelivery && <span className="text-base leading-none">🛵</span>}
+            {isSunday && !isDelivery && dayPlan.dinner?.id === SUNDAY_DINNER.id && (
+              <span className="text-base leading-none" title="Noche de pasta">🍝</span>
+            )}
             {isToday && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
                 Hoy

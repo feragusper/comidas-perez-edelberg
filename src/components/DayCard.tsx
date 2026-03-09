@@ -9,6 +9,8 @@ import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, 
 interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
+  isToday?: boolean;
+  isPast?: boolean;
   prevDinner: Meal | null;
   expanded: boolean;
   onToggleExpanded: () => void;

@@ -9,6 +9,7 @@ type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
 
 interface WeekTableViewProps {
   plan: DayPlan[];
+  todayIdx?: number;
   onSetDinner: (i: number, meal: Meal | null) => void;
   onSetDinnerSide: (i: number, meal: Meal | null) => void;
   onSetDinnerNote: (i: number, note: string) => void;
@@ -131,6 +132,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
 
 export function WeekTableView({
   plan,
+  todayIdx = -1,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
@@ -190,22 +192,41 @@ export function WeekTableView({
           <thead>
             <tr>
               <th className="w-[110px] min-w-[90px] bg-muted/60 border-b border-r border-border" />
-              {plan.map((d) => (
-                <th
-                  key={d.day}
-                  className={cn(
-                    "border-b border-r last:border-r-0 border-border px-2 py-2 text-center",
-                    d.day === "Domingo" ? "bg-sunday-accent/10" : "bg-muted/40"
-                  )}
-                >
-                  <span
-                    className={cn("text-xs font-bold uppercase tracking-wider", d.day === "Domingo" ? "text-sunday-accent" : "text-foreground")}
-                    style={{ fontFamily: "Fraunces, serif" }}
+              {plan.map((d, idx) => {
+                const isToday = todayIdx === idx;
+                const isPast = todayIdx !== -1 && idx < todayIdx;
+                return (
+                  <th
+                    key={d.day}
+                    className={cn(
+                      "border-b border-r last:border-r-0 border-border px-2 py-2 text-center transition-all",
+                      d.day === "Domingo" ? "bg-sunday-accent/10"
+                        : isToday ? "bg-primary/10"
+                        : isPast ? "bg-muted/20"
+                        : "bg-muted/40",
+                      isPast && "opacity-50"
+                    )}
                   >
-                    {SHORT_DAYS[d.day] ?? d.day}
-                  </span>
-                </th>
-              ))}
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span
+                        className={cn("text-xs font-bold uppercase tracking-wider",
+                          d.day === "Domingo" ? "text-sunday-accent"
+                          : isToday ? "text-primary"
+                          : "text-foreground"
+                        )}
+                        style={{ fontFamily: "Fraunces, serif" }}
+                      >
+                        {SHORT_DAYS[d.day] ?? d.day}
+                      </span>
+                      {isToday && (
+                        <span className="text-[9px] font-semibold uppercase tracking-wider px-1 py-0 rounded-full bg-primary text-primary-foreground leading-4">
+                          Hoy
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -218,14 +239,18 @@ export function WeekTableView({
                   </div>
                 </td>
                 {plan.map((dayPlan, idx) => {
+                  const isToday = todayIdx === idx;
+                  const isPast = todayIdx !== -1 && idx < todayIdx;
                   const { meal, side, note } = getSlotData(dayPlan, row.slot);
                   return (
                     <td
                       key={dayPlan.day}
                       className={cn(
-                        "px-2 py-2 border-r border-b last:border-r-0 border-border align-top min-w-[100px]",
+                        "px-2 py-2 border-r border-b last:border-r-0 border-border align-top min-w-[100px] transition-all",
                         row.cellBg,
-                        dayPlan.day === "Domingo" && "border-l border-sunday-accent/20"
+                        dayPlan.day === "Domingo" && "border-l border-sunday-accent/20",
+                        isToday && "ring-inset ring-1 ring-primary/30",
+                        isPast && "opacity-40"
                       )}
                     >
                       <EditableCell

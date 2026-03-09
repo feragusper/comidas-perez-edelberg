@@ -7,7 +7,7 @@ import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } 
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { isStageEnv, currentWeekKey } from "@/lib/env";
+import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
 
 export default function Index() {
@@ -15,6 +15,7 @@ export default function Index() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [expandedDays, setExpandedDays] = useState<boolean[]>(Array(7).fill(true));
   const isStage = isStageEnv();
+  const todayIdx = todayDayIndex(activeWeek);
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
@@ -123,6 +124,8 @@ export default function Index() {
               key={dayPlan.day}
               dayPlan={dayPlan}
               dayIndex={idx}
+              isToday={todayIdx === idx}
+              isPast={todayIdx !== -1 && idx < todayIdx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
               expanded={expandedDays[idx]}
               onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
@@ -157,6 +160,7 @@ export default function Index() {
         <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto pb-20">
           <WeekTableView
             plan={plan}
+            todayIdx={todayIdx}
             onSetDinner={setDinner}
             onSetDinnerSide={setDinnerSide}
             onSetDinnerNote={setDinnerNote}

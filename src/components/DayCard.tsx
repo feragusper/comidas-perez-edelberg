@@ -9,6 +9,8 @@ import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, 
 interface DayCardProps {
   dayPlan: DayPlan;
   dayIndex: number;
+  isToday?: boolean;
+  isPast?: boolean;
   prevDinner: Meal | null;
   expanded: boolean;
   onToggleExpanded: () => void;
@@ -136,6 +138,7 @@ function MealDisplay({
 
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
+  isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
   onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,
@@ -185,20 +188,34 @@ export function DayCard({
     <>
       <div className={cn(
         "rounded-2xl border overflow-hidden shadow-card transition-all",
-        isSunday ? "border-sunday-accent/40 bg-sunday-bg" : isDelivery ? "border-warning/40 bg-warning/5" : "border-border bg-card"
+        isPast && "opacity-50",
+        isSunday ? "border-sunday-accent/40 bg-sunday-bg"
+          : isDelivery ? "border-warning/40 bg-warning/5"
+          : isToday ? "border-primary/50 bg-card ring-2 ring-primary/20"
+          : "border-border bg-card"
       )}>
         {/* Header */}
         <div
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
-            isSunday ? "bg-sunday-accent/10" : isDelivery ? "bg-warning/10" : "bg-muted/40"
+            isSunday ? "bg-sunday-accent/10"
+              : isDelivery ? "bg-warning/10"
+              : isToday ? "bg-primary/8"
+              : "bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
-          <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : isDelivery ? "text-warning" : "text-foreground")}
-            style={{ fontFamily: 'Fraunces, serif' }}>
-            {dayPlan.day} {isDelivery && "🛵"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={cn("text-base font-bold", isSunday ? "text-sunday-accent" : isDelivery ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
+              style={{ fontFamily: 'Fraunces, serif' }}>
+              {dayPlan.day} {isDelivery && "🛵"}
+            </span>
+            {isToday && (
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+                Hoy
+              </span>
+            )}
+          </div>
           {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
         </div>
 

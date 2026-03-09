@@ -64,3 +64,16 @@ export function envWeekKey(weekKey: string): string {
 export function currentWeekKey(): string {
   return toWeekKey(new Date());
 }
+
+/** DAYS array order: Lunes=0 … Domingo=6, matching JS getDay() 1-0 */
+const JS_DAY_TO_IDX: Record<number, number> = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 };
+
+/**
+ * Returns the index (0=Lunes … 6=Domingo) of today within the DAYS array,
+ * or -1 if it's a different week.
+ */
+export function todayDayIndex(weekKey: string): number {
+  const now = new Date();
+  if (toWeekKey(now) !== weekKey) return -1;
+  return JS_DAY_TO_IDX[now.getDay()];
+}

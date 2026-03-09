@@ -124,6 +124,8 @@ export default function Index() {
               key={dayPlan.day}
               dayPlan={dayPlan}
               dayIndex={idx}
+              isToday={todayIdx === idx}
+              isPast={todayIdx !== -1 && idx < todayIdx}
               prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
               expanded={expandedDays[idx]}
               onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}

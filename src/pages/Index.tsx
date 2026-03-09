@@ -7,7 +7,7 @@ import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } 
 import heroFood from "@/assets/hero-food.jpg";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { isStageEnv, currentWeekKey } from "@/lib/env";
+import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
 
 export default function Index() {

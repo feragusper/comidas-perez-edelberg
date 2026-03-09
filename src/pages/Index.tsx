@@ -15,6 +15,7 @@ export default function Index() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [expandedDays, setExpandedDays] = useState<boolean[]>(Array(7).fill(true));
   const isStage = isStageEnv();
+  const todayIdx = todayDayIndex(activeWeek);
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote, toggleDelivery,

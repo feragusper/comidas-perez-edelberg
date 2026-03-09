@@ -248,7 +248,6 @@ export function WeekTableView({
                       className={cn(
                         "px-2 py-2 border-r border-b last:border-r-0 border-border align-top min-w-[100px] transition-all",
                         row.cellBg,
-                        dayPlan.day === "Domingo" && "border-l border-sunday-accent/20",
                         isToday && "ring-inset ring-1 ring-primary/30",
                         isPast && "opacity-40"
                       )}

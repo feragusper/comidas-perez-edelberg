@@ -485,6 +485,8 @@ export function DayCard({
           mode={pickerMode}
           step={pickerStep}
           prevDinner={pickerPrevDinner}
+          extraMeals={extraMeals}
+          onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
           onClose={() => setPickerTarget(null)}
           onSkipSide={() => setPickerTarget(null)}

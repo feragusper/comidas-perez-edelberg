@@ -278,6 +278,8 @@ export function WeekTableView({
           mode={pickerMode}
           step={pickerStep}
           prevDinner={pickerPrevDinner}
+          extraMeals={extraMeals}
+          onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
           onClose={closePicker}
           onSkipSide={closePicker}

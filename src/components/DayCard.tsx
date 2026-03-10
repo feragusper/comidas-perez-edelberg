@@ -143,6 +143,7 @@ export function DayCard({
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
+  extraMeals = [], onCustomMeal,
   onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,

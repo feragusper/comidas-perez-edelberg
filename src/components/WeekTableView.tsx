@@ -135,6 +135,8 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
 export function WeekTableView({
   plan,
   todayIdx = -1,
+  extraMeals = [],
+  onCustomMeal,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,

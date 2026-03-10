@@ -1,5 +1,6 @@
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
+import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";

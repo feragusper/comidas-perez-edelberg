@@ -27,6 +27,8 @@ export default function Index() {
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
 
+  const { customMeals, saveCustomMeal } = useCustomMeals();
+
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
 

@@ -11,7 +11,9 @@ interface MealPickerProps {
   mode: PickerMode;
   step: PickerStep;
   prevDinner?: Meal | null;
+  extraMeals?: Meal[];
   onSelect: (meal: Meal) => void;
+  onCustomMeal?: (meal: Meal) => void;
   onClose: () => void;
   onSkipSide?: () => void;
 }

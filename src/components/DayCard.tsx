@@ -19,6 +19,8 @@ interface DayCardProps {
   onDismissSuggestion?: () => void;
   onRegenerateSuggestion?: () => void;
   loadingSuggestion?: boolean;
+  extraMeals?: Meal[];
+  onCustomMeal?: (meal: Meal) => void;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;

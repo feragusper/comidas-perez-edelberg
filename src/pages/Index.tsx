@@ -178,6 +178,8 @@ export default function Index() {
             onSetBabyLunch={setBabyLunch}
             onSetBabyLunchSide={setBabyLunchSide}
             onSetBabyLunchNote={setBabyLunchNote}
+            extraMeals={customMeals}
+            onCustomMeal={saveCustomMeal}
           />
         </div>
       )}

@@ -156,6 +156,8 @@ export default function Index() {
               onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
               onHideBabyLunch={() => hideBabyLunch(idx)}
               onResetBabyLunch={() => resetBabyLunch(idx)}
+              extraMeals={customMeals}
+              onCustomMeal={saveCustomMeal}
             />
           ))}
         </div>

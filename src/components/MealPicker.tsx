@@ -30,7 +30,7 @@ const safetyLabel: Record<BabySafety, string> = {
   unsafe: "✗ No apto",
 };
 
-export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSide }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
 
@@ -43,7 +43,13 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
   const isBaby = mode === "baby";
   const isSide = step === "side";
 
-  const pool = MEALS.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
+  // Merge static + custom meals, deduplicating by id
+  const allMeals = [
+    ...MEALS,
+    ...extraMeals.filter((e) => !MEALS.some((m) => m.id === e.id)),
+  ];
+
+  const pool = allMeals.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
   const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
   const filtered = dietFiltered.filter((m) =>
@@ -59,8 +65,14 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
     : [];
   const prevRelatedIds = new Set(prevRelated.map((m) => m.id));
 
+  // Custom meals group (in main step)
+  const customPool = !isSide
+    ? filtered.filter((m) => m.id.startsWith("custom-") && !prevRelatedIds.has(m.id))
+    : [];
+  const customIds = new Set(customPool.map((m) => m.id));
+
   // Rest grouped by category
-  const rest = filtered.filter((m) => !prevRelatedIds.has(m.id));
+  const rest = filtered.filter((m) => !prevRelatedIds.has(m.id) && !customIds.has(m.id));
   const grouped = MEAL_CATEGORIES.reduce<Record<string, Meal[]>>((acc, cat) => {
     const meals = rest.filter((m) => m.category === cat);
     if (meals.length) acc[cat] = meals;
@@ -72,13 +84,15 @@ export function MealPicker({ mode, step, prevDinner, onSelect, onClose, onSkipSi
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
 
   const handleSelectFreeText = () => {
-    onSelect({
+    const newMeal: Meal = {
       id: `custom-${Date.now()}`,
       name: search.trim(),
       emoji: "🍽️",
       babySafety: "caution",
       category: "Otro",
-    });
+    };
+    onSelect(newMeal);
+    onCustomMeal?.(newMeal);
     onClose();
   };
 

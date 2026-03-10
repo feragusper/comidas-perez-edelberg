@@ -1,5 +1,6 @@
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
+import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
@@ -25,6 +26,8 @@ export default function Index() {
     resetPlan,
   } = useMealPlan(activeWeek);
   const [showReset, setShowReset] = useState(false);
+
+  const { customMeals, saveCustomMeal } = useCustomMeals();
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
@@ -153,6 +156,8 @@ export default function Index() {
               onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
               onHideBabyLunch={() => hideBabyLunch(idx)}
               onResetBabyLunch={() => resetBabyLunch(idx)}
+              extraMeals={customMeals}
+              onCustomMeal={saveCustomMeal}
             />
           ))}
         </div>
@@ -173,6 +178,8 @@ export default function Index() {
             onSetBabyLunch={setBabyLunch}
             onSetBabyLunchSide={setBabyLunchSide}
             onSetBabyLunchNote={setBabyLunchNote}
+            extraMeals={customMeals}
+            onCustomMeal={saveCustomMeal}
           />
         </div>
       )}

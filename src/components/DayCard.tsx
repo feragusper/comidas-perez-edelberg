@@ -19,6 +19,8 @@ interface DayCardProps {
   onDismissSuggestion?: () => void;
   onRegenerateSuggestion?: () => void;
   loadingSuggestion?: boolean;
+  extraMeals?: Meal[];
+  onCustomMeal?: (meal: Meal) => void;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;
@@ -141,6 +143,7 @@ export function DayCard({
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
+  extraMeals = [], onCustomMeal,
   onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
@@ -482,6 +485,8 @@ export function DayCard({
           mode={pickerMode}
           step={pickerStep}
           prevDinner={pickerPrevDinner}
+          extraMeals={extraMeals}
+          onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
           onClose={() => setPickerTarget(null)}
           onSkipSide={() => setPickerTarget(null)}

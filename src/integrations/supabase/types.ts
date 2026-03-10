@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      custom_meals: {
+        Row: {
+          baby_note: string | null
+          baby_safety: string
+          category: string
+          created_at: string
+          emoji: string
+          id: string
+          is_keto: boolean
+          is_side: boolean
+          meal_id: string
+          name: string
+        }
+        Insert: {
+          baby_note?: string | null
+          baby_safety?: string
+          category?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          is_keto?: boolean
+          is_side?: boolean
+          meal_id: string
+          name: string
+        }
+        Update: {
+          baby_note?: string | null
+          baby_safety?: string
+          category?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          is_keto?: boolean
+          is_side?: boolean
+          meal_id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       meal_plan: {
         Row: {
           id: string

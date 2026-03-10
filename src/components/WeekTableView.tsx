@@ -10,6 +10,8 @@ type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
 interface WeekTableViewProps {
   plan: DayPlan[];
   todayIdx?: number;
+  extraMeals?: Meal[];
+  onCustomMeal?: (meal: Meal) => void;
   onSetDinner: (i: number, meal: Meal | null) => void;
   onSetDinnerSide: (i: number, meal: Meal | null) => void;
   onSetDinnerNote: (i: number, note: string) => void;
@@ -133,6 +135,8 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
 export function WeekTableView({
   plan,
   todayIdx = -1,
+  extraMeals = [],
+  onCustomMeal,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
@@ -274,6 +278,8 @@ export function WeekTableView({
           mode={pickerMode}
           step={pickerStep}
           prevDinner={pickerPrevDinner}
+          extraMeals={extraMeals}
+          onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
           onClose={closePicker}
           onSkipSide={closePicker}

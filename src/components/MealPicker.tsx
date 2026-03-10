@@ -200,7 +200,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
               <span className="text-2xl">🍽️</span>
               <div>
                 <p className="text-sm font-medium text-foreground">Usar &ldquo;{search.trim()}&rdquo;</p>
-                <p className="text-xs text-muted-foreground">Agregar como comida libre</p>
+                <p className="text-xs text-muted-foreground">Guardar y agregar como comida personalizada</p>
               </div>
             </button>
           )}
@@ -218,6 +218,18 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
               </div>
               <div className="space-y-2">
                 {prevRelated.map((meal) => (
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Custom meals group */}
+          {!isSide && !noResults && customPool.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">⭐ Mis comidas</p>
+              <div className="space-y-2">
+                {customPool.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>

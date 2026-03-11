@@ -229,7 +229,9 @@ export function useMealPlan(weekKey: WeekKey) {
     return { ...dayPlan, dinner: effectiveDinner, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
   });
 
+  // Mark plan change as user-initiated so the save effect picks it up
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
+    isUserEdit.current = true;
     setPlan((prev) => prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d)));
   };
 
@@ -237,6 +239,7 @@ export function useMealPlan(weekKey: WeekKey) {
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
   const toggleDelivery = (i: number) => {
+    isUserEdit.current = true;
     setPlan((prev) => prev.map((d, idx) =>
       idx === i ? { ...d, isDelivery: !d.isDelivery, dinner: !d.isDelivery ? null : d.dinner, dinnerSide: !d.isDelivery ? null : d.dinnerSide } : d
     ));
@@ -257,7 +260,7 @@ export function useMealPlan(weekKey: WeekKey) {
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
   const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
-  const resetPlan = () => setPlan(buildInitialPlan());
+  const resetPlan = () => { isUserEdit.current = true; setPlan(buildInitialPlan()); };
 
   return {
     plan: planWithLunch,

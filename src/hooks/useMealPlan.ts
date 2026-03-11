@@ -113,7 +113,7 @@ export function useMealPlan(weekKey: WeekKey) {
     return () => { cancelled = true; };
   }, [weekKey]);
 
-  // Real-time subscription
+  // Real-time subscription — when a remote change arrives, mark it as non-user so we don't re-save
   useEffect(() => {
     const channel = supabase
       .channel(`meal_plan_${envWeekKey(weekKey)}`)
@@ -129,7 +129,7 @@ export function useMealPlan(weekKey: WeekKey) {
           if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
             const newPlan = (payload.new as { plan: DayPlan[] }).plan;
             if (newPlan) {
-              skipNextSave.current = true;
+              isUserEdit.current = false;
               setPlan(newPlan as DayPlan[]);
             }
           }
@@ -142,47 +142,35 @@ export function useMealPlan(weekKey: WeekKey) {
     };
   }, [weekKey]);
 
-  const savePlan = useCallback(
-    (newPlan: DayPlan[]) => {
-      if (saveTimeout.current) clearTimeout(saveTimeout.current);
-      saveTimeout.current = setTimeout(async () => {
-        if (skipNextSave.current) {
-          skipNextSave.current = false;
-          return;
-        }
-        if (loadedWeekKey.current !== weekKey) return;
-        const rawPlan = newPlan.map((day) => ({
-          ...day,
-          lunch: day.lunchOverridden ? day.lunch : null,
-          lunchSide: day.lunchOverridden ? day.lunchSide : null,
-          lunchNote: day.lunchOverridden ? day.lunchNote : "",
-          babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
-          babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
-          babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
-          babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
-          babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
-          babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
-        }));
-        const { error } = await supabase
-          .from("meal_plan")
-          .upsert(
-            { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
-            { onConflict: "week_key" }
-          );
-        if (error) console.error("Error saving meal plan:", error);
-      }, 600);
-    },
-    [weekKey]
-  );
-
+  // Save plan to DB whenever it changes due to a user action
   useEffect(() => {
     if (loading) return;
-    if (skipNextSave.current) {
-      skipNextSave.current = false;
-      return;
-    }
-    savePlan(plan);
-  }, [plan, loading, savePlan]);
+    if (!isUserEdit.current) return;
+    isUserEdit.current = false;
+
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(async () => {
+      const rawPlan = plan.map((day) => ({
+        ...day,
+        lunch: day.lunchOverridden ? day.lunch : null,
+        lunchSide: day.lunchOverridden ? day.lunchSide : null,
+        lunchNote: day.lunchOverridden ? day.lunchNote : "",
+        babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
+        babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
+        babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
+        babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
+        babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
+        babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
+      }));
+      const { error } = await supabase
+        .from("meal_plan")
+        .upsert(
+          { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
+          { onConflict: "week_key" }
+        );
+      if (error) console.error("Error saving meal plan:", error);
+    }, 600);
+  }, [plan, loading, weekKey]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     const prevDay = idx === 0 ? null : plan[idx - 1];

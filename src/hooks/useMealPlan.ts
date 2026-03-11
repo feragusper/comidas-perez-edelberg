@@ -59,20 +59,20 @@ const buildInitialPlan = (): DayPlan[] => {
 export function useMealPlan(weekKey: WeekKey) {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
-  const skipNextSave = useRef(false);
-  const loadedWeekKey = useRef<WeekKey | null>(null);
+  // isUserEdit tracks whether the current plan change came from the user (vs. a load/realtime update)
+  const isUserEdit = useRef(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {
     let cancelled = false;
+    isUserEdit.current = false;
     setLoading(true);
     setPlan(buildInitialPlan());
     if (saveTimeout.current) {
       clearTimeout(saveTimeout.current);
       saveTimeout.current = null;
     }
-    skipNextSave.current = true;
 
     supabase
       .from("meal_plan")
@@ -81,10 +81,8 @@ export function useMealPlan(weekKey: WeekKey) {
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
-        skipNextSave.current = true;
         if (error) {
           console.error("Error loading meal plan:", error);
-          setPlan(buildInitialPlan());
         } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
           const raw = data.plan as unknown as DayPlan[];
           const migrated = raw.map((day) => ({
@@ -106,11 +104,9 @@ export function useMealPlan(weekKey: WeekKey) {
             babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
             babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
           }));
+          isUserEdit.current = false;
           setPlan(migrated);
-        } else {
-          setPlan(buildInitialPlan());
         }
-        loadedWeekKey.current = weekKey;
         setLoading(false);
       });
 

@@ -113,10 +113,10 @@ const buildInitialPlan = (): DayPlan[] => {
 export function useMealPlan(weekKey: WeekKey) {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
-  // isUserEdit tracks whether the current plan change came from the user (vs. a load/realtime update)
-  const isUserEdit = useRef(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<{ weekKey: WeekKey; plan: DayPlan[] } | null>(null);
+  const weekKeyRef = useRef(weekKey);
+  weekKeyRef.current = weekKey;
 
   const flushPendingSave = useCallback(async (options?: { keepalive?: boolean }) => {
     const pending = pendingSave.current;
@@ -136,13 +136,22 @@ export function useMealPlan(weekKey: WeekKey) {
     }
   }, []);
 
+  // Schedule a debounced save — called directly from update helpers
+  const scheduleSave = useCallback((updatedPlan: DayPlan[]) => {
+    const wk = weekKeyRef.current;
+    pendingSave.current = { weekKey: wk, plan: updatedPlan };
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(async () => {
+      await flushPendingSave();
+    }, 600);
+  }, [flushPendingSave]);
+
   // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {
     let cancelled = false;
     if (pendingSave.current?.weekKey && pendingSave.current.weekKey !== weekKey) {
       void flushPendingSave();
     }
-    isUserEdit.current = false;
     setLoading(true);
     setPlan(buildInitialPlan());
     if (saveTimeout.current) {
@@ -217,19 +226,6 @@ export function useMealPlan(weekKey: WeekKey) {
       supabase.removeChannel(channel);
     };
   }, [weekKey]);
-
-  // Save plan to DB whenever it changes due to a user action
-  useEffect(() => {
-    if (loading) return;
-    if (!isUserEdit.current) return;
-    isUserEdit.current = false;
-    pendingSave.current = { weekKey, plan };
-
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
-    saveTimeout.current = setTimeout(async () => {
-      await flushPendingSave();
-    }, 600);
-  }, [plan, loading, weekKey, flushPendingSave]);
 
   useEffect(() => {
     const handlePageHide = () => {
@@ -312,18 +308,24 @@ export function useMealPlan(weekKey: WeekKey) {
 
   // Mark plan change as user-initiated so the save effect picks it up
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
-    isUserEdit.current = true;
-    setPlan((prev) => prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d)));
+    setPlan((prev) => {
+      const next = prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d));
+      scheduleSave(next);
+      return next;
+    });
   };
 
   const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
   const toggleDelivery = (i: number) => {
-    isUserEdit.current = true;
-    setPlan((prev) => prev.map((d, idx) =>
-      idx === i ? { ...d, isDelivery: !d.isDelivery, dinner: !d.isDelivery ? null : d.dinner, dinnerSide: !d.isDelivery ? null : d.dinnerSide } : d
-    ));
+    setPlan((prev) => {
+      const next = prev.map((d, idx) =>
+        idx === i ? { ...d, isDelivery: !d.isDelivery, dinner: !d.isDelivery ? null : d.dinner, dinnerSide: !d.isDelivery ? null : d.dinnerSide } : d
+      );
+      scheduleSave(next);
+      return next;
+    });
   };
   const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
@@ -341,7 +343,11 @@ export function useMealPlan(weekKey: WeekKey) {
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
   const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
-  const resetPlan = () => { isUserEdit.current = true; setPlan(buildInitialPlan()); };
+  const resetPlan = () => {
+    const initial = buildInitialPlan();
+    setPlan(initial);
+    scheduleSave(initial);
+  };
 
   return {
     plan: planWithLunch,

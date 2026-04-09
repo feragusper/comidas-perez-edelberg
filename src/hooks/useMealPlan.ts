@@ -189,7 +189,6 @@ export function useMealPlan(weekKey: WeekKey) {
             babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
             babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
           }));
-          isUserEdit.current = false;
           setPlan(migrated);
         }
         setLoading(false);
@@ -214,7 +213,6 @@ export function useMealPlan(weekKey: WeekKey) {
           if (payload.eventType === "UPDATE" || payload.eventType === "INSERT") {
             const newPlan = (payload.new as { plan: DayPlan[] }).plan;
             if (newPlan) {
-              isUserEdit.current = false;
               setPlan(newPlan as DayPlan[]);
             }
           }

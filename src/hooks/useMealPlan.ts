@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Meal, DAYS, SUNDAY_DINNER, DELIVERY_DINNER, DELIVERY_LEFTOVERS } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
 import { envWeekKey } from "@/lib/env";
@@ -29,6 +29,60 @@ export interface DayPlan {
 
 // weekKey is now an ISO week string like "2025-W12"
 export type WeekKey = string;
+
+function serializePlan(plan: DayPlan[]) {
+  return plan.map((day) => ({
+    ...day,
+    lunch: day.lunchOverridden ? day.lunch : null,
+    lunchSide: day.lunchOverridden ? day.lunchSide : null,
+    lunchNote: day.lunchOverridden ? day.lunchNote : "",
+    babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
+    babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
+    babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
+    babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
+    babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
+    babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
+  }));
+}
+
+async function persistPlan(weekKey: WeekKey, plan: DayPlan[], options?: { keepalive?: boolean }) {
+  const rawPlan = serializePlan(plan);
+
+  if (options?.keepalive) {
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/meal_plan?on_conflict=week_key`,
+      {
+        method: "POST",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify({
+          week_key: envWeekKey(weekKey),
+          plan: rawPlan,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Error saving meal plan on unload: ${response.status}`);
+    }
+
+    return;
+  }
+
+  const { error } = await supabase
+    .from("meal_plan")
+    .upsert(
+      { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
+      { onConflict: "week_key" }
+    );
+
+  if (error) throw error;
+}
 
 const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
@@ -62,10 +116,32 @@ export function useMealPlan(weekKey: WeekKey) {
   // isUserEdit tracks whether the current plan change came from the user (vs. a load/realtime update)
   const isUserEdit = useRef(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSave = useRef<{ weekKey: WeekKey; plan: DayPlan[] } | null>(null);
+
+  const flushPendingSave = useCallback(async (options?: { keepalive?: boolean }) => {
+    const pending = pendingSave.current;
+    if (!pending) return;
+
+    pendingSave.current = null;
+    if (saveTimeout.current) {
+      clearTimeout(saveTimeout.current);
+      saveTimeout.current = null;
+    }
+
+    try {
+      await persistPlan(pending.weekKey, pending.plan, options);
+    } catch (error) {
+      console.error("Error saving meal plan:", error);
+      pendingSave.current = pending;
+    }
+  }, []);
 
   // Load initial data from DB — also resets plan immediately to avoid flicker
   useEffect(() => {
     let cancelled = false;
+    if (pendingSave.current?.weekKey && pendingSave.current.weekKey !== weekKey) {
+      void flushPendingSave();
+    }
     isUserEdit.current = false;
     setLoading(true);
     setPlan(buildInitialPlan());
@@ -147,30 +223,35 @@ export function useMealPlan(weekKey: WeekKey) {
     if (loading) return;
     if (!isUserEdit.current) return;
     isUserEdit.current = false;
+    pendingSave.current = { weekKey, plan };
 
     if (saveTimeout.current) clearTimeout(saveTimeout.current);
     saveTimeout.current = setTimeout(async () => {
-      const rawPlan = plan.map((day) => ({
-        ...day,
-        lunch: day.lunchOverridden ? day.lunch : null,
-        lunchSide: day.lunchOverridden ? day.lunchSide : null,
-        lunchNote: day.lunchOverridden ? day.lunchNote : "",
-        babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
-        babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
-        babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
-        babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
-        babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
-        babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
-      }));
-      const { error } = await supabase
-        .from("meal_plan")
-        .upsert(
-          { week_key: envWeekKey(weekKey), plan: rawPlan as unknown as never[] },
-          { onConflict: "week_key" }
-        );
-      if (error) console.error("Error saving meal plan:", error);
+      await flushPendingSave();
     }, 600);
-  }, [plan, loading, weekKey]);
+  }, [plan, loading, weekKey, flushPendingSave]);
+
+  useEffect(() => {
+    const handlePageHide = () => {
+      void flushPendingSave({ keepalive: true });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        void flushPendingSave({ keepalive: true });
+      }
+    };
+
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("beforeunload", handlePageHide);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("beforeunload", handlePageHide);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [flushPendingSave]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     const prevDay = idx === 0 ? null : plan[idx - 1];

@@ -1,0 +1,1 @@
+ALTER TABLE public.meal_plan DROP CONSTRAINT meal_plan_week_key_check;

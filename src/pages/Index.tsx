@@ -16,11 +16,18 @@ import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const isStage = isStageEnv();
   const todayIdx = todayDayIndex(activeWeek);
   const [expandedDays, setExpandedDays] = useState<boolean[]>(() => {
     const idx = todayDayIndex(activeWeek);
     return Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx);
   });
+
+  // Update expanded state when week changes
+  useEffect(() => {
+    const idx = todayDayIndex(activeWeek);
+    setExpandedDays(Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx));
+  }, [activeWeek]);
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote, toggleDelivery,

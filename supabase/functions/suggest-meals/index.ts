@@ -110,6 +110,15 @@ Reglas adicionales:
 
     if (!response.ok) {
       const err = await response.text();
+      console.error("AI gateway error:", response.status, err);
+
+      if (response.status === 429 || response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: response.status === 429 ? "RATE_LIMITED" : "PAYMENT_REQUIRED", fallback: true }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
       throw new Error(`AI gateway error ${response.status}: ${err}`);
     }
 

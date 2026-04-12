@@ -101,7 +101,12 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
         body: { currentMeals, mealCatalog, sideCatalog },
       });
 
-      if (error || !data?.suggestions) throw new Error(error?.message ?? "No suggestions");
+      if (error) throw new Error(error?.message ?? "Request failed");
+      if (data?.fallback || !data?.suggestions) {
+        console.warn("AI unavailable, using local suggestions");
+        setAiSuggestions(null);
+        return;
+      }
 
       const mapped: (DinnerSuggestion | null)[] = plan.map((dayPlan, idx) => {
         if (dayPlan.dinner !== null) return null;

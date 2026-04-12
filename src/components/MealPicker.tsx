@@ -30,9 +30,20 @@ const safetyLabel: Record<BabySafety, string> = {
   unsafe: "✗ No apto",
 };
 
+const FOOD_EMOJIS = [
+  "🍽️", "🍗", "🥩", "🍖", "🥓", "🌭", "🍔", "🍟", "🍕", "🫓",
+  "🥪", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🍲", "🍛", "🍜",
+  "🍝", "🍣", "🍤", "🍱", "🥟", "🍚", "🍙", "🥚", "🧀", "🥦",
+  "🥬", "🥕", "🌽", "🍠", "🥑", "🍅", "🫑", "🧅", "🧄", "🍄",
+  "🐟", "🐠", "🦐", "🦑", "🥫", "🫘", "🥜", "🫒", "🍞", "🥖",
+  "🥐", "🧇", "🥞", "🍳", "🫙", "🥣", "🧆", "🥙", "🫛",
+];
+
 export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
+  const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
+  const [selectedEmoji, setSelectedEmoji] = useState("🍽️");
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -79,15 +90,23 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
     return acc;
   }, {});
 
-  const title = isSide
+  const title = customEmojiPicker
+    ? "Elegir ícono"
+    : isSide
     ? "Elegir guarnición"
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
 
-  const handleSelectFreeText = () => {
+  const openEmojiPicker = () => {
+    setCustomEmojiPicker(search.trim());
+    setSelectedEmoji("🍽️");
+  };
+
+  const confirmCustomMeal = () => {
+    if (!customEmojiPicker) return;
     const newMeal: Meal = {
       id: `custom-${Date.now()}`,
-      name: search.trim(),
-      emoji: "🍽️",
+      name: customEmojiPicker,
+      emoji: selectedEmoji,
       babySafety: "caution",
       category: "Otro",
     };

@@ -115,6 +115,63 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
     onClose();
   };
 
+  if (customEmojiPicker) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
+          <div className="flex items-center justify-between p-5 pb-3">
+            <div className="flex items-center gap-2">
+              <ChefHat size={18} className="text-primary" />
+              <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Fraunces, serif' }}>
+                {title}
+              </h3>
+            </div>
+            <button onClick={() => setCustomEmojiPicker(null)} className="p-2 rounded-full hover:bg-muted transition-colors">
+              <X size={18} className="text-muted-foreground" />
+            </button>
+          </div>
+
+          <div className="px-5 pb-3">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/60 border border-border">
+              <span className="text-3xl">{selectedEmoji}</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">{customEmojiPicker}</p>
+                <p className="text-xs text-muted-foreground">Elegí un ícono para esta comida</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-5 pb-3">
+            <div className="grid grid-cols-8 gap-1.5">
+              {FOOD_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => setSelectedEmoji(emoji)}
+                  className={cn(
+                    "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
+                    selectedEmoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
+                  )}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-5 pt-2 border-t border-border">
+            <button
+              onClick={confirmCustomMeal}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+            >
+              Confirmar {selectedEmoji} {customEmojiPicker}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
@@ -202,7 +259,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
                 No encontramos esa comida
               </p>
               <button
-                onClick={handleSelectFreeText}
+                onClick={openEmojiPicker}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
               >
                 Usar &ldquo;{search.trim()}&rdquo;
@@ -213,7 +270,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
           {/* Also show free-text option when there are partial results */}
           {hasSearch && !noResults && (
             <button
-              onClick={handleSelectFreeText}
+              onClick={openEmojiPicker}
               className="w-full text-left px-3 py-2.5 rounded-xl border border-dashed border-border hover:bg-muted transition-all flex items-center gap-3"
             >
               <span className="text-2xl">🍽️</span>

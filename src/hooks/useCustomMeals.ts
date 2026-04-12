@@ -30,22 +30,20 @@ function rowToMeal(row: CustomMealRow): Meal {
 export function useCustomMeals() {
   const [customMeals, setCustomMeals] = useState<Meal[]>([]);
 
-  useEffect(() => {
-    supabase
+  const loadMeals = useCallback(async () => {
+    const { data, error } = await supabase
       .from("custom_meals")
       .select("*")
-      .order("created_at", { ascending: true })
-      .then(({ data, error }) => {
-        if (error) { console.error("Error loading custom meals:", error); return; }
-        if (data) setCustomMeals((data as CustomMealRow[]).map(rowToMeal));
-      });
+      .order("created_at", { ascending: true });
+    if (error) { console.error("Error loading custom meals:", error); return; }
+    if (data) setCustomMeals((data as CustomMealRow[]).map(rowToMeal));
   }, []);
 
+  useEffect(() => { loadMeals(); }, [loadMeals]);
+
   const saveCustomMeal = useCallback(async (meal: Meal) => {
-    // Only save meals that were created via free-text (custom-* prefix)
     if (!meal.id.startsWith("custom-")) return;
 
-    // Avoid duplicates by name (case-insensitive)
     const alreadyExists = customMeals.some(
       (m) => m.name.toLowerCase() === meal.name.toLowerCase()
     );
@@ -77,5 +75,23 @@ export function useCustomMeals() {
     }
   }, [customMeals]);
 
-  return { customMeals, saveCustomMeal };
+  const updateCustomMealEmoji = useCallback(async (mealId: string, emoji: string) => {
+    const { error } = await supabase
+      .from("custom_meals")
+      .update({ emoji })
+      .eq("meal_id", mealId);
+    if (error) { console.error("Error updating emoji:", error); return; }
+    setCustomMeals((prev) => prev.map((m) => m.id === mealId ? { ...m, emoji } : m));
+  }, []);
+
+  const deleteCustomMeal = useCallback(async (mealId: string) => {
+    const { error } = await supabase
+      .from("custom_meals")
+      .delete()
+      .eq("meal_id", mealId);
+    if (error) { console.error("Error deleting custom meal:", error); return; }
+    setCustomMeals((prev) => prev.filter((m) => m.id !== mealId));
+  }, []);
+
+  return { customMeals, saveCustomMeal, updateCustomMealEmoji, deleteCustomMeal };
 }

@@ -5,7 +5,7 @@ import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3 } from "lucide-react";
+import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
 
@@ -123,6 +123,9 @@ export default function Index() {
             <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
           </span>
           <div className="ml-auto flex items-center gap-2">
+            <Link to="/mis-comidas" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
+              <UtensilsCrossed size={13} /> Mis comidas
+            </Link>
             <Link to="/reportes" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
               <BarChart3 size={13} /> Reportes
             </Link>

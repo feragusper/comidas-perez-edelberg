@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { useCustomMeals } from "@/hooks/useCustomMeals";
@@ -7,7 +8,7 @@ import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
-import { useState } from "react";
+
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
@@ -15,12 +16,18 @@ import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 export default function Index() {
   const [activeWeek, setActiveWeek] = useState<string>(currentWeekKey());
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const isStage = isStageEnv();
+  const todayIdx = todayDayIndex(activeWeek);
   const [expandedDays, setExpandedDays] = useState<boolean[]>(() => {
     const idx = todayDayIndex(activeWeek);
     return Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx);
   });
-  const isStage = isStageEnv();
-  const todayIdx = todayDayIndex(activeWeek);
+
+  // Update expanded state when week changes
+  useEffect(() => {
+    const idx = todayDayIndex(activeWeek);
+    setExpandedDays(Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx));
+  }, [activeWeek]);
   const {
     plan,
     setDinner, setDinnerSide, setDinnerNote, toggleDelivery,

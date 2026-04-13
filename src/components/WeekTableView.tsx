@@ -195,7 +195,7 @@ export function WeekTableView({
         <table className="w-full border-collapse table-fixed">
           <thead>
             <tr>
-              <th className="w-[110px] min-w-[90px] bg-muted/60 border-b border-r border-border" />
+              <th className="w-[130px] min-w-[130px] bg-muted/60 border-b border-r border-border" />
               {plan.map((d, idx) => {
                 const isToday = todayIdx === idx;
                 const isPast = todayIdx !== -1 && idx < todayIdx;

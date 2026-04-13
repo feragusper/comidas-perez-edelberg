@@ -191,8 +191,8 @@ export function WeekTableView({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl border border-border shadow-card">
-        <table className="w-full border-collapse min-w-[700px]">
+      <div className="rounded-2xl border border-border shadow-card">
+        <table className="w-full border-collapse table-fixed">
           <thead>
             <tr>
               <th className="w-[110px] min-w-[90px] bg-muted/60 border-b border-r border-border" />

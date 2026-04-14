@@ -4,7 +4,8 @@ import { Meal, BabySafety, SUNDAY_DINNER, DELIVERY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2 } from "lucide-react";
+import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface DayCardProps {
   dayPlan: DayPlan;
@@ -55,6 +56,42 @@ const safetyIcon: Record<BabySafety, string> = {
 };
 
 type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | null;
+
+function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: string; hasMeal: boolean; children: React.ReactNode }) {
+  return (
+    <Droppable droppableId={droppableId}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          className={cn("rounded-xl transition-colors", snapshot.isDraggingOver && "ring-2 ring-primary/40 bg-primary/5")}
+        >
+          {hasMeal ? (
+            <Draggable draggableId={droppableId} index={0}>
+              {(dragProvided, dragSnapshot) => (
+                <div
+                  ref={dragProvided.innerRef}
+                  {...dragProvided.draggableProps}
+                  className={cn(dragSnapshot.isDragging && "shadow-lg rounded-xl bg-card p-2 border border-border")}
+                >
+                  <div className="flex items-start gap-1">
+                    <div {...dragProvided.dragHandleProps} className="pt-1 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground shrink-0">
+                      <GripVertical size={14} />
+                    </div>
+                    <div className="flex-1 min-w-0">{children}</div>
+                  </div>
+                </div>
+              )}
+            </Draggable>
+          ) : (
+            children
+          )}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  );
+}
 
 function NoteInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
@@ -237,7 +274,7 @@ export function DayCard({
               </div>
 
               {/* Adults lunch */}
-              <div>
+              <DraggableMealSlot droppableId={`${dayIndex}-lunch`} hasMeal={!!dayPlan.lunch}>
                 {dayPlan.lunch ? (
                   <div className="space-y-1">
                     <MealDisplay
@@ -263,7 +300,7 @@ export function DayCard({
                     <Plus size={15} /> Elegir almuerzo
                   </button>
                 )}
-              </div>
+              </DraggableMealSlot>
 
               {/* Nico lunch */}
               <div className="border-t border-secondary/15 pt-2">
@@ -274,31 +311,33 @@ export function DayCard({
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
-                {dayPlan.babyLunch ? (
-                  <div className="space-y-1">
-                    <MealDisplay
-                      meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
-                      onChangeNote={onSetBabyLunchNote}
-                      onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
-                      onChangeMeal={() => openMainPicker("babyLunch")}
-                      onChangeSide={() => openSidePicker("babyLunch")}
-                      onRemoveSide={() => onSetBabyLunchSide(null)}
-                      isBaby showSide
-                    />
-                    {dayPlan.babyLunchOverridden && (
-                      <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
-                        <RotateCcw size={11} /> Restaurar sugerencia
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => openMainPicker("babyLunch")}
-                    className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
-                  >
-                    <Plus size={13} /> Elegir comida de Nico
-                  </button>
-                )}
+                <DraggableMealSlot droppableId={`${dayIndex}-babyLunch`} hasMeal={!!dayPlan.babyLunch}>
+                  {dayPlan.babyLunch ? (
+                    <div className="space-y-1">
+                      <MealDisplay
+                        meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
+                        onChangeNote={onSetBabyLunchNote}
+                        onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
+                        onChangeMeal={() => openMainPicker("babyLunch")}
+                        onChangeSide={() => openSidePicker("babyLunch")}
+                        onRemoveSide={() => onSetBabyLunchSide(null)}
+                        isBaby showSide
+                      />
+                      {dayPlan.babyLunchOverridden && (
+                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
+                          <RotateCcw size={11} /> Restaurar sugerencia
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => openMainPicker("babyLunch")}
+                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
+                    >
+                      <Plus size={13} /> Elegir comida de Nico
+                    </button>
+                  )}
+                </DraggableMealSlot>
               </div>
             </div>
 
@@ -354,7 +393,7 @@ export function DayCard({
                 </div>
               ) : (
               /* Adults dinner */
-              <div>
+              <DraggableMealSlot droppableId={`${dayIndex}-dinner`} hasMeal={!!dayPlan.dinner}>
                 {dayPlan.dinner ? (
                   <div className="space-y-1">
                     <MealDisplay
@@ -380,7 +419,6 @@ export function DayCard({
                       <span className="text-xs text-primary/70 font-medium italic">
                         {dinnerSuggestion.isAI ? "✨ Sugerencia IA keto" : "Sugerencia"}
                       </span>
-                      {/* Regenerate button */}
                       <button
                         onClick={() => onRegenerateSuggestion?.()}
                         disabled={loadingSuggestion}
@@ -394,12 +432,10 @@ export function DayCard({
                         Otra
                       </button>
                     </div>
-                    {/* Meal row */}
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{dinnerSuggestion.meal.emoji}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground/80">{dinnerSuggestion.meal.name}</p>
-                        {/* Side suggestion inline */}
                         {dinnerSuggestion.side && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             + {dinnerSuggestion.side.emoji} {dinnerSuggestion.side.name}
@@ -437,7 +473,7 @@ export function DayCard({
                     {isSunday ? "Elegir cena (sugerido: pasta)" : "Elegir cena"}
                   </button>
                 )}
-              </div>
+              </DraggableMealSlot>
               )}
 
               {/* Nico dinner */}
@@ -449,31 +485,33 @@ export function DayCard({
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
-                {dayPlan.babyDinner ? (
-                  <div className="space-y-1">
-                    <MealDisplay
-                      meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
-                      onChangeNote={onSetBabyDinnerNote}
-                      onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onHideBabyDinner()}
-                      onChangeMeal={() => openMainPicker("babyDinner")}
-                      onChangeSide={() => openSidePicker("babyDinner")}
-                      onRemoveSide={() => onSetBabyDinnerSide(null)}
-                      isBaby showSide
-                    />
-                    {dayPlan.babyDinnerOverridden && (
-                      <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
-                        <RotateCcw size={11} /> Restaurar sugerencia
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => openMainPicker("babyDinner")}
-                    className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
-                  >
-                    <Plus size={13} /> Elegir cena de Nico
-                  </button>
-                )}
+                <DraggableMealSlot droppableId={`${dayIndex}-babyDinner`} hasMeal={!!dayPlan.babyDinner}>
+                  {dayPlan.babyDinner ? (
+                    <div className="space-y-1">
+                      <MealDisplay
+                        meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
+                        onChangeNote={onSetBabyDinnerNote}
+                        onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onHideBabyDinner()}
+                        onChangeMeal={() => openMainPicker("babyDinner")}
+                        onChangeSide={() => openSidePicker("babyDinner")}
+                        onRemoveSide={() => onSetBabyDinnerSide(null)}
+                        isBaby showSide
+                      />
+                      {dayPlan.babyDinnerOverridden && (
+                        <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
+                          <RotateCcw size={11} /> Restaurar sugerencia
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => openMainPicker("babyDinner")}
+                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
+                    >
+                      <Plus size={13} /> Elegir cena de Nico
+                    </button>
+                  )}
+                </DraggableMealSlot>
               </div>
             </div>
           </div>

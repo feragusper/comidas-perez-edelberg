@@ -8,6 +8,7 @@ import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
@@ -34,8 +35,20 @@ export default function Index() {
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
-    resetPlan,
+    resetPlan, swapSlots,
   } = useMealPlan(activeWeek);
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId) return;
+    // droppableId format: "dayIndex-slot"
+    const [srcDayStr, srcSlot] = source.droppableId.split("-");
+    const [dstDayStr, dstSlot] = destination.droppableId.split("-");
+    const srcDay = parseInt(srcDayStr, 10);
+    const dstDay = parseInt(dstDayStr, 10);
+    swapSlots(srcDay, srcSlot as any, dstDay, dstSlot as any);
+  };
   const [showReset, setShowReset] = useState(false);
 
   const { customMeals, saveCustomMeal } = useCustomMeals();
@@ -137,69 +150,71 @@ export default function Index() {
       </div>
 
       {/* Days / Table */}
-      {viewMode === "cards" ? (
-        <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-3 pb-20">
-          {plan.map((dayPlan, idx) => (
-            <DayCard
-              key={dayPlan.day}
-              dayPlan={dayPlan}
-              dayIndex={idx}
-              isToday={todayIdx === idx}
-              isPast={todayIdx !== -1 && idx < todayIdx}
-              prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
-              expanded={expandedDays[idx]}
-              onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
-              dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
-              onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
-              onDismissSuggestion={() => dismissSuggestion(idx)}
-              onRegenerateSuggestion={() => regenerateDay(idx)}
-              loadingSuggestion={loadingDayIndex === idx}
-              onSetDinner={(meal) => setDinner(idx, meal)}
-              onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
-              onSetDinnerNote={(note) => setDinnerNote(idx, note)}
-              onToggleDelivery={() => toggleDelivery(idx)}
-              onSetLunch={(meal) => setLunch(idx, meal)}
-              onSetLunchSide={(meal) => setLunchSide(idx, meal)}
-              onSetLunchNote={(note) => setLunchNote(idx, note)}
-              onHideLunch={() => hideLunch(idx)}
-              onResetLunch={() => resetLunch(idx)}
-              onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
-              onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
-              onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
-              onHideBabyDinner={() => hideBabyDinner(idx)}
-              onResetBabyDinner={() => resetBabyDinner(idx)}
-              onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
-              onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
-              onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
-              onHideBabyLunch={() => hideBabyLunch(idx)}
-              onResetBabyLunch={() => resetBabyLunch(idx)}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        {viewMode === "cards" ? (
+          <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-3 pb-20">
+            {plan.map((dayPlan, idx) => (
+              <DayCard
+                key={dayPlan.day}
+                dayPlan={dayPlan}
+                dayIndex={idx}
+                isToday={todayIdx === idx}
+                isPast={todayIdx !== -1 && idx < todayIdx}
+                prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
+                expanded={expandedDays[idx]}
+                onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
+                dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
+                onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
+                onDismissSuggestion={() => dismissSuggestion(idx)}
+                onRegenerateSuggestion={() => regenerateDay(idx)}
+                loadingSuggestion={loadingDayIndex === idx}
+                onSetDinner={(meal) => setDinner(idx, meal)}
+                onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
+                onSetDinnerNote={(note) => setDinnerNote(idx, note)}
+                onToggleDelivery={() => toggleDelivery(idx)}
+                onSetLunch={(meal) => setLunch(idx, meal)}
+                onSetLunchSide={(meal) => setLunchSide(idx, meal)}
+                onSetLunchNote={(note) => setLunchNote(idx, note)}
+                onHideLunch={() => hideLunch(idx)}
+                onResetLunch={() => resetLunch(idx)}
+                onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
+                onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
+                onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
+                onHideBabyDinner={() => hideBabyDinner(idx)}
+                onResetBabyDinner={() => resetBabyDinner(idx)}
+                onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
+                onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
+                onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
+                onHideBabyLunch={() => hideBabyLunch(idx)}
+                onResetBabyLunch={() => resetBabyLunch(idx)}
+                extraMeals={customMeals}
+                onCustomMeal={saveCustomMeal}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="px-4 sm:px-8 py-4 max-w-7xl mx-auto pb-20">
+            <WeekTableView
+              plan={plan}
+              todayIdx={todayIdx}
+              onSetDinner={setDinner}
+              onSetDinnerSide={setDinnerSide}
+              onSetDinnerNote={setDinnerNote}
+              onSetLunch={setLunch}
+              onSetLunchSide={setLunchSide}
+              onSetLunchNote={setLunchNote}
+              onSetBabyDinner={setBabyDinner}
+              onSetBabyDinnerSide={setBabyDinnerSide}
+              onSetBabyDinnerNote={setBabyDinnerNote}
+              onSetBabyLunch={setBabyLunch}
+              onSetBabyLunchSide={setBabyLunchSide}
+              onSetBabyLunchNote={setBabyLunchNote}
               extraMeals={customMeals}
               onCustomMeal={saveCustomMeal}
             />
-          ))}
-        </div>
-      ) : (
-        <div className="px-4 sm:px-8 py-4 max-w-7xl mx-auto pb-20">
-          <WeekTableView
-            plan={plan}
-            todayIdx={todayIdx}
-            onSetDinner={setDinner}
-            onSetDinnerSide={setDinnerSide}
-            onSetDinnerNote={setDinnerNote}
-            onSetLunch={setLunch}
-            onSetLunchSide={setLunchSide}
-            onSetLunchNote={setLunchNote}
-            onSetBabyDinner={setBabyDinner}
-            onSetBabyDinnerSide={setBabyDinnerSide}
-            onSetBabyDinnerNote={setBabyDinnerNote}
-            onSetBabyLunch={setBabyLunch}
-            onSetBabyLunchSide={setBabyLunchSide}
-            onSetBabyLunchNote={setBabyLunchNote}
-            extraMeals={customMeals}
-            onCustomMeal={saveCustomMeal}
-          />
-        </div>
-      )}
+          </div>
+        )}
+      </DragDropContext>
 
       {/* Stage badge — fixed top-right corner */}
       {isStage && (

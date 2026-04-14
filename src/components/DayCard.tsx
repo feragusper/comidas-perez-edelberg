@@ -57,6 +57,42 @@ const safetyIcon: Record<BabySafety, string> = {
 
 type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | null;
 
+function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: string; hasMeal: boolean; children: React.ReactNode }) {
+  return (
+    <Droppable droppableId={droppableId}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          className={cn("rounded-xl transition-colors", snapshot.isDraggingOver && "ring-2 ring-primary/40 bg-primary/5")}
+        >
+          {hasMeal ? (
+            <Draggable draggableId={droppableId} index={0}>
+              {(dragProvided, dragSnapshot) => (
+                <div
+                  ref={dragProvided.innerRef}
+                  {...dragProvided.draggableProps}
+                  className={cn(dragSnapshot.isDragging && "shadow-lg rounded-xl bg-card p-2 border border-border")}
+                >
+                  <div className="flex items-start gap-1">
+                    <div {...dragProvided.dragHandleProps} className="pt-1 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground shrink-0">
+                      <GripVertical size={14} />
+                    </div>
+                    <div className="flex-1 min-w-0">{children}</div>
+                  </div>
+                </div>
+              )}
+            </Draggable>
+          ) : (
+            children
+          )}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  );
+}
+
 function NoteInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <input

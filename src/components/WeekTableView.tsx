@@ -2,8 +2,9 @@ import { useState } from "react";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal, SUNDAY_DINNER } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
-import { Baby, Plus, Trash2, Pencil } from "lucide-react";
+import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
 
@@ -256,14 +257,53 @@ export function WeekTableView({
                         isPast && "opacity-40"
                       )}
                     >
-                      <EditableCell
-                        meal={meal} side={side} note={note} isBaby={row.isBaby}
-                        onPickMain={() => openMain(idx, row.slot)}
-                        onPickSide={() => openSide(idx, row.slot)}
-                        onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
-                        onRemoveSide={() => getSideSetter(row.slot, idx)(null)}
-                        onChangeNote={getNoteSetter(row.slot, idx)}
-                      />
+                      <Droppable droppableId={`${idx}-${row.slot}`}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className={cn("min-h-[52px] rounded-lg transition-colors", snapshot.isDraggingOver && "bg-primary/10 ring-2 ring-primary/30")}
+                          >
+                            {meal ? (
+                              <Draggable draggableId={`${idx}-${row.slot}`} index={0}>
+                                {(dragProvided, dragSnapshot) => (
+                                  <div
+                                    ref={dragProvided.innerRef}
+                                    {...dragProvided.draggableProps}
+                                    className={cn("transition-shadow", dragSnapshot.isDragging && "shadow-lg rounded-lg bg-card p-1")}
+                                  >
+                                    <div className="flex items-start gap-0.5">
+                                      <div {...dragProvided.dragHandleProps} className="pt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0">
+                                        <GripVertical size={10} />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <EditableCell
+                                          meal={meal} side={side} note={note} isBaby={row.isBaby}
+                                          onPickMain={() => openMain(idx, row.slot)}
+                                          onPickSide={() => openSide(idx, row.slot)}
+                                          onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
+                                          onRemoveSide={() => getSideSetter(row.slot, idx)(null)}
+                                          onChangeNote={getNoteSetter(row.slot, idx)}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ) : (
+                              <EditableCell
+                                meal={null} side={null} note="" isBaby={row.isBaby}
+                                onPickMain={() => openMain(idx, row.slot)}
+                                onPickSide={() => openSide(idx, row.slot)}
+                                onRemove={() => {}}
+                                onRemoveSide={() => {}}
+                                onChangeNote={() => {}}
+                              />
+                            )}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
                     </td>
                   );
                 })}

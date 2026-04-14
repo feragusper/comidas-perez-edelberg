@@ -4,7 +4,8 @@ import { Meal, BabySafety, SUNDAY_DINNER, DELIVERY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2 } from "lucide-react";
+import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface DayCardProps {
   dayPlan: DayPlan;

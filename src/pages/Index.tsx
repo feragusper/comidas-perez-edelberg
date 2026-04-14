@@ -8,6 +8,7 @@ import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
@@ -34,8 +35,20 @@ export default function Index() {
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
-    resetPlan,
+    resetPlan, swapSlots,
   } = useMealPlan(activeWeek);
+
+  const handleDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (!destination) return;
+    if (source.droppableId === destination.droppableId) return;
+    // droppableId format: "dayIndex-slot"
+    const [srcDayStr, srcSlot] = source.droppableId.split("-");
+    const [dstDayStr, dstSlot] = destination.droppableId.split("-");
+    const srcDay = parseInt(srcDayStr, 10);
+    const dstDay = parseInt(dstDayStr, 10);
+    swapSlots(srcDay, srcSlot as any, dstDay, dstSlot as any);
+  };
   const [showReset, setShowReset] = useState(false);
 
   const { customMeals, saveCustomMeal } = useCustomMeals();

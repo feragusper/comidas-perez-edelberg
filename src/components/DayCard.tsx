@@ -393,7 +393,7 @@ export function DayCard({
                 </div>
               ) : (
               /* Adults dinner */
-              <div>
+              <DraggableMealSlot droppableId={`${dayIndex}-dinner`} hasMeal={!!dayPlan.dinner}>
                 {dayPlan.dinner ? (
                   <div className="space-y-1">
                     <MealDisplay
@@ -419,7 +419,6 @@ export function DayCard({
                       <span className="text-xs text-primary/70 font-medium italic">
                         {dinnerSuggestion.isAI ? "✨ Sugerencia IA keto" : "Sugerencia"}
                       </span>
-                      {/* Regenerate button */}
                       <button
                         onClick={() => onRegenerateSuggestion?.()}
                         disabled={loadingSuggestion}
@@ -433,12 +432,10 @@ export function DayCard({
                         Otra
                       </button>
                     </div>
-                    {/* Meal row */}
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{dinnerSuggestion.meal.emoji}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground/80">{dinnerSuggestion.meal.name}</p>
-                        {/* Side suggestion inline */}
                         {dinnerSuggestion.side && (
                           <p className="text-xs text-muted-foreground mt-0.5">
                             + {dinnerSuggestion.side.emoji} {dinnerSuggestion.side.name}
@@ -476,7 +473,7 @@ export function DayCard({
                     {isSunday ? "Elegir cena (sugerido: pasta)" : "Elegir cena"}
                   </button>
                 )}
-              </div>
+              </DraggableMealSlot>
               )}
 
               {/* Nico dinner */}

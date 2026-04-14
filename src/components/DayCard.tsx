@@ -274,7 +274,7 @@ export function DayCard({
               </div>
 
               {/* Adults lunch */}
-              <div>
+              <DraggableMealSlot droppableId={`${dayIndex}-lunch`} hasMeal={!!dayPlan.lunch}>
                 {dayPlan.lunch ? (
                   <div className="space-y-1">
                     <MealDisplay
@@ -300,7 +300,7 @@ export function DayCard({
                     <Plus size={15} /> Elegir almuerzo
                   </button>
                 )}
-              </div>
+              </DraggableMealSlot>
 
               {/* Nico lunch */}
               <div className="border-t border-secondary/15 pt-2">
@@ -311,31 +311,33 @@ export function DayCard({
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
-                {dayPlan.babyLunch ? (
-                  <div className="space-y-1">
-                    <MealDisplay
-                      meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
-                      onChangeNote={onSetBabyLunchNote}
-                      onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
-                      onChangeMeal={() => openMainPicker("babyLunch")}
-                      onChangeSide={() => openSidePicker("babyLunch")}
-                      onRemoveSide={() => onSetBabyLunchSide(null)}
-                      isBaby showSide
-                    />
-                    {dayPlan.babyLunchOverridden && (
-                      <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
-                        <RotateCcw size={11} /> Restaurar sugerencia
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => openMainPicker("babyLunch")}
-                    className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
-                  >
-                    <Plus size={13} /> Elegir comida de Nico
-                  </button>
-                )}
+                <DraggableMealSlot droppableId={`${dayIndex}-babyLunch`} hasMeal={!!dayPlan.babyLunch}>
+                  {dayPlan.babyLunch ? (
+                    <div className="space-y-1">
+                      <MealDisplay
+                        meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
+                        onChangeNote={onSetBabyLunchNote}
+                        onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
+                        onChangeMeal={() => openMainPicker("babyLunch")}
+                        onChangeSide={() => openSidePicker("babyLunch")}
+                        onRemoveSide={() => onSetBabyLunchSide(null)}
+                        isBaby showSide
+                      />
+                      {dayPlan.babyLunchOverridden && (
+                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
+                          <RotateCcw size={11} /> Restaurar sugerencia
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => openMainPicker("babyLunch")}
+                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
+                    >
+                      <Plus size={13} /> Elegir comida de Nico
+                    </button>
+                  )}
+                </DraggableMealSlot>
               </div>
             </div>
 

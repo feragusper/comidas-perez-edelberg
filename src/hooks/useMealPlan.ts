@@ -341,6 +341,48 @@ export function useMealPlan(weekKey: WeekKey) {
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
   const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
+
+  type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch";
+
+  const slotFields = (slot: MealSlot) => {
+    if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", note: "dinnerNote", overridden: null, hidden: null } as const;
+    if (slot === "lunch") return { meal: "lunch", side: "lunchSide", note: "lunchNote", overridden: "lunchOverridden", hidden: "lunchHidden" } as const;
+    if (slot === "babyDinner") return { meal: "babyDinner", side: "babyDinnerSide", note: "babyDinnerNote", overridden: "babyDinnerOverridden", hidden: "babyDinnerHidden" } as const;
+    return { meal: "babyLunch", side: "babyLunchSide", note: "babyLunchNote", overridden: "babyLunchOverridden", hidden: "babyLunchHidden" } as const;
+  };
+
+  const swapSlots = (srcDay: number, srcSlot: MealSlot, dstDay: number, dstSlot: MealSlot) => {
+    setPlan((prev) => {
+      const next = prev.map((d) => ({ ...d }));
+      const sf = slotFields(srcSlot);
+      const df = slotFields(dstSlot);
+
+      const srcMeal = next[srcDay][sf.meal];
+      const srcSide = next[srcDay][sf.side];
+      const srcNote = next[srcDay][sf.note];
+      const dstMeal = next[dstDay][df.meal];
+      const dstSide = next[dstDay][df.side];
+      const dstNote = next[dstDay][df.note];
+
+      // Set destination with source data
+      (next[dstDay] as any)[df.meal] = srcMeal;
+      (next[dstDay] as any)[df.side] = srcSide;
+      (next[dstDay] as any)[df.note] = srcNote;
+      if (df.overridden) (next[dstDay] as any)[df.overridden] = srcMeal != null;
+      if (df.hidden) (next[dstDay] as any)[df.hidden] = false;
+
+      // Set source with destination data
+      (next[srcDay] as any)[sf.meal] = dstMeal;
+      (next[srcDay] as any)[sf.side] = dstSide;
+      (next[srcDay] as any)[sf.note] = dstNote;
+      if (sf.overridden) (next[srcDay] as any)[sf.overridden] = dstMeal != null;
+      if (sf.hidden) (next[srcDay] as any)[sf.hidden] = false;
+
+      scheduleSave(next);
+      return next;
+    });
+  };
+
   const resetPlan = () => {
     const initial = buildInitialPlan();
     setPlan(initial);
@@ -355,6 +397,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setNotes,
+    swapSlots,
     resetPlan,
   };
 }

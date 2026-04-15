@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { DayPlan } from "@/hooks/useMealPlan";
-import { Meal, SUNDAY_DINNER } from "@/data/meals";
+import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";

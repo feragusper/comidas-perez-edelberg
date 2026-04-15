@@ -32,7 +32,7 @@ export default function Index() {
   }, [activeWeek]);
   const {
     plan, loading,
-    setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
+    setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
@@ -188,7 +188,7 @@ export default function Index() {
                   onSetDinner={(meal) => setDinner(idx, meal)}
                   onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
                   onSetDinnerNote={(note) => setDinnerNote(idx, note)}
-                  onToggleDelivery={() => toggleDelivery(idx)}
+                  
                   onSetLunch={(meal) => setLunch(idx, meal)}
                   onSetLunchSide={(meal) => setLunchSide(idx, meal)}
                   onSetLunchNote={(note) => setLunchNote(idx, note)}

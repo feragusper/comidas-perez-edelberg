@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Meal, DAYS, SUNDAY_DINNER, DELIVERY_DINNER, DELIVERY_LEFTOVERS } from "@/data/meals";
+import { Meal, DAYS, DELIVERY_DINNER, DELIVERY_LEFTOVERS } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
 import { envWeekKey } from "@/lib/env";
 
@@ -8,12 +8,11 @@ export interface DayPlan {
   dinner: Meal | null;
   dinnerSide: Meal | null;
   dinnerNote: string;
-  isDelivery: boolean;        // true = delivery/cheat night
   lunch: Meal | null;
   lunchSide: Meal | null;
   lunchNote: string;
-  lunchOverridden: boolean;  // true = user manually picked a lunch
-  lunchHidden: boolean;       // true = user dismissed the suggestion
+  lunchOverridden: boolean;
+  lunchHidden: boolean;
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
   babyDinnerNote: string;
@@ -27,8 +26,12 @@ export interface DayPlan {
   notes: string;
 }
 
-// weekKey is now an ISO week string like "2025-W12"
 export type WeekKey = string;
+
+/** Helper: is this meal the delivery sentinel? */
+export function isDeliveryMeal(meal: Meal | null): boolean {
+  return meal?.id === "delivery";
+}
 
 function serializePlan(plan: DayPlan[]) {
   return plan.map((day) => ({
@@ -87,10 +90,9 @@ async function persistPlan(weekKey: WeekKey, plan: DayPlan[], options?: { keepal
 const buildInitialPlan = (): DayPlan[] => {
   return DAYS.map((day) => ({
     day,
-    dinner: day === "Domingo" ? SUNDAY_DINNER : null,
+    dinner: null,
     dinnerSide: null,
     dinnerNote: "",
-    isDelivery: false,
     lunch: null,
     lunchSide: null,
     lunchNote: "",
@@ -136,7 +138,6 @@ export function useMealPlan(weekKey: WeekKey) {
     }
   }, []);
 
-  // Schedule a debounced save — called directly from update helpers
   const scheduleSave = useCallback((updatedPlan: DayPlan[]) => {
     const wk = weekKeyRef.current;
     pendingSave.current = { weekKey: wk, plan: updatedPlan };
@@ -146,7 +147,7 @@ export function useMealPlan(weekKey: WeekKey) {
     }, 600);
   }, [flushPendingSave]);
 
-  // Load initial data from DB — also resets plan immediately to avoid flicker
+  // Load initial data
   useEffect(() => {
     let cancelled = false;
     if (pendingSave.current?.weekKey && pendingSave.current.weekKey !== weekKey) {
@@ -169,26 +170,33 @@ export function useMealPlan(weekKey: WeekKey) {
         if (error) {
           console.error("Error loading meal plan:", error);
         } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
-          const raw = data.plan as unknown as DayPlan[];
-          const migrated = raw.map((day) => ({
-            ...day,
-            isDelivery: day.isDelivery ?? false,
-            lunchOverridden: (day.lunchOverridden ?? false) && day.lunch != null,
-            lunchHidden: day.lunchHidden ?? false,
-            babyDinnerOverridden: (day.babyDinnerOverridden ?? false) && day.babyDinner != null,
-            babyDinnerHidden: day.babyDinnerHidden ?? false,
-            babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
-            babyLunchHidden: day.babyLunchHidden ?? false,
-            lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
-            lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
-            lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
-            babyDinner: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinner : null,
-            babyDinnerSide: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerSide : null,
-            babyDinnerNote: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerNote : "",
-            babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
-            babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
-            babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
-          }));
+          const raw = data.plan as unknown as (DayPlan & { isDelivery?: boolean })[];
+          const migrated = raw.map((day) => {
+            // Migration: convert old isDelivery flag to delivery meal
+            const wasDelivery = day.isDelivery ?? false;
+            const dinner = wasDelivery && !day.dinner ? DELIVERY_DINNER : day.dinner;
+            return {
+              ...day,
+              dinner,
+              // Remove legacy field
+              isDelivery: undefined,
+              lunchOverridden: (day.lunchOverridden ?? false) && day.lunch != null,
+              lunchHidden: day.lunchHidden ?? false,
+              babyDinnerOverridden: (day.babyDinnerOverridden ?? false) && day.babyDinner != null,
+              babyDinnerHidden: day.babyDinnerHidden ?? false,
+              babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
+              babyLunchHidden: day.babyLunchHidden ?? false,
+              lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
+              lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
+              lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
+              babyDinner: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinner : null,
+              babyDinnerSide: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerSide : null,
+              babyDinnerNote: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerNote : "",
+              babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
+              babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
+              babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
+            } as DayPlan;
+          });
           setPlan(migrated);
         }
         setLoading(false);
@@ -197,7 +205,7 @@ export function useMealPlan(weekKey: WeekKey) {
     return () => { cancelled = true; };
   }, [weekKey]);
 
-  // Real-time subscription — when a remote change arrives, mark it as non-user so we don't re-save
+  // Real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel(`meal_plan_${envWeekKey(weekKey)}`)
@@ -229,17 +237,14 @@ export function useMealPlan(weekKey: WeekKey) {
     const handlePageHide = () => {
       void flushPendingSave({ keepalive: true });
     };
-
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
         void flushPendingSave({ keepalive: true });
       }
     };
-
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("beforeunload", handlePageHide);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
       window.removeEventListener("pagehide", handlePageHide);
       window.removeEventListener("beforeunload", handlePageHide);
@@ -250,11 +255,10 @@ export function useMealPlan(weekKey: WeekKey) {
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
     const prevDay = idx === 0 ? null : plan[idx - 1];
     const prevDinner = prevDay?.dinner ?? null;
-    const isPrevDelivery = prevDay?.isDelivery ?? false;
+    const isPrevDelivery = isDeliveryMeal(prevDinner);
     const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
+    const isCurrentDelivery = isDeliveryMeal(dayPlan.dinner);
 
-    // For delivery nights, treat dinner as the DELIVERY_DINNER sentinel
-    const effectiveDinner = dayPlan.isDelivery ? DELIVERY_DINNER : dayPlan.dinner;
     const effectivePrevDinner = isPrevDelivery ? DELIVERY_LEFTOVERS : prevDinner;
     const effectivePrevSide = isPrevDelivery ? null : (prevDay?.dinnerSide ?? null);
     const effectivePrevNote = isPrevDelivery ? "" : (prevDay?.dinnerNote ?? "");
@@ -278,7 +282,6 @@ export function useMealPlan(weekKey: WeekKey) {
     } else if (dayPlan.babyDinnerHidden) {
       babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
     } else {
-      // Don't suggest delivery leftovers for baby — skip if delivery
       const babyPrev = (prevDinner && !isPrevDelivery && isPrevBabySafe) ? prevDinner : null;
       babyDinnerSuggested = {
         babyDinner: babyPrev,
@@ -301,10 +304,9 @@ export function useMealPlan(weekKey: WeekKey) {
       };
     }
 
-    return { ...dayPlan, dinner: effectiveDinner, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
+    return { ...dayPlan, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
   });
 
-  // Mark plan change as user-initiated so the save effect picks it up
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
     setPlan((prev) => {
       const next = prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d));
@@ -313,18 +315,16 @@ export function useMealPlan(weekKey: WeekKey) {
     });
   };
 
-  const setDinner = (i: number, meal: Meal | null) => update(i, { dinner: meal });
+  const setDinner = (i: number, meal: Meal | null) => {
+    // When setting delivery, clear side dish
+    if (isDeliveryMeal(meal)) {
+      update(i, { dinner: meal, dinnerSide: null });
+    } else {
+      update(i, { dinner: meal });
+    }
+  };
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
-  const toggleDelivery = (i: number) => {
-    setPlan((prev) => {
-      const next = prev.map((d, idx) =>
-        idx === i ? { ...d, isDelivery: !d.isDelivery, dinner: !d.isDelivery ? null : d.dinner, dinnerSide: !d.isDelivery ? null : d.dinnerSide } : d
-      );
-      scheduleSave(next);
-      return next;
-    });
-  };
   const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
   const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
@@ -364,14 +364,12 @@ export function useMealPlan(weekKey: WeekKey) {
       const dstSide = next[dstDay][df.side];
       const dstNote = next[dstDay][df.note];
 
-      // Set destination with source data
       (next[dstDay] as any)[df.meal] = srcMeal;
       (next[dstDay] as any)[df.side] = srcSide;
       (next[dstDay] as any)[df.note] = srcNote;
       if (df.overridden) (next[dstDay] as any)[df.overridden] = srcMeal != null;
       if (df.hidden) (next[dstDay] as any)[df.hidden] = false;
 
-      // Set source with destination data
       (next[srcDay] as any)[sf.meal] = dstMeal;
       (next[srcDay] as any)[sf.side] = dstSide;
       (next[srcDay] as any)[sf.note] = dstNote;
@@ -392,7 +390,7 @@ export function useMealPlan(weekKey: WeekKey) {
   return {
     plan: planWithLunch,
     loading,
-    setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
+    setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,

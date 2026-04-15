@@ -90,6 +90,7 @@ export const MEALS: Meal[] = [
   { id: "arroz-leche", name: "Arroz con leche", emoji: "🍚", babySafety: "caution", babyNote: "Lacteos y azúcar, pequeñas cantidades", category: "Arroces" },
 
   // ── Especiales ──
+  { id: "delivery", name: "Delivery", emoji: "🛵", babySafety: "caution", babyNote: "Comida de pedido, adaptar para bebé", category: "Especiales" },
   { id: "pizza", name: "Pizza casera", emoji: "🍕", babySafety: "caution", babyNote: "Solo la miga, sin sal", category: "Especiales" },
   { id: "empanadas", name: "Empanadillas", emoji: "🥟", babySafety: "caution", babyNote: "Solo el relleno suave, no la masa", category: "Especiales" },
   { id: "bocadillo", name: "Bocadillo", emoji: "🥖", babySafety: "caution", babyNote: "Pan con gluten, relleno sin sal", category: "Especiales" },

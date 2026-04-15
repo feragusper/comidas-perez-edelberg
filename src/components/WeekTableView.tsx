@@ -200,13 +200,14 @@ export function WeekTableView({
               {plan.map((d, idx) => {
                 const isToday = todayIdx === idx;
                 const isPast = todayIdx !== -1 && idx < todayIdx;
-                const hasPasta = d.day === "Domingo" && !d.isDelivery && d.dinner?.id === SUNDAY_DINNER.id;
+                const isDel = isDeliveryMeal(d.dinner);
+                const isPasta = d.dinner?.id === "pasta-domingo" || d.dinner?.id === "pasta";
                 return (
                   <th
                     key={d.day}
                     className={cn(
                       "border-b border-r last:border-r-0 border-border px-2 py-2 text-center transition-all",
-                      isToday ? "bg-primary/10" : isPast ? "bg-muted/20" : "bg-muted/40",
+                      isDel ? "bg-warning/10" : isToday ? "bg-primary/10" : isPast ? "bg-muted/20" : "bg-muted/40",
                       isPast && "opacity-50"
                     )}
                   >
@@ -214,14 +215,14 @@ export function WeekTableView({
                       <div className="flex items-center gap-1 justify-center">
                         <span
                           className={cn("text-xs font-bold uppercase tracking-wider",
-                            isToday ? "text-primary" : "text-foreground"
+                            isDel ? "text-warning" : isToday ? "text-primary" : "text-foreground"
                           )}
                           style={{ fontFamily: "Fraunces, serif" }}
                         >
                           {SHORT_DAYS[d.day] ?? d.day}
                         </span>
-                        {hasPasta && <span className="text-[11px] leading-none" title="Noche de pasta">🍝</span>}
-                        {d.isDelivery && <span className="text-[11px] leading-none" title="Noche de delivery">🛵</span>}
+                        {isPasta && !isDel && <span className="text-[11px] leading-none" title="Noche de pasta">🍝</span>}
+                        {isDel && <span className="text-[11px] leading-none" title="Noche de delivery">🛵</span>}
                       </div>
                       {isToday && (
                         <span className="text-[9px] font-semibold uppercase tracking-wider px-1 py-0 rounded-full bg-primary text-primary-foreground leading-4">

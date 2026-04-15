@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { DayPlan } from "@/hooks/useMealPlan";
-import { Meal, BabySafety, SUNDAY_DINNER, DELIVERY_DINNER } from "@/data/meals";
+import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { Meal, BabySafety, SUNDAY_DINNER } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,6 @@ interface DayCardProps {
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;
-  onToggleDelivery: () => void;
   onSetLunch: (meal: Meal | null) => void;
   onSetLunchSide: (meal: Meal | null) => void;
   onSetLunchNote: (note: string) => void;
@@ -122,13 +121,18 @@ function MealDisplay({
   isBaby?: boolean;
   showSide?: boolean;
 }) {
+  const isDelivery = isDeliveryMeal(meal);
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-start gap-2">
         <span className="text-xl">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">{meal.name}</p>
-          {babySafety && meal.babySafety !== "unsafe" && (
+          <p className={cn("text-sm font-medium", isDelivery ? "text-warning" : "text-foreground")}>{meal.name}</p>
+          {isDelivery && (
+            <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
+          )}
+          {!isDelivery && babySafety && meal.babySafety !== "unsafe" && (
             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-0.5", safetyBg[meal.babySafety])}>
               {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
             </span>
@@ -139,8 +143,8 @@ function MealDisplay({
         </button>
       </div>
 
-      {/* Side dish */}
-      {showSide && (
+      {/* Side dish — hide for delivery */}
+      {showSide && !isDelivery && (
         <div className="pl-8">
           {side ? (
             <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
@@ -166,7 +170,11 @@ function MealDisplay({
 
       {/* Note + change */}
       <div className="flex items-center gap-2 pl-8">
-        <NoteInput value={note} onChange={onChangeNote} placeholder="Agregar detalle..." />
+        <NoteInput
+          value={note}
+          onChange={onChangeNote}
+          placeholder={isDelivery ? "¿Qué vas a pedir?" : "Agregar detalle..."}
+        />
         <button onClick={onChangeMeal} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
           Cambiar
         </button>
@@ -181,7 +189,7 @@ export function DayCard({
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
   extraMeals = [], onCustomMeal,
-  onSetDinner, onSetDinnerSide, onSetDinnerNote, onToggleDelivery,
+  onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
@@ -189,7 +197,8 @@ export function DayCard({
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
   const isSunday = dayPlan.day === "Domingo";
-  const isDelivery = dayPlan.isDelivery;
+  const isDelivery = isDeliveryMeal(dayPlan.dinner);
+  const isPasta = dayPlan.dinner?.id === "pasta-domingo" || dayPlan.dinner?.id === "pasta";
 
   const handlePickerSelect = (meal: Meal) => {
     if (pickerStep === "main") {
@@ -197,8 +206,12 @@ export function DayCard({
       else if (pickerTarget === "lunch") onSetLunch(meal);
       else if (pickerTarget === "babyDinner") onSetBabyDinner(meal);
       else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
-      // All targets proceed to side step
-      setPickerStep("side");
+      // Skip side step for delivery
+      if (isDeliveryMeal(meal)) {
+        setPickerTarget(null);
+      } else {
+        setPickerStep("side");
+      }
     } else {
       if (pickerTarget === "dinner") onSetDinnerSide(meal);
       else if (pickerTarget === "lunch") onSetLunchSide(meal);
@@ -248,11 +261,8 @@ export function DayCard({
               style={{ fontFamily: 'Fraunces, serif' }}>
               {dayPlan.day}
             </span>
-            {/* Day type indicators */}
             {isDelivery && <span className="text-base leading-none">🛵</span>}
-            {isSunday && !isDelivery && dayPlan.dinner?.id === SUNDAY_DINNER.id && (
-              <span className="text-base leading-none" title="Noche de pasta">🍝</span>
-            )}
+            {isPasta && !isDelivery && <span className="text-base leading-none" title="Noche de pasta">🍝</span>}
             {isToday && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
                 Hoy
@@ -350,49 +360,9 @@ export function DayCard({
                 <span className={cn("text-xs font-semibold uppercase tracking-wider", isDelivery ? "text-warning" : "text-primary")}>
                   {isDelivery ? "🛵 Delivery" : "🌙 Cena"}
                 </span>
-                {isSunday && !isDelivery && (
-                  <span className="text-xs text-muted-foreground italic flex items-center gap-1">
-                    <Lock size={10} /> sugerido: pasta
-                  </span>
-                )}
-                {/* Delivery toggle */}
-                {!isSunday && (
-                  <button
-                    onClick={onToggleDelivery}
-                    className={cn(
-                      "ml-auto flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border transition-all",
-                      isDelivery
-                        ? "bg-warning/20 border-warning/50 text-warning font-medium"
-                        : "border-dashed border-muted-foreground/30 text-muted-foreground hover:border-warning/50 hover:text-warning"
-                    )}
-                    title={isDelivery ? "Quitar delivery" : "Marcar como noche de delivery"}
-                  >
-                    🛵 {isDelivery ? "Quitar delivery" : "Delivery"}
-                  </button>
-                )}
               </div>
 
-              {/* Delivery mode: simple display */}
-              {isDelivery ? (
-                <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">🛵</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-warning">Noche de delivery</p>
-                      <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
-                    </div>
-                    <button
-                      onClick={onToggleDelivery}
-                      className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                      title="Cancelar delivery"
-                    >
-                      <X size={13} />
-                    </button>
-                  </div>
-                  <NoteInput value={dayPlan.dinnerNote} onChange={onSetDinnerNote} placeholder="¿Qué vas a pedir?" />
-                </div>
-              ) : (
-              /* Adults dinner */
+              {/* Adults dinner */}
               <DraggableMealSlot droppableId={`${dayIndex}-dinner`} hasMeal={!!dayPlan.dinner}>
                 {dayPlan.dinner ? (
                   <div className="space-y-1">
@@ -405,11 +375,6 @@ export function DayCard({
                       onRemoveSide={() => onSetDinnerSide(null)}
                       babySafety showSide
                     />
-                    {isSunday && dayPlan.dinner.id !== SUNDAY_DINNER.id && (
-                      <button onClick={() => onSetDinner(SUNDAY_DINNER)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-sunday-accent transition-colors pl-8">
-                        <RotateCcw size={11} /> Restaurar pasta
-                      </button>
-                    )}
                   </div>
                 ) : dinnerSuggestion ? (
                   /* ── Suggested dinner + side chip ── */
@@ -469,12 +434,10 @@ export function DayCard({
                     onClick={() => openMainPicker("dinner")}
                     className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-border rounded-xl p-3 hover:border-primary/50 hover:text-primary hover:bg-dinner-bg transition-all"
                   >
-                    <Plus size={16} />
-                    {isSunday ? "Elegir cena (sugerido: pasta)" : "Elegir cena"}
+                    <Plus size={16} /> Elegir cena
                   </button>
                 )}
               </DraggableMealSlot>
-              )}
 
               {/* Nico dinner */}
               <div className="border-t border-primary/15 pt-2">

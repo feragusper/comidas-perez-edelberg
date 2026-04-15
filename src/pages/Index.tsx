@@ -30,7 +30,7 @@ export default function Index() {
     setExpandedDays(Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx));
   }, [activeWeek]);
   const {
-    plan,
+    plan, loading,
     setDinner, setDinnerSide, setDinnerNote, toggleDelivery,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,

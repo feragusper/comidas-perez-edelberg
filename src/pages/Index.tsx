@@ -5,7 +5,7 @@ import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
+import { RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
@@ -34,8 +34,6 @@ export default function Index() {
     plan, loading,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
-    setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
-    setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     resetPlan, swapSlots,
   } = useMealPlan(activeWeek);
 
@@ -60,8 +58,6 @@ export default function Index() {
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;
-  const babyDinners = plan.filter((d) => d.babyDinner !== null).length;
-  const babyLunches = plan.filter((d) => d.babyLunch !== null).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,25 +112,13 @@ export default function Index() {
 
         {/* Stats bar */}
         <div className="mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap max-w-5xl">
-          {/* Nosotros */}
-          <span className="text-muted-foreground font-medium">Nosotros:</span>
+          <span className="text-muted-foreground font-medium">Plan:</span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{adultDinners}</span>/7 cenas
           </span>
           <span className="text-muted-foreground">·</span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{adultLunches}</span>/7 almuerzos
-          </span>
-          <span className="text-muted-foreground mx-1">|</span>
-          {/* Nico */}
-          <Baby size={13} className="text-baby-safe" />
-          <span className="text-muted-foreground font-medium">Nico:</span>
-          <span className="text-muted-foreground">
-            <span className="font-semibold text-baby-safe">{babyDinners}</span>/7 cenas
-          </span>
-          <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">
-            <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
           </span>
           <div className="ml-auto flex items-center gap-2">
             <Link to="/mis-comidas" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
@@ -194,16 +178,6 @@ export default function Index() {
                   onSetLunchNote={(note) => setLunchNote(idx, note)}
                   onHideLunch={() => hideLunch(idx)}
                   onResetLunch={() => resetLunch(idx)}
-                  onSetBabyDinner={(meal) => setBabyDinner(idx, meal)}
-                  onSetBabyDinnerSide={(meal) => setBabyDinnerSide(idx, meal)}
-                  onSetBabyDinnerNote={(note) => setBabyDinnerNote(idx, note)}
-                  onHideBabyDinner={() => hideBabyDinner(idx)}
-                  onResetBabyDinner={() => resetBabyDinner(idx)}
-                  onSetBabyLunch={(meal) => setBabyLunch(idx, meal)}
-                  onSetBabyLunchSide={(meal) => setBabyLunchSide(idx, meal)}
-                  onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
-                  onHideBabyLunch={() => hideBabyLunch(idx)}
-                  onResetBabyLunch={() => resetBabyLunch(idx)}
                   extraMeals={customMeals}
                   onCustomMeal={saveCustomMeal}
                 />
@@ -220,12 +194,6 @@ export default function Index() {
                 onSetLunch={setLunch}
                 onSetLunchSide={setLunchSide}
                 onSetLunchNote={setLunchNote}
-                onSetBabyDinner={setBabyDinner}
-                onSetBabyDinnerSide={setBabyDinnerSide}
-                onSetBabyDinnerNote={setBabyDinnerNote}
-                onSetBabyLunch={setBabyLunch}
-                onSetBabyLunchSide={setBabyLunchSide}
-                onSetBabyLunchNote={setBabyLunchNote}
                 extraMeals={customMeals}
                 onCustomMeal={saveCustomMeal}
               />

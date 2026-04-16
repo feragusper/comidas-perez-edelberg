@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
-import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
+import { MealPicker, PickerStep } from "./MealPicker";
+import { Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
-type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
+type SlotKey = "lunch" | "dinner";
 
 interface WeekTableViewProps {
   plan: DayPlan[];
@@ -19,12 +19,6 @@ interface WeekTableViewProps {
   onSetLunch: (i: number, meal: Meal | null) => void;
   onSetLunchSide: (i: number, meal: Meal | null) => void;
   onSetLunchNote: (i: number, note: string) => void;
-  onSetBabyDinner: (i: number, meal: Meal | null) => void;
-  onSetBabyDinnerSide: (i: number, meal: Meal | null) => void;
-  onSetBabyDinnerNote: (i: number, note: string) => void;
-  onSetBabyLunch: (i: number, meal: Meal | null) => void;
-  onSetBabyLunchSide: (i: number, meal: Meal | null) => void;
-  onSetBabyLunchNote: (i: number, note: string) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -35,30 +29,24 @@ const SHORT_DAYS: Record<string, string> = {
 const ROWS: {
   slot: SlotKey;
   label: string;
-  isBaby: boolean;
   headerBg: string;
   headerText: string;
   cellBg: string;
   borderColor: string;
 }[] = [
-  { slot: "lunch",      label: "☀ Almuerzo",    isBaby: false, headerBg: "bg-lunch-bg",      headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
-  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",   headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
-  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",     headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
-  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
+  { slot: "lunch",  label: "☀ Almuerzo", headerBg: "bg-lunch-bg",      headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
+  { slot: "dinner", label: "🌙 Cena",     headerBg: "bg-dinner-bg",     headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
 ];
 
 function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; note: string } {
-  if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      note: d.lunchNote };
-  if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  note: d.babyLunchNote };
-  if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     note: d.dinnerNote };
-  /* babyDinner */           return { meal: d.babyDinner, side: d.babyDinnerSide, note: d.babyDinnerNote };
+  if (slot === "lunch")  return { meal: d.lunch,  side: d.lunchSide,  note: d.lunchNote };
+  return { meal: d.dinner, side: d.dinnerSide, note: d.dinnerNote };
 }
 
 interface CellProps {
   meal: Meal | null;
   side: Meal | null;
   note: string;
-  isBaby: boolean;
   onPickMain: () => void;
   onPickSide: () => void;
   onRemove: () => void;
@@ -66,8 +54,8 @@ interface CellProps {
   onChangeNote: (v: string) => void;
 }
 
-function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote }: CellProps) {
-  const textColor = isBaby ? "text-baby-safe" : "text-foreground";
+function EditableCell({ meal, side, note, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote }: CellProps) {
+  const textColor = "text-foreground";
 
   if (!meal) {
     return (
@@ -140,8 +128,6 @@ export function WeekTableView({
   onCustomMeal,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote,
-  onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
-  onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -156,22 +142,16 @@ export function WeekTableView({
   const closePicker = () => { setPickerDay(null); setPickerSlot(null); };
 
   const getMainSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
-    if (slot === "lunch")      onSetLunch(i, meal);
-    if (slot === "babyLunch")  onSetBabyLunch(i, meal);
-    if (slot === "dinner")     onSetDinner(i, meal);
-    if (slot === "babyDinner") onSetBabyDinner(i, meal);
+    if (slot === "lunch")  onSetLunch(i, meal);
+    if (slot === "dinner") onSetDinner(i, meal);
   };
   const getSideSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
-    if (slot === "lunch")      onSetLunchSide(i, meal);
-    if (slot === "babyLunch")  onSetBabyLunchSide(i, meal);
-    if (slot === "dinner")     onSetDinnerSide(i, meal);
-    if (slot === "babyDinner") onSetBabyDinnerSide(i, meal);
+    if (slot === "lunch")  onSetLunchSide(i, meal);
+    if (slot === "dinner") onSetDinnerSide(i, meal);
   };
   const getNoteSetter = (slot: SlotKey, i: number) => (note: string) => {
-    if (slot === "lunch")      onSetLunchNote(i, note);
-    if (slot === "babyLunch")  onSetBabyLunchNote(i, note);
-    if (slot === "dinner")     onSetDinnerNote(i, note);
-    if (slot === "babyDinner") onSetBabyDinnerNote(i, note);
+    if (slot === "lunch")  onSetLunchNote(i, note);
+    if (slot === "dinner") onSetDinnerNote(i, note);
   };
 
   const handlePickerSelect = (meal: Meal) => {
@@ -185,8 +165,7 @@ export function WeekTableView({
     }
   };
 
-  const pickerMode: PickerMode = (pickerSlot === "babyDinner" || pickerSlot === "babyLunch") ? "baby" : "adult";
-  const pickerPrevDinner = (pickerSlot === "lunch" || pickerSlot === "babyLunch") && pickerDay !== null && pickerDay > 0
+  const pickerPrevDinner = (pickerSlot === "lunch") && pickerDay !== null && pickerDay > 0
     ? plan[pickerDay - 1].dinner
     : null;
 
@@ -240,7 +219,6 @@ export function WeekTableView({
               <tr key={row.slot}>
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">
-                    {row.isBaby && <Baby size={11} className="text-baby-safe shrink-0" />}
                     <span className={cn("text-xs font-semibold whitespace-nowrap", row.headerText)}>{row.label}</span>
                   </div>
                 </td>
@@ -279,7 +257,7 @@ export function WeekTableView({
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <EditableCell
-                                          meal={meal} side={side} note={note} isBaby={row.isBaby}
+                                          meal={meal} side={side} note={note}
                                           onPickMain={() => openMain(idx, row.slot)}
                                           onPickSide={() => openSide(idx, row.slot)}
                                           onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
@@ -293,7 +271,7 @@ export function WeekTableView({
                               </Draggable>
                             ) : (
                               <EditableCell
-                                meal={null} side={null} note="" isBaby={row.isBaby}
+                                meal={null} side={null} note=""
                                 onPickMain={() => openMain(idx, row.slot)}
                                 onPickSide={() => openSide(idx, row.slot)}
                                 onRemove={() => {}}
@@ -316,7 +294,6 @@ export function WeekTableView({
 
       {pickerDay !== null && pickerSlot && (
         <MealPicker
-          mode={pickerMode}
           step={pickerStep}
           prevDinner={pickerPrevDinner}
           extraMeals={extraMeals}

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils } from "lucide-react";
+import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ interface MealCount {
   category: string;
 }
 
-type Section = "dinners" | "lunches";
+type Section = "dinners" | "lunches" | "babyDinners" | "babyLunches";
 
 function extractMeals(plans: DayPlan[][], getter: (d: DayPlan) => Meal | null): MealCount[] {
   const map = new Map<string, MealCount>();
@@ -44,19 +44,25 @@ function categoryBreakdown(meals: MealCount[]): { category: string; count: numbe
     .sort((a, b) => b.count - a.count);
 }
 
-const SECTION_CONFIG: Record<Section, { label: string; icon: typeof Utensils }> = {
+const SECTION_CONFIG: Record<Section, { label: string; icon: typeof Utensils; baby?: boolean }> = {
   dinners: { label: "Cenas", icon: Utensils },
   lunches: { label: "Almuerzos", icon: Utensils },
+  babyDinners: { label: "Cenas bebé", icon: Baby, baby: true },
+  babyLunches: { label: "Almuerzos bebé", icon: Baby, baby: true },
 };
 
 const GETTERS: Record<Section, (d: DayPlan) => Meal | null> = {
   dinners: (d) => d.dinner,
   lunches: (d) => d.lunch,
+  babyDinners: (d) => d.babyDinner,
+  babyLunches: (d) => d.babyLunch,
 };
 
 const BAR_COLORS: Record<Section, string> = {
   dinners: "bg-primary",
   lunches: "bg-primary/70",
+  babyDinners: "bg-baby-safe",
+  babyLunches: "bg-baby-safe/70",
 };
 
 export default function Reports() {

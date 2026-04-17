@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { Meal, MEALS, MEAL_CATEGORIES } from "@/data/meals";
+import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
-import { X, Search, ChefHat, Leaf } from "lucide-react";
+import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
+export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";
 export type DietFilter = "all" | "keto";
 
 interface MealPickerProps {
+  mode: PickerMode;
   step: PickerStep;
   prevDinner?: Meal | null;
   extraMeals?: Meal[];
@@ -15,6 +17,18 @@ interface MealPickerProps {
   onClose: () => void;
   onSkipSide?: () => void;
 }
+
+const safetyColors: Record<BabySafety, string> = {
+  safe: "text-baby-safe bg-baby-safe-bg border-baby-safe/30",
+  caution: "text-baby-caution bg-baby-caution-bg border-baby-caution/30",
+  unsafe: "text-destructive bg-destructive/10 border-destructive/30",
+};
+
+const safetyLabel: Record<BabySafety, string> = {
+  safe: "✓ Apto",
+  caution: "⚠ Cuidado",
+  unsafe: "✗ No apto",
+};
 
 const FOOD_EMOJIS = [
   "🍽️", "🍗", "🥩", "🍖", "🥓", "🌭", "🍔", "🍟", "🍕", "🫓",
@@ -25,7 +39,7 @@ const FOOD_EMOJIS = [
   "🥐", "🧇", "🥞", "🍳", "🫙", "🥣", "🧆", "🥙", "🫛",
 ];
 
-export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
@@ -37,6 +51,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const isBaby = mode === "baby";
   const isSide = step === "side";
 
   // Merge static + custom meals, deduplicating by id
@@ -46,7 +61,8 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
   ];
 
   const pool = allMeals.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
-  const dietFiltered = dietFilter === "keto" ? pool.filter((m) => m.isKeto) : pool;
+  const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
+  const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
   const filtered = dietFiltered.filter((m) =>
     m.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -78,7 +94,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
     ? "Elegir ícono"
     : isSide
     ? "Elegir guarnición"
-    : "Elegir comida principal";
+    : isBaby ? "Comida de Nico" : "Elegir comida principal";
 
   const openEmojiPicker = () => {
     setCustomEmojiPicker(search.trim());
@@ -164,7 +180,9 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-3">
           <div className="flex items-center gap-2">
-            {isSide
+            {isBaby
+              ? <Baby size={18} className="text-baby-safe" />
+              : isSide
               ? <span className="text-base">🥗</span>
               : <ChefHat size={18} className="text-primary" />
             }
@@ -177,8 +195,8 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
           </button>
         </div>
 
-        {/* Diet filter (only for main) */}
-        {!isSide && (
+        {/* Diet filter (only for main/adult) */}
+        {!isBaby && !isSide && (
           <div className="px-5 pb-3 flex gap-2">
             <button
               onClick={() => setDietFilter("all")}
@@ -268,7 +286,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                  ♻️ Con lo de anoche
+                  {isBaby ? "🍼 Adaptado de lo de anoche" : "♻️ Con lo de anoche"}
                 </span>
                 <span className="text-xs text-muted-foreground">
                   (basado en: {prevDinner?.name})
@@ -276,7 +294,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
               </div>
               <div className="space-y-2">
                 {prevRelated.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} />
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
             </div>
@@ -288,7 +306,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">⭐ Mis comidas</p>
               <div className="space-y-2">
                 {customPool.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} />
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
             </div>
@@ -300,7 +318,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
               <div className="space-y-2">
                 {meals.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} />
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
             </div>
@@ -312,7 +330,7 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Guarniciones</p>
               <div className="space-y-2">
                 {filtered.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} />
+                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
             </div>
@@ -324,10 +342,11 @@ export function MealPicker({ step, prevDinner, extraMeals = [], onSelect, onCust
   );
 }
 
-function MealRow({ meal, onSelect, onClose }: {
+function MealRow({ meal, onSelect, onClose, isBaby }: {
   meal: Meal;
   onSelect: (m: Meal) => void;
   onClose: () => void;
+  isBaby: boolean;
 }) {
   return (
     <button
@@ -345,7 +364,18 @@ function MealRow({ meal, onSelect, onClose }: {
               </span>
             )}
           </div>
+          {isBaby && meal.babyNote && (
+            <div className="flex items-center gap-1 mt-1">
+              <Baby size={11} className="text-baby-safe shrink-0" />
+              <p className="text-xs text-muted-foreground">{meal.babyNote}</p>
+            </div>
+          )}
         </div>
+        {isBaby && (
+          <span className={cn("shrink-0 text-xs px-2 py-0.5 rounded-full border font-medium", safetyColors[meal.babySafety])}>
+            {safetyLabel[meal.babySafety]}
+          </span>
+        )}
       </div>
     </button>
   );

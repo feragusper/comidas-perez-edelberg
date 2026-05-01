@@ -277,6 +277,15 @@ export function DayCard({
 
         {expanded && (
           <div className="p-4 space-y-3">
+            {/* ── BREAKFAST (simple text) ── */}
+            <SimpleMealInput
+              icon="🥐"
+              label="Desayuno"
+              accent="text-amber-700"
+              value={dayPlan.breakfast}
+              onChange={onSetBreakfast}
+            />
+
             {/* ── LUNCH ── */}
             <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-3">
               <div className="flex items-center gap-2">

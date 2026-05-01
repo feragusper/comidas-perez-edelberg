@@ -368,7 +368,6 @@ export function WeekTableView({
                   );
                 })}
               </tr>
-              </>
             ))}
           </tbody>
         </table>

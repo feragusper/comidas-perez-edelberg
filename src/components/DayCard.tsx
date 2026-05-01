@@ -120,6 +120,7 @@ function SimpleMealInput({ icon, label, accent, value, onChange }: { icon: strin
       />
     </div>
   );
+}
 
 function MealDisplay({
   meal, side, note,

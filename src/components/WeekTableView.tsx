@@ -135,6 +135,47 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
   );
 }
 
+function SimpleTextRow({ icon, label, accent, headerBg, cellBg, plan, todayIdx, getValue, onChange }: {
+  icon: string; label: string; accent: string; headerBg: string; cellBg: string;
+  plan: DayPlan[]; todayIdx: number;
+  getValue: (d: DayPlan) => string;
+  onChange: (i: number, v: string) => void;
+}) {
+  return (
+    <tr>
+      <td className={cn("px-3 py-2 border-r border-b border-border", headerBg)}>
+        <div className="flex items-center gap-1">
+          <span className="text-sm">{icon}</span>
+          <span className={cn("text-xs font-semibold whitespace-nowrap", accent)}>{label}</span>
+        </div>
+      </td>
+      {plan.map((d, idx) => {
+        const isToday = todayIdx === idx;
+        const isPast = todayIdx !== -1 && idx < todayIdx;
+        return (
+          <td
+            key={d.day}
+            className={cn(
+              "px-2 py-1.5 border-r border-b last:border-r-0 border-border align-middle min-w-[100px] transition-all",
+              cellBg,
+              isToday && "ring-inset ring-1 ring-primary/30",
+              isPast && "opacity-40"
+            )}
+          >
+            <input
+              type="text"
+              value={getValue(d)}
+              onChange={(e) => onChange(idx, e.target.value)}
+              placeholder="—"
+              className="w-full text-xs bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/30 text-foreground py-0.5"
+            />
+          </td>
+        );
+      })}
+    </tr>
+  );
+}
+
 export function WeekTableView({
   plan,
   todayIdx = -1,

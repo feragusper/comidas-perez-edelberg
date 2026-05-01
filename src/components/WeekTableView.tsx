@@ -6,7 +6,7 @@ import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
-type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
+type SlotKey = "breakfast" | "lunch" | "babyLunch" | "snack" | "dinner" | "babyDinner";
 
 interface WeekTableViewProps {
   plan: DayPlan[];
@@ -25,8 +25,10 @@ interface WeekTableViewProps {
   onSetBabyLunch: (i: number, meal: Meal | null) => void;
   onSetBabyLunchSide: (i: number, meal: Meal | null) => void;
   onSetBabyLunchNote: (i: number, note: string) => void;
-  onSetBreakfast: (i: number, v: string) => void;
-  onSetSnack: (i: number, v: string) => void;
+  onSetBreakfast: (i: number, meal: Meal | null) => void;
+  onSetBreakfastNote: (i: number, v: string) => void;
+  onSetSnack: (i: number, meal: Meal | null) => void;
+  onSetSnackNote: (i: number, v: string) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -42,14 +44,19 @@ const ROWS: {
   headerText: string;
   cellBg: string;
   borderColor: string;
+  icon?: string;
 }[] = [
-  { slot: "lunch",      label: "☀ Almuerzo",    isBaby: false, headerBg: "bg-lunch-bg",      headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
-  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",   headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
-  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",     headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
-  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
+  { slot: "breakfast",  label: "Desayuno",        isBaby: false, headerBg: "bg-amber-50/60",  headerText: "text-amber-700",  cellBg: "bg-amber-50/20",  borderColor: "border-amber-200/30", icon: "🥐" },
+  { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-lunch-bg",     headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
+  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
+  { slot: "snack",      label: "Merienda",        isBaby: false, headerBg: "bg-rose-50/60",   headerText: "text-rose-700",   cellBg: "bg-rose-50/20",   borderColor: "border-rose-200/30",  icon: "🫖" },
+  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",    headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
+  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
 ];
 
 function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; note: string } {
+  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             note: d.breakfastNote };
+  if (slot === "snack")      return { meal: d.snack,      side: null,             note: d.snackNote };
   if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      note: d.lunchNote };
   if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  note: d.babyLunchNote };
   if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     note: d.dinnerNote };

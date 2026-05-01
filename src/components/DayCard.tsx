@@ -40,8 +40,10 @@ interface DayCardProps {
   onSetBabyLunchNote: (note: string) => void;
   onHideBabyLunch: () => void;
   onResetBabyLunch: () => void;
-  onSetBreakfast: (v: string) => void;
-  onSetSnack: (v: string) => void;
+  onSetBreakfast: (meal: Meal | null) => void;
+  onSetBreakfastNote: (note: string) => void;
+  onSetSnack: (meal: Meal | null) => void;
+  onSetSnackNote: (note: string) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -56,7 +58,7 @@ const safetyIcon: Record<BabySafety, string> = {
   unsafe: "✗",
 };
 
-type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | null;
+type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack" | null;
 
 function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: string; hasMeal: boolean; children: React.ReactNode }) {
   return (
@@ -106,18 +108,50 @@ function NoteInput({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
-function SimpleMealInput({ icon, label, accent, value, onChange }: { icon: string; label: string; accent: string; value: string; onChange: (v: string) => void }) {
+function SimpleMealSlot({
+  icon, label, accent, bgClass, borderClass,
+  meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
+}: {
+  icon: string; label: string; accent: string; bgClass: string; borderClass: string;
+  meal: Meal | null; note: string;
+  onPickMain: () => void;
+  onChangeNote: (v: string) => void;
+  onRemove: () => void;
+  droppableId: string;
+  dayIndex: number;
+}) {
   return (
-    <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/60 flex items-center gap-2">
-      <span className="text-base shrink-0">{icon}</span>
-      <span className={cn("text-xs font-semibold uppercase tracking-wider shrink-0", accent)}>{label}</span>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="¿Qué comemos?"
-        className="flex-1 min-w-0 text-sm bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5"
-      />
+    <div className={cn("rounded-xl px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
+      <div className="flex items-center gap-2">
+        <span className="text-base">{icon}</span>
+        <span className={cn("text-xs font-semibold uppercase tracking-wider", accent)}>{label}</span>
+      </div>
+      <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal}>
+        {meal ? (
+          <div className="flex items-center gap-2">
+            <span className="text-lg shrink-0">{meal.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">{meal.name}</p>
+              <div className="flex items-center gap-2">
+                <NoteInput value={note} onChange={onChangeNote} placeholder="Detalle..." />
+                <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+                  Cambiar
+                </button>
+              </div>
+            </div>
+            <button onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+              <Trash2 size={13} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onPickMain}
+            className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-border rounded-lg px-3 py-2 hover:border-primary/50 hover:text-primary hover:bg-muted/40 transition-all"
+          >
+            <Plus size={13} /> Elegir
+          </button>
+        )}
+      </DraggableMealSlot>
     </div>
   );
 }

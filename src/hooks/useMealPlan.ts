@@ -112,8 +112,10 @@ const buildInitialPlan = (): DayPlan[] => {
     babyLunchNote: "",
     babyLunchOverridden: false,
     babyLunchHidden: false,
-    breakfast: "",
-    snack: "",
+    breakfast: null,
+    breakfastNote: "",
+    snack: null,
+    snackNote: "",
     notes: "",
   }));
 };

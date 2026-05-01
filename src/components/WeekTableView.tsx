@@ -239,7 +239,33 @@ export function WeekTableView({
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row) => (
+            <SimpleTextRow
+              icon="🥐"
+              label="Desayuno"
+              accent="text-amber-700"
+              headerBg="bg-amber-50/60"
+              cellBg="bg-amber-50/20"
+              plan={plan}
+              todayIdx={todayIdx}
+              getValue={(d) => d.breakfast}
+              onChange={onSetBreakfast}
+            />
+            {ROWS.map((row, rowIdx) => (
+              <>
+              {row.slot === "dinner" && (
+                <SimpleTextRow
+                  key="snack-row"
+                  icon="🫖"
+                  label="Merienda"
+                  accent="text-rose-700"
+                  headerBg="bg-rose-50/60"
+                  cellBg="bg-rose-50/20"
+                  plan={plan}
+                  todayIdx={todayIdx}
+                  getValue={(d) => d.snack}
+                  onChange={onSetSnack}
+                />
+              )}
               <tr key={row.slot}>
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">

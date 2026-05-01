@@ -411,7 +411,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
-    setBreakfast, setSnack,
+    setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     setNotes,
     swapSlots,
     resetPlan,

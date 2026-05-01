@@ -23,6 +23,8 @@ export interface DayPlan {
   babyLunchNote: string;
   babyLunchOverridden: boolean;
   babyLunchHidden: boolean;
+  breakfast: string;
+  snack: string;
   notes: string;
 }
 
@@ -108,6 +110,8 @@ const buildInitialPlan = (): DayPlan[] => {
     babyLunchNote: "",
     babyLunchOverridden: false,
     babyLunchHidden: false,
+    breakfast: "",
+    snack: "",
     notes: "",
   }));
 };
@@ -195,6 +199,8 @@ export function useMealPlan(weekKey: WeekKey) {
               babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
               babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
               babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
+              breakfast: day.breakfast ?? "",
+              snack: day.snack ?? "",
             } as DayPlan;
           });
           setPlan(migrated);
@@ -341,6 +347,8 @@ export function useMealPlan(weekKey: WeekKey) {
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
   const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
+  const setBreakfast = (i: number, breakfast: string) => update(i, { breakfast });
+  const setSnack = (i: number, snack: string) => update(i, { snack });
 
   type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch";
 
@@ -394,6 +402,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
+    setBreakfast, setSnack,
     setNotes,
     swapSlots,
     resetPlan,

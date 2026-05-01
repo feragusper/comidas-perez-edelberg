@@ -40,6 +40,8 @@ interface DayCardProps {
   onSetBabyLunchNote: (note: string) => void;
   onHideBabyLunch: () => void;
   onResetBabyLunch: () => void;
+  onSetBreakfast: (v: string) => void;
+  onSetSnack: (v: string) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -101,6 +103,22 @@ function NoteInput({ value, onChange, placeholder }: { value: string; onChange: 
       placeholder={placeholder ?? "Agregar detalle..."}
       className="flex-1 min-w-0 text-xs bg-transparent border-0 border-b border-border focus:border-primary/50 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5 transition-colors"
     />
+  );
+}
+
+function SimpleMealInput({ icon, label, accent, value, onChange }: { icon: string; label: string; accent: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/60 flex items-center gap-2">
+      <span className="text-base shrink-0">{icon}</span>
+      <span className={cn("text-xs font-semibold uppercase tracking-wider shrink-0", accent)}>{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="¿Qué comemos?"
+        className="flex-1 min-w-0 text-sm bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5"
+      />
+    </div>
   );
 }
 
@@ -193,6 +211,7 @@ export function DayCard({
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
+  onSetBreakfast, onSetSnack,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
@@ -274,6 +293,15 @@ export function DayCard({
 
         {expanded && (
           <div className="p-4 space-y-3">
+            {/* ── BREAKFAST (simple text) ── */}
+            <SimpleMealInput
+              icon="🥐"
+              label="Desayuno"
+              accent="text-amber-700"
+              value={dayPlan.breakfast}
+              onChange={onSetBreakfast}
+            />
+
             {/* ── LUNCH ── */}
             <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-3">
               <div className="flex items-center gap-2">
@@ -350,6 +378,15 @@ export function DayCard({
                 </DraggableMealSlot>
               </div>
             </div>
+
+            {/* ── SNACK (simple text) ── */}
+            <SimpleMealInput
+              icon="🫖"
+              label="Merienda"
+              accent="text-rose-700"
+              value={dayPlan.snack}
+              onChange={onSetSnack}
+            />
 
             {/* ── DINNER ── */}
             <div className={cn(

@@ -25,6 +25,8 @@ interface WeekTableViewProps {
   onSetBabyLunch: (i: number, meal: Meal | null) => void;
   onSetBabyLunchSide: (i: number, meal: Meal | null) => void;
   onSetBabyLunchNote: (i: number, note: string) => void;
+  onSetBreakfast: (i: number, v: string) => void;
+  onSetSnack: (i: number, v: string) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -133,6 +135,47 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
   );
 }
 
+function SimpleTextRow({ icon, label, accent, headerBg, cellBg, plan, todayIdx, getValue, onChange }: {
+  icon: string; label: string; accent: string; headerBg: string; cellBg: string;
+  plan: DayPlan[]; todayIdx: number;
+  getValue: (d: DayPlan) => string;
+  onChange: (i: number, v: string) => void;
+}) {
+  return (
+    <tr>
+      <td className={cn("px-3 py-2 border-r border-b border-border", headerBg)}>
+        <div className="flex items-center gap-1">
+          <span className="text-sm">{icon}</span>
+          <span className={cn("text-xs font-semibold whitespace-nowrap", accent)}>{label}</span>
+        </div>
+      </td>
+      {plan.map((d, idx) => {
+        const isToday = todayIdx === idx;
+        const isPast = todayIdx !== -1 && idx < todayIdx;
+        return (
+          <td
+            key={d.day}
+            className={cn(
+              "px-2 py-1.5 border-r border-b last:border-r-0 border-border align-middle min-w-[100px] transition-all",
+              cellBg,
+              isToday && "ring-inset ring-1 ring-primary/30",
+              isPast && "opacity-40"
+            )}
+          >
+            <input
+              type="text"
+              value={getValue(d)}
+              onChange={(e) => onChange(idx, e.target.value)}
+              placeholder="—"
+              className="w-full text-xs bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/30 text-foreground py-0.5"
+            />
+          </td>
+        );
+      })}
+    </tr>
+  );
+}
+
 export function WeekTableView({
   plan,
   todayIdx = -1,
@@ -142,6 +185,7 @@ export function WeekTableView({
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
+  onSetBreakfast, onSetSnack,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -236,7 +280,33 @@ export function WeekTableView({
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((row) => (
+            <SimpleTextRow
+              icon="🥐"
+              label="Desayuno"
+              accent="text-amber-700"
+              headerBg="bg-amber-50/60"
+              cellBg="bg-amber-50/20"
+              plan={plan}
+              todayIdx={todayIdx}
+              getValue={(d) => d.breakfast}
+              onChange={onSetBreakfast}
+            />
+            {ROWS.map((row, rowIdx) => (
+              <>
+              {row.slot === "dinner" && (
+                <SimpleTextRow
+                  key="snack-row"
+                  icon="🫖"
+                  label="Merienda"
+                  accent="text-rose-700"
+                  headerBg="bg-rose-50/60"
+                  cellBg="bg-rose-50/20"
+                  plan={plan}
+                  todayIdx={todayIdx}
+                  getValue={(d) => d.snack}
+                  onChange={onSetSnack}
+                />
+              )}
               <tr key={row.slot}>
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">
@@ -309,6 +379,7 @@ export function WeekTableView({
                   );
                 })}
               </tr>
+              </>
             ))}
           </tbody>
         </table>

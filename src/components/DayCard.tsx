@@ -106,6 +106,21 @@ function NoteInput({ value, onChange, placeholder }: { value: string; onChange: 
   );
 }
 
+function SimpleMealInput({ icon, label, accent, value, onChange }: { icon: string; label: string; accent: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="rounded-xl bg-muted/30 px-3 py-2 border border-border/60 flex items-center gap-2">
+      <span className="text-base shrink-0">{icon}</span>
+      <span className={cn("text-xs font-semibold uppercase tracking-wider shrink-0", accent)}>{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="¿Qué comemos?"
+        className="flex-1 min-w-0 text-sm bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5"
+      />
+    </div>
+  );
+
 function MealDisplay({
   meal, side, note,
   onChangeNote, onRemove, onChangeMeal, onChangeSide, onRemoveSide,

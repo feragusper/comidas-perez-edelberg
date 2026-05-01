@@ -40,6 +40,8 @@ interface DayCardProps {
   onSetBabyLunchNote: (note: string) => void;
   onHideBabyLunch: () => void;
   onResetBabyLunch: () => void;
+  onSetBreakfast: (v: string) => void;
+  onSetSnack: (v: string) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -193,6 +195,7 @@ export function DayCard({
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
+  onSetBreakfast, onSetSnack,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");

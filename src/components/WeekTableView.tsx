@@ -192,7 +192,7 @@ export function WeekTableView({
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
-  onSetBreakfast, onSetSnack,
+  onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -207,6 +207,8 @@ export function WeekTableView({
   const closePicker = () => { setPickerDay(null); setPickerSlot(null); };
 
   const getMainSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
+    if (slot === "breakfast")  onSetBreakfast(i, meal);
+    if (slot === "snack")      onSetSnack(i, meal);
     if (slot === "lunch")      onSetLunch(i, meal);
     if (slot === "babyLunch")  onSetBabyLunch(i, meal);
     if (slot === "dinner")     onSetDinner(i, meal);
@@ -219,18 +221,27 @@ export function WeekTableView({
     if (slot === "babyDinner") onSetBabyDinnerSide(i, meal);
   };
   const getNoteSetter = (slot: SlotKey, i: number) => (note: string) => {
+    if (slot === "breakfast")  onSetBreakfastNote(i, note);
+    if (slot === "snack")      onSetSnackNote(i, note);
     if (slot === "lunch")      onSetLunchNote(i, note);
     if (slot === "babyLunch")  onSetBabyLunchNote(i, note);
     if (slot === "dinner")     onSetDinnerNote(i, note);
     if (slot === "babyDinner") onSetBabyDinnerNote(i, note);
   };
 
+  const slotHasSide = (slot: SlotKey | null) => slot !== "breakfast" && slot !== "snack";
+
   const handlePickerSelect = (meal: Meal) => {
     if (pickerDay === null || !pickerSlot) return;
     if (pickerStep === "main") {
       getMainSetter(pickerSlot, pickerDay)(meal);
-      setPickerStep("side");
+      if (slotHasSide(pickerSlot)) setPickerStep("side");
+      else closePicker();
     } else {
+      getSideSetter(pickerSlot, pickerDay)(meal);
+      closePicker();
+    }
+  };
       getSideSetter(pickerSlot, pickerDay)(meal);
       closePicker();
     }

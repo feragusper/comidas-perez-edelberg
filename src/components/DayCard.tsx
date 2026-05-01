@@ -245,7 +245,7 @@ export function DayCard({
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
-  onSetBreakfast, onSetSnack,
+  onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
@@ -259,6 +259,8 @@ export function DayCard({
       else if (pickerTarget === "lunch") onSetLunch(meal);
       else if (pickerTarget === "babyDinner") onSetBabyDinner(meal);
       else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
+      else if (pickerTarget === "breakfast") { onSetBreakfast(meal); setPickerTarget(null); return; }
+      else if (pickerTarget === "snack") { onSetSnack(meal); setPickerTarget(null); return; }
       // Skip side step for delivery
       if (isDeliveryMeal(meal)) {
         setPickerTarget(null);
@@ -327,13 +329,20 @@ export function DayCard({
 
         {expanded && (
           <div className="p-4 space-y-3">
-            {/* ── BREAKFAST (simple text) ── */}
-            <SimpleMealInput
+            {/* ── BREAKFAST ── */}
+            <SimpleMealSlot
               icon="🥐"
               label="Desayuno"
               accent="text-amber-700"
-              value={dayPlan.breakfast}
-              onChange={onSetBreakfast}
+              bgClass="bg-amber-50/40"
+              borderClass="border-amber-200/40"
+              meal={dayPlan.breakfast}
+              note={dayPlan.breakfastNote}
+              onPickMain={() => openMainPicker("breakfast")}
+              onChangeNote={onSetBreakfastNote}
+              onRemove={() => onSetBreakfast(null)}
+              droppableId={`${dayIndex}-breakfast`}
+              dayIndex={dayIndex}
             />
 
             {/* ── LUNCH ── */}
@@ -413,13 +422,20 @@ export function DayCard({
               </div>
             </div>
 
-            {/* ── SNACK (simple text) ── */}
-            <SimpleMealInput
+            {/* ── SNACK ── */}
+            <SimpleMealSlot
               icon="🫖"
               label="Merienda"
               accent="text-rose-700"
-              value={dayPlan.snack}
-              onChange={onSetSnack}
+              bgClass="bg-rose-50/40"
+              borderClass="border-rose-200/40"
+              meal={dayPlan.snack}
+              note={dayPlan.snackNote}
+              onPickMain={() => openMainPicker("snack")}
+              onChangeNote={onSetSnackNote}
+              onRemove={() => onSetSnack(null)}
+              droppableId={`${dayIndex}-snack`}
+              dayIndex={dayIndex}
             />
 
             {/* ── DINNER ── */}

@@ -25,6 +25,8 @@ interface WeekTableViewProps {
   onSetBabyLunch: (i: number, meal: Meal | null) => void;
   onSetBabyLunchSide: (i: number, meal: Meal | null) => void;
   onSetBabyLunchNote: (i: number, note: string) => void;
+  onSetBreakfast: (i: number, v: string) => void;
+  onSetSnack: (i: number, v: string) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -142,6 +144,7 @@ export function WeekTableView({
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
+  onSetBreakfast, onSetSnack,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);

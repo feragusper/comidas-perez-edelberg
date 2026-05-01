@@ -6,7 +6,7 @@ import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
-type SlotKey = "lunch" | "babyLunch" | "dinner" | "babyDinner";
+type SlotKey = "breakfast" | "lunch" | "babyLunch" | "snack" | "dinner" | "babyDinner";
 
 interface WeekTableViewProps {
   plan: DayPlan[];
@@ -25,8 +25,10 @@ interface WeekTableViewProps {
   onSetBabyLunch: (i: number, meal: Meal | null) => void;
   onSetBabyLunchSide: (i: number, meal: Meal | null) => void;
   onSetBabyLunchNote: (i: number, note: string) => void;
-  onSetBreakfast: (i: number, v: string) => void;
-  onSetSnack: (i: number, v: string) => void;
+  onSetBreakfast: (i: number, meal: Meal | null) => void;
+  onSetBreakfastNote: (i: number, v: string) => void;
+  onSetSnack: (i: number, meal: Meal | null) => void;
+  onSetSnackNote: (i: number, v: string) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -42,14 +44,19 @@ const ROWS: {
   headerText: string;
   cellBg: string;
   borderColor: string;
+  icon?: string;
 }[] = [
-  { slot: "lunch",      label: "☀ Almuerzo",    isBaby: false, headerBg: "bg-lunch-bg",      headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
-  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",   headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
-  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",     headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
-  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
+  { slot: "breakfast",  label: "Desayuno",        isBaby: false, headerBg: "bg-amber-50/60",  headerText: "text-amber-700",  cellBg: "bg-amber-50/20",  borderColor: "border-amber-200/30", icon: "🥐" },
+  { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-lunch-bg",     headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
+  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
+  { slot: "snack",      label: "Merienda",        isBaby: false, headerBg: "bg-rose-50/60",   headerText: "text-rose-700",   cellBg: "bg-rose-50/20",   borderColor: "border-rose-200/30",  icon: "🫖" },
+  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",    headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
+  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
 ];
 
 function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; note: string } {
+  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             note: d.breakfastNote };
+  if (slot === "snack")      return { meal: d.snack,      side: null,             note: d.snackNote };
   if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      note: d.lunchNote };
   if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  note: d.babyLunchNote };
   if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     note: d.dinnerNote };
@@ -135,46 +142,6 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
   );
 }
 
-function SimpleTextRow({ icon, label, accent, headerBg, cellBg, plan, todayIdx, getValue, onChange }: {
-  icon: string; label: string; accent: string; headerBg: string; cellBg: string;
-  plan: DayPlan[]; todayIdx: number;
-  getValue: (d: DayPlan) => string;
-  onChange: (i: number, v: string) => void;
-}) {
-  return (
-    <tr>
-      <td className={cn("px-3 py-2 border-r border-b border-border", headerBg)}>
-        <div className="flex items-center gap-1">
-          <span className="text-sm">{icon}</span>
-          <span className={cn("text-xs font-semibold whitespace-nowrap", accent)}>{label}</span>
-        </div>
-      </td>
-      {plan.map((d, idx) => {
-        const isToday = todayIdx === idx;
-        const isPast = todayIdx !== -1 && idx < todayIdx;
-        return (
-          <td
-            key={d.day}
-            className={cn(
-              "px-2 py-1.5 border-r border-b last:border-r-0 border-border align-middle min-w-[100px] transition-all",
-              cellBg,
-              isToday && "ring-inset ring-1 ring-primary/30",
-              isPast && "opacity-40"
-            )}
-          >
-            <input
-              type="text"
-              value={getValue(d)}
-              onChange={(e) => onChange(idx, e.target.value)}
-              placeholder="—"
-              className="w-full text-xs bg-transparent border-0 focus:outline-none placeholder:text-muted-foreground/30 text-foreground py-0.5"
-            />
-          </td>
-        );
-      })}
-    </tr>
-  );
-}
 
 export function WeekTableView({
   plan,
@@ -185,7 +152,7 @@ export function WeekTableView({
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
-  onSetBreakfast, onSetSnack,
+  onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -200,6 +167,8 @@ export function WeekTableView({
   const closePicker = () => { setPickerDay(null); setPickerSlot(null); };
 
   const getMainSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
+    if (slot === "breakfast")  onSetBreakfast(i, meal);
+    if (slot === "snack")      onSetSnack(i, meal);
     if (slot === "lunch")      onSetLunch(i, meal);
     if (slot === "babyLunch")  onSetBabyLunch(i, meal);
     if (slot === "dinner")     onSetDinner(i, meal);
@@ -212,17 +181,22 @@ export function WeekTableView({
     if (slot === "babyDinner") onSetBabyDinnerSide(i, meal);
   };
   const getNoteSetter = (slot: SlotKey, i: number) => (note: string) => {
+    if (slot === "breakfast")  onSetBreakfastNote(i, note);
+    if (slot === "snack")      onSetSnackNote(i, note);
     if (slot === "lunch")      onSetLunchNote(i, note);
     if (slot === "babyLunch")  onSetBabyLunchNote(i, note);
     if (slot === "dinner")     onSetDinnerNote(i, note);
     if (slot === "babyDinner") onSetBabyDinnerNote(i, note);
   };
 
+  const slotHasSide = (slot: SlotKey | null) => slot !== "breakfast" && slot !== "snack";
+
   const handlePickerSelect = (meal: Meal) => {
     if (pickerDay === null || !pickerSlot) return;
     if (pickerStep === "main") {
       getMainSetter(pickerSlot, pickerDay)(meal);
-      setPickerStep("side");
+      if (slotHasSide(pickerSlot)) setPickerStep("side");
+      else closePicker();
     } else {
       getSideSetter(pickerSlot, pickerDay)(meal);
       closePicker();
@@ -280,37 +254,12 @@ export function WeekTableView({
             </tr>
           </thead>
           <tbody>
-            <SimpleTextRow
-              icon="🥐"
-              label="Desayuno"
-              accent="text-amber-700"
-              headerBg="bg-amber-50/60"
-              cellBg="bg-amber-50/20"
-              plan={plan}
-              todayIdx={todayIdx}
-              getValue={(d) => d.breakfast}
-              onChange={onSetBreakfast}
-            />
-            {ROWS.map((row, rowIdx) => (
-              <>
-              {row.slot === "dinner" && (
-                <SimpleTextRow
-                  key="snack-row"
-                  icon="🫖"
-                  label="Merienda"
-                  accent="text-rose-700"
-                  headerBg="bg-rose-50/60"
-                  cellBg="bg-rose-50/20"
-                  plan={plan}
-                  todayIdx={todayIdx}
-                  getValue={(d) => d.snack}
-                  onChange={onSetSnack}
-                />
-              )}
+            {ROWS.map((row) => (
               <tr key={row.slot}>
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">
                     {row.isBaby && <Baby size={11} className="text-baby-safe shrink-0" />}
+                    {row.icon && <span className="text-sm">{row.icon}</span>}
                     <span className={cn("text-xs font-semibold whitespace-nowrap", row.headerText)}>{row.label}</span>
                   </div>
                 </td>
@@ -379,7 +328,6 @@ export function WeekTableView({
                   );
                 })}
               </tr>
-              </>
             ))}
           </tbody>
         </table>

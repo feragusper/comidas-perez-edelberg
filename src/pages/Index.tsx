@@ -36,7 +36,7 @@ export default function Index() {
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
-    setBreakfast, setSnack,
+    setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     resetPlan, swapSlots,
   } = useMealPlan(activeWeek);
 
@@ -205,8 +205,10 @@ export default function Index() {
                   onSetBabyLunchNote={(note) => setBabyLunchNote(idx, note)}
                   onHideBabyLunch={() => hideBabyLunch(idx)}
                   onResetBabyLunch={() => resetBabyLunch(idx)}
-                  onSetBreakfast={(v) => setBreakfast(idx, v)}
-                  onSetSnack={(v) => setSnack(idx, v)}
+                  onSetBreakfast={(meal) => setBreakfast(idx, meal)}
+                  onSetBreakfastNote={(v) => setBreakfastNote(idx, v)}
+                  onSetSnack={(meal) => setSnack(idx, meal)}
+                  onSetSnackNote={(v) => setSnackNote(idx, v)}
                   extraMeals={customMeals}
                   onCustomMeal={saveCustomMeal}
                 />
@@ -230,7 +232,9 @@ export default function Index() {
                 onSetBabyLunchSide={setBabyLunchSide}
                 onSetBabyLunchNote={setBabyLunchNote}
                 onSetBreakfast={setBreakfast}
+                onSetBreakfastNote={setBreakfastNote}
                 onSetSnack={setSnack}
+                onSetSnackNote={setSnackNote}
                 extraMeals={customMeals}
                 onCustomMeal={saveCustomMeal}
               />

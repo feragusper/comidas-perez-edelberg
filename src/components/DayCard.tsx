@@ -363,6 +363,15 @@ export function DayCard({
               </div>
             </div>
 
+            {/* ── SNACK (simple text) ── */}
+            <SimpleMealInput
+              icon="🫖"
+              label="Merienda"
+              accent="text-rose-700"
+              value={dayPlan.snack}
+              onChange={onSetSnack}
+            />
+
             {/* ── DINNER ── */}
             <div className={cn(
               "rounded-xl p-3 border space-y-3",

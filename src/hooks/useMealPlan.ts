@@ -289,12 +289,32 @@ export function useMealPlan(weekKey: WeekKey) {
     const prevDay = idx === 0 ? null : plan[idx - 1];
     const prevDinner = prevDay?.dinner ?? null;
     const isPrevDelivery = isDeliveryMeal(prevDinner);
+    const isPrevTakeaway = isTakeawayMeal(prevDinner);
+    const isPrevRestaurant = isRestaurantMeal(prevDinner);
+    const prevHasLeftovers = isPrevDelivery || isPrevTakeaway;
     const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
-    const isCurrentDelivery = isDeliveryMeal(dayPlan.dinner);
 
-    const effectivePrevDinner = isPrevDelivery ? DELIVERY_LEFTOVERS : prevDinner;
-    const effectivePrevSide = isPrevDelivery ? null : (prevDay?.dinnerSide ?? null);
-    const effectivePrevNote = isPrevDelivery ? "" : (prevDay?.dinnerNote ?? "");
+    let effectivePrevDinner: Meal | null;
+    let effectivePrevSide: Meal | null;
+    let effectivePrevNote: string;
+    if (isPrevDelivery) {
+      effectivePrevDinner = DELIVERY_LEFTOVERS;
+      effectivePrevSide = null;
+      effectivePrevNote = "";
+    } else if (isPrevTakeaway) {
+      effectivePrevDinner = TAKEAWAY_LEFTOVERS;
+      effectivePrevSide = null;
+      effectivePrevNote = "";
+    } else if (isPrevRestaurant) {
+      // Restaurant doesn't produce leftovers — no inheritance
+      effectivePrevDinner = null;
+      effectivePrevSide = null;
+      effectivePrevNote = "";
+    } else {
+      effectivePrevDinner = prevDinner;
+      effectivePrevSide = prevDay?.dinnerSide ?? null;
+      effectivePrevNote = prevDay?.dinnerNote ?? "";
+    }
 
     let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
     if (dayPlan.lunchOverridden) {
@@ -315,7 +335,7 @@ export function useMealPlan(weekKey: WeekKey) {
     } else if (dayPlan.babyDinnerHidden) {
       babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
     } else {
-      const babyPrev = (prevDinner && !isPrevDelivery && isPrevBabySafe) ? prevDinner : null;
+      const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyDinnerSuggested = {
         babyDinner: babyPrev,
         babyDinnerSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
@@ -329,7 +349,7 @@ export function useMealPlan(weekKey: WeekKey) {
     } else if (dayPlan.babyLunchHidden) {
       babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchNote: "" };
     } else {
-      const babyPrev = (prevDinner && !isPrevDelivery && isPrevBabySafe) ? prevDinner : null;
+      const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyLunchSuggested = {
         babyLunch: babyPrev,
         babyLunchSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,

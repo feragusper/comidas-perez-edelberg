@@ -260,6 +260,11 @@ export function DayCard({
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
   const isSunday = dayPlan.day === "Domingo";
   const isDelivery = isDeliveryMeal(dayPlan.dinner);
+  const isTakeaway = isTakeawayMeal(dayPlan.dinner);
+  const isRestaurant = isRestaurantMeal(dayPlan.dinner);
+  const isEatingOut = isEatingOutMeal(dayPlan.dinner);
+  const dinnerEmoji = dayPlan.dinner?.emoji ?? "";
+  const dinnerLabel = isDelivery ? "Delivery" : isTakeaway ? "Takeaway" : isRestaurant ? "Restaurante" : "Cena";
   const isPasta = dayPlan.dinner?.id === "pasta-domingo" || dayPlan.dinner?.id === "pasta";
 
   const handlePickerSelect = (meal: Meal) => {

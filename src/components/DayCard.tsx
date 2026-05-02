@@ -234,7 +234,7 @@ function MealDisplay({
         <NoteInput
           value={note}
           onChange={onChangeNote}
-          placeholder={isDelivery ? "¿Qué vas a pedir?" : "Agregar detalle..."}
+          placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
         />
         <button onClick={onChangeMeal} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
           Cambiar

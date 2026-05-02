@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { DayPlan, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";

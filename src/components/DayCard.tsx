@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { DayPlan, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
@@ -174,17 +174,26 @@ function MealDisplay({
   showSide?: boolean;
 }) {
   const isDelivery = isDeliveryMeal(meal);
+  const isTakeaway = isTakeawayMeal(meal);
+  const isRestaurant = isRestaurantMeal(meal);
+  const isEatingOut = isEatingOutMeal(meal);
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-start gap-2">
         <span className="text-xl">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-medium", isDelivery ? "text-warning" : "text-foreground")}>{meal.name}</p>
+          <p className={cn("text-sm font-medium", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
           {isDelivery && (
             <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
           )}
-          {!isDelivery && babySafety && meal.babySafety !== "unsafe" && (
+          {isTakeaway && (
+            <p className="text-xs text-muted-foreground">Al día siguiente: sobras del takeaway al almuerzo</p>
+          )}
+          {isRestaurant && (
+            <p className="text-xs text-muted-foreground">Comemos afuera — sin sobras</p>
+          )}
+          {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-0.5", safetyBg[meal.babySafety])}>
               {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
             </span>
@@ -195,8 +204,8 @@ function MealDisplay({
         </button>
       </div>
 
-      {/* Side dish — hide for delivery */}
-      {showSide && !isDelivery && (
+      {/* Side dish — hide for eating-out meals */}
+      {showSide && !isEatingOut && (
         <div className="pl-8">
           {side ? (
             <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
@@ -225,7 +234,7 @@ function MealDisplay({
         <NoteInput
           value={note}
           onChange={onChangeNote}
-          placeholder={isDelivery ? "¿Qué vas a pedir?" : "Agregar detalle..."}
+          placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
         />
         <button onClick={onChangeMeal} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
           Cambiar
@@ -251,6 +260,11 @@ export function DayCard({
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
   const isSunday = dayPlan.day === "Domingo";
   const isDelivery = isDeliveryMeal(dayPlan.dinner);
+  const isTakeaway = isTakeawayMeal(dayPlan.dinner);
+  const isRestaurant = isRestaurantMeal(dayPlan.dinner);
+  const isEatingOut = isEatingOutMeal(dayPlan.dinner);
+  const dinnerEmoji = dayPlan.dinner?.emoji ?? "";
+  const dinnerLabel = isDelivery ? "Delivery" : isTakeaway ? "Takeaway" : isRestaurant ? "Restaurante" : "Cena";
   const isPasta = dayPlan.dinner?.id === "pasta-domingo" || dayPlan.dinner?.id === "pasta";
 
   const handlePickerSelect = (meal: Meal) => {
@@ -261,8 +275,8 @@ export function DayCard({
       else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
       else if (pickerTarget === "breakfast") { onSetBreakfast(meal); setPickerTarget(null); return; }
       else if (pickerTarget === "snack") { onSetSnack(meal); setPickerTarget(null); return; }
-      // Skip side step for delivery
-      if (isDeliveryMeal(meal)) {
+      // Skip side step for eating-out meals
+      if (isEatingOutMeal(meal)) {
         setPickerTarget(null);
       } else {
         setPickerStep("side");
@@ -297,7 +311,7 @@ export function DayCard({
       <div className={cn(
         "rounded-2xl border overflow-hidden shadow-card transition-all",
         isPast && "opacity-50",
-        isDelivery ? "border-warning/40 bg-warning/5"
+        isEatingOut ? "border-warning/40 bg-warning/5"
           : isToday ? "border-primary/50 bg-card ring-2 ring-primary/20"
           : "border-border bg-card"
       )}>
@@ -305,19 +319,19 @@ export function DayCard({
         <div
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
-            isDelivery ? "bg-warning/10"
+            isEatingOut ? "bg-warning/10"
               : isToday ? "bg-primary/8"
               : "bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
           <div className="flex items-center gap-2">
-            <span className={cn("text-base font-bold", isDelivery ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
+            <span className={cn("text-base font-bold", isEatingOut ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
               style={{ fontFamily: 'Fraunces, serif' }}>
               {dayPlan.day}
             </span>
-            {isDelivery && <span className="text-base leading-none">🛵</span>}
-            {isPasta && !isDelivery && <span className="text-base leading-none" title="Noche de pasta">🍝</span>}
+            {isEatingOut && <span className="text-base leading-none">{dinnerEmoji}</span>}
+            {isPasta && !isEatingOut && <span className="text-base leading-none" title="Noche de pasta">🍝</span>}
             {isToday && (
               <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
                 Hoy
@@ -441,11 +455,11 @@ export function DayCard({
             {/* ── DINNER ── */}
             <div className={cn(
               "rounded-xl p-3 border space-y-3",
-              isDelivery ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
+              isEatingOut ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
             )}>
               <div className="flex items-center gap-2">
-                <span className={cn("text-xs font-semibold uppercase tracking-wider", isDelivery ? "text-warning" : "text-primary")}>
-                  {isDelivery ? "🛵 Delivery" : "🌙 Cena"}
+                <span className={cn("text-xs font-semibold uppercase tracking-wider", isEatingOut ? "text-warning" : "text-primary")}>
+                  {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "🌙 Cena"}
                 </span>
               </div>
 

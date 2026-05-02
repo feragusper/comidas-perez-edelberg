@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { DayPlan, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
@@ -218,8 +218,9 @@ export function WeekTableView({
               {plan.map((d, idx) => {
                 const isToday = todayIdx === idx;
                 const isPast = todayIdx !== -1 && idx < todayIdx;
-                const isDel = isDeliveryMeal(d.dinner);
+                const isDel = isEatingOutMeal(d.dinner);
                 const isPasta = d.dinner?.id === "pasta-domingo" || d.dinner?.id === "pasta";
+                const dinnerEmoji = d.dinner?.emoji ?? "";
                 return (
                   <th
                     key={d.day}
@@ -240,7 +241,7 @@ export function WeekTableView({
                           {SHORT_DAYS[d.day] ?? d.day}
                         </span>
                         {isPasta && !isDel && <span className="text-[11px] leading-none" title="Noche de pasta">🍝</span>}
-                        {isDel && <span className="text-[11px] leading-none" title="Noche de delivery">🛵</span>}
+                        {isDel && <span className="text-[11px] leading-none" title={d.dinner?.name}>{dinnerEmoji}</span>}
                       </div>
                       {isToday && (
                         <span className="text-[9px] font-semibold uppercase tracking-wider px-1 py-0 rounded-full bg-primary text-primary-foreground leading-4">

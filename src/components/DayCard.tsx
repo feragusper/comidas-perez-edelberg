@@ -455,11 +455,11 @@ export function DayCard({
             {/* ── DINNER ── */}
             <div className={cn(
               "rounded-xl p-3 border space-y-3",
-              isDelivery ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
+              isEatingOut ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
             )}>
               <div className="flex items-center gap-2">
-                <span className={cn("text-xs font-semibold uppercase tracking-wider", isDelivery ? "text-warning" : "text-primary")}>
-                  {isDelivery ? "🛵 Delivery" : "🌙 Cena"}
+                <span className={cn("text-xs font-semibold uppercase tracking-wider", isEatingOut ? "text-warning" : "text-primary")}>
+                  {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "🌙 Cena"}
                 </span>
               </div>
 

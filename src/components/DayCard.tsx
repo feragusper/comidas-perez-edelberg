@@ -332,10 +332,10 @@ export function DayCard({
             {/* ── BREAKFAST ── */}
             <SimpleMealSlot
               icon="🥐"
-              label="Desayuno"
-              accent="text-amber-700"
+              label="Desayuno · Nico"
+              accent="text-baby-safe"
               bgClass="bg-amber-50/40"
-              borderClass="border-amber-200/40"
+              borderClass="border-baby-safe/30"
               meal={dayPlan.breakfast}
               note={dayPlan.breakfastNote}
               onPickMain={() => openMainPicker("breakfast")}

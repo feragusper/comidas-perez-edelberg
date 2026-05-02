@@ -46,7 +46,7 @@ const ROWS: {
   borderColor: string;
   icon?: string;
 }[] = [
-  { slot: "breakfast",  label: "Desayuno",        isBaby: false, headerBg: "bg-amber-50/60",  headerText: "text-amber-700",  cellBg: "bg-amber-50/20",  borderColor: "border-amber-200/30", icon: "🥐" },
+  { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-amber-50/60",  headerText: "text-baby-safe",  cellBg: "bg-amber-50/20",  borderColor: "border-baby-safe/20",  icon: "🥐" },
   { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-lunch-bg",     headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
   { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
   { slot: "snack",      label: "Merienda",        isBaby: false, headerBg: "bg-rose-50/60",   headerText: "text-rose-700",   cellBg: "bg-rose-50/20",   borderColor: "border-rose-200/30",  icon: "🫖" },

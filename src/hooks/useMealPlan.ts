@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Meal, DAYS, DELIVERY_DINNER, DELIVERY_LEFTOVERS } from "@/data/meals";
+import { Meal, DAYS, DELIVERY_DINNER, DELIVERY_LEFTOVERS, TAKEAWAY_LEFTOVERS } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
 import { envWeekKey } from "@/lib/env";
 

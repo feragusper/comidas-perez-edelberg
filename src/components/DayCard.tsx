@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal } from "@/hooks/useMealPlan";
+import { DayPlan, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";

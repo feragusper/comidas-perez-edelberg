@@ -174,17 +174,26 @@ function MealDisplay({
   showSide?: boolean;
 }) {
   const isDelivery = isDeliveryMeal(meal);
+  const isTakeaway = isTakeawayMeal(meal);
+  const isRestaurant = isRestaurantMeal(meal);
+  const isEatingOut = isEatingOutMeal(meal);
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-start gap-2">
         <span className="text-xl">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-medium", isDelivery ? "text-warning" : "text-foreground")}>{meal.name}</p>
+          <p className={cn("text-sm font-medium", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
           {isDelivery && (
             <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
           )}
-          {!isDelivery && babySafety && meal.babySafety !== "unsafe" && (
+          {isTakeaway && (
+            <p className="text-xs text-muted-foreground">Al día siguiente: sobras del takeaway al almuerzo</p>
+          )}
+          {isRestaurant && (
+            <p className="text-xs text-muted-foreground">Comemos afuera — sin sobras</p>
+          )}
+          {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-0.5", safetyBg[meal.babySafety])}>
               {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
             </span>
@@ -195,8 +204,8 @@ function MealDisplay({
         </button>
       </div>
 
-      {/* Side dish — hide for delivery */}
-      {showSide && !isDelivery && (
+      {/* Side dish — hide for eating-out meals */}
+      {showSide && !isEatingOut && (
         <div className="pl-8">
           {side ? (
             <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">

@@ -275,8 +275,8 @@ export function DayCard({
       else if (pickerTarget === "babyLunch") onSetBabyLunch(meal);
       else if (pickerTarget === "breakfast") { onSetBreakfast(meal); setPickerTarget(null); return; }
       else if (pickerTarget === "snack") { onSetSnack(meal); setPickerTarget(null); return; }
-      // Skip side step for delivery
-      if (isDeliveryMeal(meal)) {
+      // Skip side step for eating-out meals
+      if (isEatingOutMeal(meal)) {
         setPickerTarget(null);
       } else {
         setPickerStep("side");

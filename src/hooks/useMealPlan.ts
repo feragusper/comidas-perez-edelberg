@@ -37,6 +37,26 @@ export function isDeliveryMeal(meal: Meal | null): boolean {
   return meal?.id === "delivery";
 }
 
+/** Helper: is this meal takeaway? */
+export function isTakeawayMeal(meal: Meal | null): boolean {
+  return meal?.id === "takeaway";
+}
+
+/** Helper: is this meal restaurant (eat out, no leftovers)? */
+export function isRestaurantMeal(meal: Meal | null): boolean {
+  return meal?.id === "restaurante";
+}
+
+/** Helper: any "eating out" meal — delivery, takeaway, or restaurant. */
+export function isEatingOutMeal(meal: Meal | null): boolean {
+  return isDeliveryMeal(meal) || isTakeawayMeal(meal) || isRestaurantMeal(meal);
+}
+
+/** Helper: meal that produces leftovers for next day's lunch. */
+export function hasLeftovers(meal: Meal | null): boolean {
+  return isDeliveryMeal(meal) || isTakeawayMeal(meal);
+}
+
 function serializePlan(plan: DayPlan[]) {
   return plan.map((day) => ({
     ...day,

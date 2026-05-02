@@ -49,7 +49,7 @@ const ROWS: {
   { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-amber-50/60",  headerText: "text-baby-safe",  cellBg: "bg-amber-50/20",  borderColor: "border-baby-safe/20",  icon: "🥐" },
   { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-lunch-bg",     headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
   { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
-  { slot: "snack",      label: "Merienda",        isBaby: false, headerBg: "bg-rose-50/60",   headerText: "text-rose-700",   cellBg: "bg-rose-50/20",   borderColor: "border-rose-200/30",  icon: "🫖" },
+  { slot: "snack",      label: "Merienda · Nico", isBaby: true,  headerBg: "bg-amber-50/60",  headerText: "text-baby-safe",  cellBg: "bg-amber-50/20", borderColor: "border-baby-safe/20",  icon: "🫖" },
   { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",    headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
   { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
 ];

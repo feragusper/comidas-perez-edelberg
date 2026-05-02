@@ -149,9 +149,36 @@ export const DELIVERY_DINNER: Meal = {
   category: "Especiales",
 };
 
+export const TAKEAWAY_DINNER: Meal = {
+  id: "takeaway",
+  name: "Takeaway 🥡",
+  emoji: "🥡",
+  babySafety: "caution",
+  babyNote: "Comida para llevar, adaptar para bebé",
+  category: "Especiales",
+};
+
+export const RESTAURANT_DINNER: Meal = {
+  id: "restaurante",
+  name: "Restaurante 🍽️",
+  emoji: "🍽️",
+  babySafety: "caution",
+  babyNote: "Comemos afuera, adaptar para bebé",
+  category: "Especiales",
+};
+
 export const DELIVERY_LEFTOVERS: Meal = {
   id: "delivery-sobras",
   name: "Sobras del delivery",
+  emoji: "📦",
+  babySafety: "caution",
+  babyNote: "Adaptar según lo que sobró",
+  category: "Especiales",
+};
+
+export const TAKEAWAY_LEFTOVERS: Meal = {
+  id: "takeaway-sobras",
+  name: "Sobras del takeaway",
   emoji: "📦",
   babySafety: "caution",
   babyNote: "Adaptar según lo que sobró",

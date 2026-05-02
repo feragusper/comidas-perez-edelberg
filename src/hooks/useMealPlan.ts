@@ -369,8 +369,8 @@ export function useMealPlan(weekKey: WeekKey) {
   };
 
   const setDinner = (i: number, meal: Meal | null) => {
-    // When setting delivery, clear side dish
-    if (isDeliveryMeal(meal)) {
+    // When setting eating-out meal, clear side dish
+    if (isEatingOutMeal(meal)) {
       update(i, { dinner: meal, dinnerSide: null });
     } else {
       update(i, { dinner: meal });

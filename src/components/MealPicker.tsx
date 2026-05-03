@@ -31,14 +31,6 @@ const safetyLabel: Record<BabySafety, string> = {
   unsafe: "✗ No apto",
 };
 
-const FOOD_EMOJIS = [
-  "🍽️", "🍗", "🥩", "🍖", "🥓", "🌭", "🍔", "🍟", "🍕", "🫓",
-  "🥪", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🍲", "🍛", "🍜",
-  "🍝", "🍣", "🍤", "🍱", "🥟", "🍚", "🍙", "🥚", "🧀", "🥦",
-  "🥬", "🥕", "🌽", "🍠", "🥑", "🍅", "🫑", "🧅", "🧄", "🍄",
-  "🐟", "🐠", "🦐", "🦑", "🥫", "🫘", "🥜", "🫒", "🍞", "🥖",
-  "🥐", "🧇", "🥞", "🍳", "🫙", "🥣", "🧆", "🥙", "🫛",
-];
 
 export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");

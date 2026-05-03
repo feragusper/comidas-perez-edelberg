@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby } from "lucide-react";
+import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -14,19 +14,22 @@ interface MealCount {
   category: string;
 }
 
-type Section = "dinners" | "lunches" | "babyDinners" | "babyLunches";
+type Section = "all" | "dinners" | "lunches" | "breakfasts" | "snacks" | "babyDinners" | "babyLunches";
 
-function extractMeals(plans: DayPlan[][], getter: (d: DayPlan) => Meal | null): MealCount[] {
+type MealGetter = (d: DayPlan) => (Meal | null)[];
+
+function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
   const map = new Map<string, MealCount>();
   for (const week of plans) {
     for (const day of week) {
-      const meal = getter(day);
-      if (!meal) continue;
-      const existing = map.get(meal.id);
-      if (existing) {
-        existing.count++;
-      } else {
-        map.set(meal.id, { name: meal.name, emoji: meal.emoji, count: 1, category: meal.category });
+      for (const meal of getter(day)) {
+        if (!meal) continue;
+        const existing = map.get(meal.id);
+        if (existing) {
+          existing.count++;
+        } else {
+          map.set(meal.id, { name: meal.name, emoji: meal.emoji, count: 1, category: meal.category });
+        }
       }
     }
   }
@@ -45,22 +48,37 @@ function categoryBreakdown(meals: MealCount[]): { category: string; count: numbe
 }
 
 const SECTION_CONFIG: Record<Section, { label: string; icon: typeof Utensils; baby?: boolean }> = {
+  all: { label: "Todas", icon: Layers },
   dinners: { label: "Cenas", icon: Utensils },
   lunches: { label: "Almuerzos", icon: Utensils },
+  breakfasts: { label: "Desayunos", icon: Coffee, baby: true },
+  snacks: { label: "Meriendas", icon: Cookie, baby: true },
   babyDinners: { label: "Cenas bebé", icon: Baby, baby: true },
   babyLunches: { label: "Almuerzos bebé", icon: Baby, baby: true },
 };
 
-const GETTERS: Record<Section, (d: DayPlan) => Meal | null> = {
-  dinners: (d) => d.dinner,
-  lunches: (d) => d.lunch,
-  babyDinners: (d) => d.babyDinner,
-  babyLunches: (d) => d.babyLunch,
+const GETTERS: Record<Section, MealGetter> = {
+  all: (d) => [
+    d.dinner, d.dinnerSide,
+    d.lunch, d.lunchSide,
+    d.breakfast, d.snack,
+    d.babyDinner, d.babyDinnerSide,
+    d.babyLunch, d.babyLunchSide,
+  ],
+  dinners: (d) => [d.dinner, d.dinnerSide],
+  lunches: (d) => [d.lunch, d.lunchSide],
+  breakfasts: (d) => [d.breakfast],
+  snacks: (d) => [d.snack],
+  babyDinners: (d) => [d.babyDinner, d.babyDinnerSide],
+  babyLunches: (d) => [d.babyLunch, d.babyLunchSide],
 };
 
 const BAR_COLORS: Record<Section, string> = {
+  all: "bg-primary",
   dinners: "bg-primary",
   lunches: "bg-primary/70",
+  breakfasts: "bg-baby-safe",
+  snacks: "bg-baby-safe/80",
   babyDinners: "bg-baby-safe",
   babyLunches: "bg-baby-safe/70",
 };

@@ -5,14 +5,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Pencil, Trash2, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const FOOD_EMOJIS = [
-  "🍽️", "🍗", "🥩", "🍖", "🥓", "🌭", "🍔", "🍟", "🍕", "🫓",
-  "🥪", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🍲", "🍛", "🍜",
-  "🍝", "🍣", "🍤", "🍱", "🥟", "🍚", "🍙", "🥚", "🧀", "🥦",
-  "🥬", "🥕", "🌽", "🍠", "🥑", "🍅", "🫑", "🧅", "🧄", "🍄",
-  "🐟", "🐠", "🦐", "🦑", "🥫", "🫘", "🥜", "🫒", "🍞", "🥖",
-  "🥐", "🧇", "🥞", "🍳", "🫙", "🥣", "🧆", "🥙", "🫛",
-];
+import { FOOD_EMOJIS } from "@/data/foodEmojis";
 
 export default function CustomMeals() {
   const { customMeals, updateCustomMealEmoji, deleteCustomMeal } = useCustomMeals();

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
+import { FOOD_EMOJIS } from "@/data/foodEmojis";
 
 export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";
@@ -30,14 +31,6 @@ const safetyLabel: Record<BabySafety, string> = {
   unsafe: "✗ No apto",
 };
 
-const FOOD_EMOJIS = [
-  "🍽️", "🍗", "🥩", "🍖", "🥓", "🌭", "🍔", "🍟", "🍕", "🫓",
-  "🥪", "🌮", "🌯", "🫔", "🥗", "🥘", "🫕", "🍲", "🍛", "🍜",
-  "🍝", "🍣", "🍤", "🍱", "🥟", "🍚", "🍙", "🥚", "🧀", "🥦",
-  "🥬", "🥕", "🌽", "🍠", "🥑", "🍅", "🫑", "🧅", "🧄", "🍄",
-  "🐟", "🐠", "🦐", "🦑", "🥫", "🫘", "🥜", "🫒", "🍞", "🥖",
-  "🥐", "🧇", "🥞", "🍳", "🫙", "🥣", "🧆", "🥙", "🫛",
-];
 
 export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
   const [search, setSearch] = useState("");

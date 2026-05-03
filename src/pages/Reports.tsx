@@ -86,7 +86,7 @@ const BAR_COLORS: Record<Section, string> = {
 export default function Reports() {
   const [allPlans, setAllPlans] = useState<DayPlan[][]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<Section>("dinners");
+  const [activeSection, setActiveSection] = useState<Section>("all");
 
   useEffect(() => {
     const prefix = isStageEnv() ? "stage_" : "prod_";

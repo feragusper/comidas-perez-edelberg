@@ -1,20 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers } from "lucide-react";
+import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 interface MealCount {
+  id: string;
   name: string;
   emoji: string;
   count: number;
   category: string;
+  isKeto: boolean;
 }
 
-type Section = "all" | "dinners" | "lunches" | "breakfasts" | "snacks" | "babyDinners" | "babyLunches";
+type Persona = "all" | "us" | "nico";
+type Section =
+  | "all"
+  | "dinners" | "lunches"
+  | "breakfasts" | "snacks"
+  | "babyDinners" | "babyLunches";
 
 type MealGetter = (d: DayPlan) => (Meal | null)[];
 
@@ -28,7 +35,14 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
         if (existing) {
           existing.count++;
         } else {
-          map.set(meal.id, { name: meal.name, emoji: meal.emoji, count: 1, category: meal.category });
+          map.set(meal.id, {
+            id: meal.id,
+            name: meal.name,
+            emoji: meal.emoji,
+            count: 1,
+            category: meal.category,
+            isKeto: !!meal.isKeto,
+          });
         }
       }
     }
@@ -47,46 +61,67 @@ function categoryBreakdown(meals: MealCount[]): { category: string; count: numbe
     .sort((a, b) => b.count - a.count);
 }
 
-const SECTION_CONFIG: Record<Section, { label: string; icon: typeof Utensils; baby?: boolean }> = {
-  all: { label: "Todas", icon: Layers },
-  dinners: { label: "Cenas", icon: Utensils },
-  lunches: { label: "Almuerzos", icon: Utensils },
-  breakfasts: { label: "Desayunos", icon: Coffee, baby: true },
-  snacks: { label: "Meriendas", icon: Cookie, baby: true },
-  babyDinners: { label: "Cenas bebé", icon: Baby, baby: true },
-  babyLunches: { label: "Almuerzos bebé", icon: Baby, baby: true },
-};
+const US_GETTERS = {
+  all: (d: DayPlan) => [d.dinner, d.dinnerSide, d.lunch, d.lunchSide],
+  dinners: (d: DayPlan) => [d.dinner, d.dinnerSide],
+  lunches: (d: DayPlan) => [d.lunch, d.lunchSide],
+} as const;
 
-const GETTERS: Record<Section, MealGetter> = {
-  all: (d) => [
-    d.dinner, d.dinnerSide,
-    d.lunch, d.lunchSide,
+const NICO_GETTERS = {
+  all: (d: DayPlan) => [
     d.breakfast, d.snack,
     d.babyDinner, d.babyDinnerSide,
     d.babyLunch, d.babyLunchSide,
   ],
-  dinners: (d) => [d.dinner, d.dinnerSide],
-  lunches: (d) => [d.lunch, d.lunchSide],
-  breakfasts: (d) => [d.breakfast],
-  snacks: (d) => [d.snack],
-  babyDinners: (d) => [d.babyDinner, d.babyDinnerSide],
-  babyLunches: (d) => [d.babyLunch, d.babyLunchSide],
+  breakfasts: (d: DayPlan) => [d.breakfast],
+  snacks: (d: DayPlan) => [d.snack],
+  babyDinners: (d: DayPlan) => [d.babyDinner, d.babyDinnerSide],
+  babyLunches: (d: DayPlan) => [d.babyLunch, d.babyLunchSide],
+} as const;
+
+const ALL_GETTERS = {
+  all: (d: DayPlan) => [...US_GETTERS.all(d), ...NICO_GETTERS.all(d)],
+  dinners: US_GETTERS.dinners,
+  lunches: US_GETTERS.lunches,
+  breakfasts: NICO_GETTERS.breakfasts,
+  snacks: NICO_GETTERS.snacks,
+  babyDinners: NICO_GETTERS.babyDinners,
+  babyLunches: NICO_GETTERS.babyLunches,
+} as const;
+
+const SECTION_LABELS: Record<Section, { label: string; icon: typeof Utensils }> = {
+  all: { label: "Todas", icon: Layers },
+  dinners: { label: "Cenas", icon: Utensils },
+  lunches: { label: "Almuerzos", icon: Utensils },
+  breakfasts: { label: "Desayunos", icon: Coffee },
+  snacks: { label: "Meriendas", icon: Cookie },
+  babyDinners: { label: "Cenas", icon: Baby },
+  babyLunches: { label: "Almuerzos", icon: Baby },
 };
 
-const BAR_COLORS: Record<Section, string> = {
-  all: "bg-primary",
-  dinners: "bg-primary",
-  lunches: "bg-primary/70",
-  breakfasts: "bg-baby-safe",
-  snacks: "bg-baby-safe/80",
-  babyDinners: "bg-baby-safe",
-  babyLunches: "bg-baby-safe/70",
+const PERSONA_SECTIONS: Record<Persona, Section[]> = {
+  all: ["all", "dinners", "lunches", "breakfasts", "snacks", "babyDinners", "babyLunches"],
+  us: ["all", "dinners", "lunches"],
+  nico: ["all", "breakfasts", "snacks", "babyDinners", "babyLunches"],
 };
+
+const PERSONA_CONFIG: Record<Persona, { label: string; icon: typeof Utensils; bar: string }> = {
+  all: { label: "Todos", icon: Users, bar: "bg-primary" },
+  us: { label: "Nosotros", icon: Utensils, bar: "bg-primary" },
+  nico: { label: "Nico", icon: Baby, bar: "bg-baby-safe" },
+};
+
+function getterFor(persona: Persona, section: Section): MealGetter {
+  const map = persona === "us" ? US_GETTERS : persona === "nico" ? NICO_GETTERS : ALL_GETTERS;
+  // Section may not exist for persona; fallback to "all"
+  return (map as Record<string, MealGetter>)[section] ?? map.all;
+}
 
 export default function Reports() {
   const [allPlans, setAllPlans] = useState<DayPlan[][]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<Section>("all");
+  const [persona, setPersona] = useState<Persona>("all");
+  const [section, setSection] = useState<Section>("all");
 
   useEffect(() => {
     const prefix = isStageEnv() ? "stage_" : "prod_";
@@ -107,11 +142,22 @@ export default function Reports() {
       });
   }, []);
 
-  const meals = extractMeals(allPlans, GETTERS[activeSection]);
+  // If active section isn't valid for persona, reset to "all"
+  const availableSections = PERSONA_SECTIONS[persona];
+  const activeSection: Section = availableSections.includes(section) ? section : "all";
+
+  const meals = useMemo(
+    () => extractMeals(allPlans, getterFor(persona, activeSection)),
+    [allPlans, persona, activeSection]
+  );
   const total = meals.reduce((s, m) => s + m.count, 0);
+  const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);
+  const ketoPct = total ? Math.round((ketoCount / total) * 100) : 0;
   const categories = categoryBreakdown(meals);
   const maxCount = meals.length > 0 ? meals[0].count : 1;
   const weeksCount = allPlans.length;
+  const barColor = PERSONA_CONFIG[persona].bar;
+  const showKeto = persona === "us";
 
   return (
     <div className="min-h-screen bg-background">
@@ -139,15 +185,36 @@ export default function Reports() {
           </div>
         ) : (
           <>
-            {/* Section tabs */}
-            <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
-              {(Object.keys(SECTION_CONFIG) as Section[]).map((key) => {
-                const cfg = SECTION_CONFIG[key];
+            {/* Persona toggle */}
+            <div className="flex gap-1 bg-muted/60 rounded-xl p-1 w-fit">
+              {(Object.keys(PERSONA_CONFIG) as Persona[]).map((key) => {
+                const cfg = PERSONA_CONFIG[key];
                 const Icon = cfg.icon;
                 return (
                   <button
                     key={key}
-                    onClick={() => setActiveSection(key)}
+                    onClick={() => setPersona(key)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                      persona === key ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon size={14} />
+                    {cfg.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Section tabs (scoped to persona) */}
+            <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
+              {availableSections.map((key) => {
+                const cfg = SECTION_LABELS[key];
+                const Icon = cfg.icon;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSection(key)}
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
                       activeSection === key ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -164,9 +231,46 @@ export default function Reports() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <SummaryCard icon={<Utensils size={16} />} label="Total comidas" value={total} />
               <SummaryCard icon={<PieChart size={16} />} label="Platos únicos" value={meals.length} />
-              <SummaryCard icon={<TrendingUp size={16} />} label="Más popular" value={meals[0]?.emoji ?? "—"} subtitle={meals[0]?.name} />
+              {showKeto ? (
+                <SummaryCard
+                  icon={<Leaf size={16} />}
+                  label="% Keto"
+                  value={`${ketoPct}%`}
+                  subtitle={`${ketoCount} de ${total} comidas`}
+                />
+              ) : (
+                <SummaryCard
+                  icon={<TrendingUp size={16} />}
+                  label="Más popular"
+                  value={meals[0]?.emoji ?? "—"}
+                  subtitle={meals[0]?.name}
+                />
+              )}
               <SummaryCard icon={<BarChart3 size={16} />} label="Categorías" value={categories.length} />
             </div>
+
+            {/* Keto detailed bar (only for "us") */}
+            {showKeto && total > 0 && (
+              <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+                <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Leaf size={14} className="text-secondary" /> Adherencia keto
+                </h2>
+                <div className="flex justify-between text-xs">
+                  <span className="text-foreground font-medium">Keto</span>
+                  <span className="text-muted-foreground">{ketoCount} ({ketoPct}%)</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-secondary transition-all" style={{ width: `${ketoPct}%` }} />
+                </div>
+                <div className="flex justify-between text-xs pt-1">
+                  <span className="text-foreground font-medium">No keto</span>
+                  <span className="text-muted-foreground">{total - ketoCount} ({100 - ketoPct}%)</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-muted-foreground/40 transition-all" style={{ width: `${100 - ketoPct}%` }} />
+                </div>
+              </div>
+            )}
 
             {/* Category breakdown */}
             <div className="bg-card rounded-xl border border-border p-4 space-y-3">
@@ -180,7 +284,7 @@ export default function Reports() {
                     <span className="text-muted-foreground">{cat.count} ({cat.pct}%)</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all", BAR_COLORS[activeSection])} style={{ width: `${cat.pct}%` }} />
+                    <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${cat.pct}%` }} />
                   </div>
                 </div>
               ))}
@@ -195,17 +299,22 @@ export default function Reports() {
                 <p className="text-xs text-muted-foreground py-4 text-center">Sin datos para esta sección.</p>
               )}
               {meals.map((meal, idx) => (
-                <div key={meal.name} className="flex items-center gap-3 py-1.5">
+                <div key={meal.id} className="flex items-center gap-3 py-1.5">
                   <span className="text-xs text-muted-foreground w-5 text-right font-mono">{idx + 1}</span>
                   <span className="text-lg">{meal.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-foreground truncate">{meal.name}</span>
                       <span className="text-[10px] text-muted-foreground">{meal.category}</span>
+                      {meal.isKeto && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-medium">
+                          <Leaf size={9} /> keto
+                        </span>
+                      )}
                     </div>
                     <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
                       <div
-                        className={cn("h-full rounded-full transition-all", BAR_COLORS[activeSection])}
+                        className={cn("h-full rounded-full transition-all", barColor)}
                         style={{ width: `${(meal.count / maxCount) * 100}%` }}
                       />
                     </div>

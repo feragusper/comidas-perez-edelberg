@@ -312,10 +312,29 @@ export default function Reports() {
               </div>
             )}
 
-            {/* Category breakdown */}
+            {/* Tipo de comida (taxonomía) */}
             <div className="bg-card rounded-xl border border-border p-4 space-y-3">
               <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <PieChart size={14} className="text-primary" /> Por categoría
+                <Tag size={14} className="text-primary" /> Por tipo de comida
+                <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                  (los platos pueden tener varios tipos)
+                </span>
+              </h2>
+              {taxonomyBreakdown.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">
+                  Asigná categorías a tus comidas para ver este reporte.
+                </p>
+              ) : (
+                taxonomyBreakdown.map((cat) => (
+                  <TaxonomyRow key={cat.category} cat={cat} taxonomyTotal={taxonomyTotal} />
+                ))
+              )}
+            </div>
+
+            {/* Category breakdown (legacy meal categories) */}
+            <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <PieChart size={14} className="text-primary" /> Por grupo de plato
               </h2>
               {categories.map((cat) => (
                 <div key={cat.category} className="space-y-1">

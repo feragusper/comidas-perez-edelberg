@@ -12,6 +12,7 @@ interface CustomMealRow {
   baby_note: string | null;
   is_keto: boolean;
   is_side: boolean;
+  tags: string[] | null;
 }
 
 function rowToMeal(row: CustomMealRow): Meal {
@@ -24,6 +25,7 @@ function rowToMeal(row: CustomMealRow): Meal {
     babyNote: row.baby_note ?? undefined,
     isKeto: row.is_keto,
     isSide: row.is_side,
+    tags: row.tags ?? [],
   };
 }
 

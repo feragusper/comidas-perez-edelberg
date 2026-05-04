@@ -140,20 +140,29 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-5 pb-3">
-            <div className="grid grid-cols-8 gap-1.5">
-              {FOOD_EMOJIS.map((emoji) => (
-                <button
-                  key={emoji}
-                  onClick={() => setSelectedEmoji(emoji)}
-                  className={cn(
-                    "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
-                    selectedEmoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
-                  )}
-                >
-                  {emoji}
-                </button>
-              ))}
+          <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Ícono</p>
+              <div className="grid grid-cols-8 gap-1.5">
+                {FOOD_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => setSelectedEmoji(emoji)}
+                    className={cn(
+                      "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
+                      selectedEmoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
+                    )}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Categorías <span className="font-normal normal-case text-muted-foreground/70">(opcional, para reportes)</span>
+              </p>
+              <TagPicker value={customTags} onChange={setCustomTags} compact />
             </div>
           </div>
 

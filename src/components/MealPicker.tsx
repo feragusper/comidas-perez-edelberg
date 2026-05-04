@@ -94,6 +94,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
   const openEmojiPicker = () => {
     setCustomEmojiPicker(search.trim());
     setSelectedEmoji("🍽️");
+    setCustomTags([]);
   };
 
   const confirmCustomMeal = () => {
@@ -104,6 +105,8 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
       emoji: selectedEmoji,
       babySafety: "caution",
       category: "Otro",
+      isSide: isSide,
+      tags: customTags,
     };
     onSelect(newMeal);
     onCustomMeal?.(newMeal);

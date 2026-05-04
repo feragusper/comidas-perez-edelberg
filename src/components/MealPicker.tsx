@@ -38,6 +38,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
   const [selectedEmoji, setSelectedEmoji] = useState("🍽️");
+  const [customTags, setCustomTags] = useState<string[]>([]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };

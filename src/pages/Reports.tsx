@@ -44,6 +44,7 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
             count: 1,
             category: meal.category,
             isKeto: !!meal.isKeto,
+            tags: meal.tags ?? [],
           });
         }
       }

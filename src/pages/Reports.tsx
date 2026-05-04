@@ -99,6 +99,7 @@ function buildTaxonomyBreakdown(meals: MealCount[]): CatCount[] {
   return result.sort((a, b) => b.count - a.count);
 }
 
+const US_GETTERS = {
   all: (d: DayPlan) => [d.dinner, d.dinnerSide, d.lunch, d.lunchSide],
   dinners: (d: DayPlan) => [d.dinner, d.dinnerSide],
   lunches: (d: DayPlan) => [d.lunch, d.lunchSide],

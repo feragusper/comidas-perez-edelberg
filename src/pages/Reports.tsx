@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf } from "lucide-react";
+import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 interface MealCount {
   id: string;
@@ -14,6 +15,7 @@ interface MealCount {
   count: number;
   category: string;
   isKeto: boolean;
+  tags: string[];
 }
 
 type Persona = "all" | "us" | "nico";

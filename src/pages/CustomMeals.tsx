@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { useCustomMeals } from "@/hooks/useCustomMeals";
-import { Meal } from "@/data/meals";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Pencil, Trash2, X, Check } from "lucide-react";
+import { ArrowLeft, Pencil, Trash2, X, Check, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { FOOD_EMOJIS } from "@/data/foodEmojis";
+import { TagPicker } from "@/components/TagPicker";
+import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 export default function CustomMeals() {
-  const { customMeals, updateCustomMealEmoji, deleteCustomMeal } = useCustomMeals();
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const { customMeals, updateCustomMealEmoji, updateCustomMealTags, deleteCustomMeal } = useCustomMeals();
+  const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
+  const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const handleEmojiSelect = async (mealId: string, emoji: string) => {
     await updateCustomMealEmoji(mealId, emoji);
-    setEditingId(null);
+    setEditingEmojiId(null);
   };
 
   const handleDelete = async (mealId: string) => {
@@ -47,84 +49,138 @@ export default function CustomMeals() {
           </div>
         ) : (
           <div className="space-y-3">
-            {customMeals.map((meal) => (
-              <div key={meal.id}>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 p-4 rounded-xl border border-border bg-card transition-all",
-                    editingId === meal.id && "rounded-b-none border-b-0"
-                  )}
-                >
-                  <button
-                    onClick={() => setEditingId(editingId === meal.id ? null : meal.id)}
-                    className="text-2xl hover:scale-110 transition-transform cursor-pointer"
-                    title="Cambiar ícono"
+            {customMeals.map((meal) => {
+              const tags = meal.tags ?? [];
+              const emojiOpen = editingEmojiId === meal.id;
+              const tagsOpen = editingTagsId === meal.id;
+              return (
+                <div key={meal.id}>
+                  <div
+                    className={cn(
+                      "flex items-start gap-3 p-4 rounded-xl border border-border bg-card transition-all",
+                      (emojiOpen || tagsOpen) && "rounded-b-none border-b-0"
+                    )}
                   >
-                    {meal.emoji}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{meal.name}</p>
-                    <p className="text-xs text-muted-foreground">{meal.category}{meal.isSide ? " · Guarnición" : ""}</p>
-                  </div>
-                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setEditingId(editingId === meal.id ? null : meal.id)}
-                      className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                      onClick={() => { setEditingEmojiId(emojiOpen ? null : meal.id); setEditingTagsId(null); }}
+                      className="text-2xl hover:scale-110 transition-transform cursor-pointer mt-0.5"
                       title="Cambiar ícono"
                     >
-                      <Pencil size={14} />
+                      {meal.emoji}
                     </button>
-                    {confirmDeleteId === meal.id ? (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleDelete(meal.id)}
-                          className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
-                          title="Confirmar"
-                        >
-                          <Check size={14} />
-                        </button>
-                        <button
-                          onClick={() => setConfirmDeleteId(null)}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
-                          title="Cancelar"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-                    ) : (
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{meal.name}</p>
+                      <p className="text-xs text-muted-foreground mb-1.5">
+                        {meal.category}{meal.isSide ? " · Guarnición" : ""}
+                      </p>
+                      {tags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {tags.map((tag) => {
+                            const parsed = parseTag(tag);
+                            if (!parsed) return null;
+                            const cat = categoryOf(parsed.category);
+                            return (
+                              <span
+                                key={tag}
+                                className={cn(
+                                  "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
+                                  cat?.bg ?? "bg-muted",
+                                  cat?.color ?? "text-foreground"
+                                )}
+                              >
+                                <span>{cat?.emoji}</span>
+                                <span>{parsed.sub}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] italic text-muted-foreground">Sin categorías asignadas</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
                       <button
-                        onClick={() => setConfirmDeleteId(meal.id)}
-                        className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                        title="Eliminar"
+                        onClick={() => { setEditingTagsId(tagsOpen ? null : meal.id); setEditingEmojiId(null); }}
+                        className={cn(
+                          "p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors",
+                          tagsOpen && "bg-primary/10 text-primary"
+                        )}
+                        title="Editar categorías"
                       >
-                        <Trash2 size={14} />
+                        <Tag size={14} />
                       </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Inline emoji picker */}
-                {editingId === meal.id && (
-                  <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Elegí un ícono:</p>
-                    <div className="grid grid-cols-10 sm:grid-cols-12 gap-1">
-                      {FOOD_EMOJIS.map((emoji) => (
+                      <button
+                        onClick={() => { setEditingEmojiId(emojiOpen ? null : meal.id); setEditingTagsId(null); }}
+                        className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                        title="Cambiar ícono"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      {confirmDeleteId === meal.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleDelete(meal.id)}
+                            className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                            title="Confirmar"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+                            title="Cancelar"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
                         <button
-                          key={emoji}
-                          onClick={() => handleEmojiSelect(meal.id, emoji)}
-                          className={cn(
-                            "text-xl p-1.5 rounded-lg transition-all hover:bg-card",
-                            meal.emoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
-                          )}
+                          onClick={() => setConfirmDeleteId(meal.id)}
+                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Eliminar"
                         >
-                          {emoji}
+                          <Trash2 size={14} />
                         </button>
-                      ))}
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {/* Inline emoji picker */}
+                  {emojiOpen && (
+                    <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30">
+                      <p className="text-xs text-muted-foreground mb-2 font-medium">Elegí un ícono:</p>
+                      <div className="grid grid-cols-10 sm:grid-cols-12 gap-1">
+                        {FOOD_EMOJIS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            onClick={() => handleEmojiSelect(meal.id, emoji)}
+                            className={cn(
+                              "text-xl p-1.5 rounded-lg transition-all hover:bg-card",
+                              meal.emoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
+                            )}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Inline tags picker */}
+                  {tagsOpen && (
+                    <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30 space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">
+                        Asigná categorías y subcategorías (podés elegir varias):
+                      </p>
+                      <TagPicker
+                        value={tags}
+                        onChange={(newTags) => updateCustomMealTags(meal.id, newTags)}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

@@ -26,6 +26,7 @@ export type Database = {
           is_side: boolean
           meal_id: string
           name: string
+          tags: string[]
         }
         Insert: {
           baby_note?: string | null
@@ -38,6 +39,7 @@ export type Database = {
           is_side?: boolean
           meal_id: string
           name: string
+          tags?: string[]
         }
         Update: {
           baby_note?: string | null
@@ -50,6 +52,7 @@ export type Database = {
           is_side?: boolean
           meal_id?: string
           name?: string
+          tags?: string[]
         }
         Relationships: []
       }

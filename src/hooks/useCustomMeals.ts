@@ -12,6 +12,7 @@ interface CustomMealRow {
   baby_note: string | null;
   is_keto: boolean;
   is_side: boolean;
+  tags: string[] | null;
 }
 
 function rowToMeal(row: CustomMealRow): Meal {
@@ -24,6 +25,7 @@ function rowToMeal(row: CustomMealRow): Meal {
     babyNote: row.baby_note ?? undefined,
     isKeto: row.is_keto,
     isSide: row.is_side,
+    tags: row.tags ?? [],
   };
 }
 
@@ -58,6 +60,7 @@ export function useCustomMeals() {
       baby_note: meal.babyNote ?? null,
       is_keto: meal.isKeto ?? false,
       is_side: meal.isSide ?? false,
+      tags: meal.tags ?? [],
     };
 
     const { data, error } = await supabase
@@ -84,6 +87,15 @@ export function useCustomMeals() {
     setCustomMeals((prev) => prev.map((m) => m.id === mealId ? { ...m, emoji } : m));
   }, []);
 
+  const updateCustomMealTags = useCallback(async (mealId: string, tags: string[]) => {
+    const { error } = await supabase
+      .from("custom_meals")
+      .update({ tags })
+      .eq("meal_id", mealId);
+    if (error) { console.error("Error updating tags:", error); return; }
+    setCustomMeals((prev) => prev.map((m) => m.id === mealId ? { ...m, tags } : m));
+  }, []);
+
   const deleteCustomMeal = useCallback(async (mealId: string) => {
     const { error } = await supabase
       .from("custom_meals")
@@ -93,5 +105,5 @@ export function useCustomMeals() {
     setCustomMeals((prev) => prev.filter((m) => m.id !== mealId));
   }, []);
 
-  return { customMeals, saveCustomMeal, updateCustomMealEmoji, deleteCustomMeal };
+  return { customMeals, saveCustomMeal, updateCustomMealEmoji, updateCustomMealTags, deleteCustomMeal };
 }

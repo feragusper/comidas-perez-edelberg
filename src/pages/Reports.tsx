@@ -64,7 +64,41 @@ function categoryBreakdown(meals: MealCount[]): { category: string; count: numbe
     .sort((a, b) => b.count - a.count);
 }
 
-const US_GETTERS = {
+interface SubCount { sub: string; count: number; pct: number }
+interface CatCount { category: string; count: number; pct: number; subs: SubCount[] }
+
+function buildTaxonomyBreakdown(meals: MealCount[]): CatCount[] {
+  const catMap = new Map<string, { count: number; subs: Map<string, number> }>();
+  for (const m of meals) {
+    const tags = m.tags ?? [];
+    if (tags.length === 0) continue;
+    for (const tag of tags) {
+      const parsed = parseTag(tag);
+      if (!parsed) continue;
+      let entry = catMap.get(parsed.category);
+      if (!entry) { entry = { count: 0, subs: new Map() }; catMap.set(parsed.category, entry); }
+      entry.count += m.count;
+      entry.subs.set(parsed.sub, (entry.subs.get(parsed.sub) || 0) + m.count);
+    }
+  }
+  const total = Array.from(catMap.values()).reduce((s, e) => s + e.count, 0);
+  const result: CatCount[] = [];
+  for (const cat of TAXONOMY) {
+    const entry = catMap.get(cat.id);
+    if (!entry) continue;
+    const subs: SubCount[] = Array.from(entry.subs.entries())
+      .map(([sub, count]) => ({ sub, count, pct: entry.count ? Math.round((count / entry.count) * 100) : 0 }))
+      .sort((a, b) => b.count - a.count);
+    result.push({
+      category: cat.id,
+      count: entry.count,
+      pct: total ? Math.round((entry.count / total) * 100) : 0,
+      subs,
+    });
+  }
+  return result.sort((a, b) => b.count - a.count);
+}
+
   all: (d: DayPlan) => [d.dinner, d.dinnerSide, d.lunch, d.lunchSide],
   dinners: (d: DayPlan) => [d.dinner, d.dinnerSide],
   lunches: (d: DayPlan) => [d.lunch, d.lunchSide],

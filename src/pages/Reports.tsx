@@ -403,3 +403,46 @@ function SummaryCard({ icon, label, value, subtitle }: { icon: React.ReactNode; 
     </div>
   );
 }
+
+function TaxonomyRow({ cat, taxonomyTotal }: { cat: CatCount; taxonomyTotal: number }) {
+  const [open, setOpen] = useState(false);
+  const meta = categoryOf(cat.category);
+  return (
+    <div className="space-y-1">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
+      >
+        {open ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
+        <span className="text-base">{meta?.emoji ?? "🏷️"}</span>
+        <span className={cn("text-xs font-medium flex-1", meta?.color ?? "text-foreground")}>{meta?.label ?? cat.category}</span>
+        <span className="text-xs text-muted-foreground">{cat.count} ({cat.pct}%)</span>
+      </button>
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all", meta?.bar ?? "bg-primary")}
+          style={{ width: `${taxonomyTotal ? (cat.count / taxonomyTotal) * 100 : 0}%` }}
+        />
+      </div>
+      {open && (
+        <div className="pl-6 space-y-1.5 pt-1.5">
+          {cat.subs.map((s) => (
+            <div key={s.sub} className="space-y-0.5">
+              <div className="flex justify-between text-[11px]">
+                <span className={cn("font-medium", meta?.color ?? "text-foreground")}>{s.sub}</span>
+                <span className="text-muted-foreground">{s.count} ({s.pct}%)</span>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full transition-all opacity-80", meta?.bar ?? "bg-primary")}
+                  style={{ width: `${s.pct}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+

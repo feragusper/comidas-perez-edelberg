@@ -157,6 +157,8 @@ export default function Reports() {
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);
   const ketoPct = total ? Math.round((ketoCount / total) * 100) : 0;
   const categories = categoryBreakdown(meals);
+  const taxonomyBreakdown = useMemo(() => buildTaxonomyBreakdown(meals), [meals]);
+  const taxonomyTotal = taxonomyBreakdown.reduce((s, c) => s + c.count, 0);
   const maxCount = meals.length > 0 ? meals[0].count : 1;
   const weeksCount = allPlans.length;
   const barColor = PERSONA_CONFIG[persona].bar;

@@ -192,6 +192,26 @@ export default function CustomMeals() {
           </div>
         )}
       </div>
+
+      <Dialog open={showReset} onOpenChange={setShowReset}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Reiniciar la semana?</DialogTitle>
+            <DialogDescription>
+              Se borrará toda la planificación de la semana actual y los almuerzos volverán a ser sugeridos automáticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReset(false)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => { resetPlan(); setShowReset(false); }}
+            >
+              Reiniciar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

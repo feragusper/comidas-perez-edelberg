@@ -5,9 +5,8 @@ import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed, Carrot } from "lucide-react";
+import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 

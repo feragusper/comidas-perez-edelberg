@@ -5,11 +5,12 @@ import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, RotateCcw, LayoutList, Table2, FlaskConical, Sparkles, Loader2, BarChart3, UtensilsCrossed } from "lucide-react";
+import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+
+import { TopNav } from "@/components/TopNav";
 
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
@@ -37,7 +38,7 @@ export default function Index() {
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
-    resetPlan, swapSlots,
+    swapSlots,
   } = useMealPlan(activeWeek);
 
   const handleDragEnd = (result: DropResult) => {
@@ -51,7 +52,7 @@ export default function Index() {
     const dstDay = parseInt(dstDayStr, 10);
     swapSlots(srcDay, srcSlot as any, dstDay, dstSlot as any);
   };
-  const [showReset, setShowReset] = useState(false);
+  
 
   const { customMeals, saveCustomMeal } = useCustomMeals();
 
@@ -66,6 +67,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
+      <TopNav />
       {/* Hero */}
       <div className="relative overflow-hidden">
         <img src={heroFood} alt="Cocina familiar" className="w-full h-48 sm:h-64 object-cover" style={{ objectPosition: "center 60%" }} />
@@ -137,17 +139,6 @@ export default function Index() {
           <span className="text-muted-foreground">
             <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
           </span>
-          <div className="ml-auto flex items-center gap-2">
-            <Link to="/mis-comidas" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <UtensilsCrossed size={13} /> Mis comidas
-            </Link>
-            <Link to="/reportes" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <BarChart3 size={13} /> Reportes
-            </Link>
-            <button onClick={() => setShowReset(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors">
-              <RotateCcw size={13} /> Reiniciar
-            </button>
-          </div>
         </div>
       </div>
 
@@ -251,19 +242,6 @@ export default function Index() {
         </div>
       )}
 
-      {showReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setShowReset(false)} />
-          <div className="relative z-10 bg-card rounded-2xl p-6 shadow-2xl max-w-sm w-full mx-4 border border-border">
-            <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'Fraunces, serif' }}>¿Reiniciar la semana?</h3>
-            <p className="text-sm text-muted-foreground mb-5">Se borrará toda la planificación y los almuerzos volverán a ser sugeridos automáticamente.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowReset(false)} className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
-              <button onClick={() => { resetPlan(); setShowReset(false); }} className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition-opacity">Reiniciar</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { useCustomMeals } from "@/hooks/useCustomMeals";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Pencil, Trash2, X, Check, Tag } from "lucide-react";
+import { useMealPlan } from "@/hooks/useMealPlan";
+import { currentWeekKey } from "@/lib/env";
+import { Pencil, Trash2, X, Check, Tag, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TopNav } from "@/components/TopNav";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 import { FOOD_EMOJIS } from "@/data/foodEmojis";
 import { TagPicker } from "@/components/TagPicker";
@@ -10,9 +14,11 @@ import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 export default function CustomMeals() {
   const { customMeals, updateCustomMealEmoji, updateCustomMealTags, deleteCustomMeal } = useCustomMeals();
+  const { resetPlan } = useMealPlan(currentWeekKey());
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
   const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showReset, setShowReset] = useState(false);
 
   const handleEmojiSelect = async (mealId: string, emoji: string) => {
     await updateCustomMealEmoji(mealId, emoji);
@@ -26,19 +32,21 @@ export default function CustomMeals() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="px-4 sm:px-8 py-4 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link to="/" className="p-2 rounded-xl hover:bg-muted transition-colors">
-            <ArrowLeft size={18} className="text-muted-foreground" />
-          </Link>
-          <h1 className="text-xl font-bold text-foreground" style={{ fontFamily: "Fraunces, serif" }}>
+      <TopNav />
+      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "Fraunces, serif" }}>
             Mis comidas personalizadas
           </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowReset(true)}
+            className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+          >
+            <RotateCcw size={14} className="mr-1.5" /> Reiniciar semana
+          </Button>
         </div>
-      </div>
-
-      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
         {customMeals.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">🍽️</p>
@@ -184,6 +192,26 @@ export default function CustomMeals() {
           </div>
         )}
       </div>
+
+      <Dialog open={showReset} onOpenChange={setShowReset}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Reiniciar la semana?</DialogTitle>
+            <DialogDescription>
+              Se borrará toda la planificación de la semana actual y los almuerzos volverán a ser sugeridos automáticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReset(false)}>Cancelar</Button>
+            <Button
+              variant="destructive"
+              onClick={() => { resetPlan(); setShowReset(false); }}
+            >
+              Reiniciar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

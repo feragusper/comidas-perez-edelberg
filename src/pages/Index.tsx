@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import heroFood from "@/assets/hero-food.jpg";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
+import { TopNav } from "@/components/TopNav";
+
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
@@ -66,6 +68,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
+      <TopNav />
       {/* Hero */}
       <div className="relative overflow-hidden">
         <img src={heroFood} alt="Cocina familiar" className="w-full h-48 sm:h-64 object-cover" style={{ objectPosition: "center 60%" }} />
@@ -137,17 +140,6 @@ export default function Index() {
           <span className="text-muted-foreground">
             <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
           </span>
-          <div className="ml-auto flex items-center gap-2">
-            <Link to="/mis-comidas" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <UtensilsCrossed size={13} /> Mis comidas
-            </Link>
-            <Link to="/reportes" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
-              <BarChart3 size={13} /> Reportes
-            </Link>
-            <button onClick={() => setShowReset(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors">
-              <RotateCcw size={13} /> Reiniciar
-            </button>
-          </div>
         </div>
       </div>
 

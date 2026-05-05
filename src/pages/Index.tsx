@@ -39,7 +39,7 @@ export default function Index() {
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
-    resetPlan, swapSlots,
+    swapSlots,
   } = useMealPlan(activeWeek);
 
   const handleDragEnd = (result: DropResult) => {

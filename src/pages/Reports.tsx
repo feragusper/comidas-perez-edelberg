@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { ArrowLeft, BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag } from "lucide-react";
+import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
+import { TopNav } from "@/components/TopNav";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 
@@ -201,12 +202,9 @@ export default function Reports() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="px-4 sm:px-8 py-4 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
+      <TopNav />
+      <div className="px-4 sm:px-8 py-4 border-b border-border bg-card/80">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
           <BarChart3 size={22} className="text-primary" />
           <h1 className="text-xl font-bold text-foreground">Reportes</h1>
           <span className="text-xs text-muted-foreground ml-auto">

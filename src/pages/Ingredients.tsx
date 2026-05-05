@@ -117,14 +117,10 @@ export default function Ingredients() {
     const [dayStr, slot] = value.split("|") as [string, SlotKey];
     const dayIndex = parseInt(dayStr, 10);
     const existing = getCurrentMealAt(dayIndex, slot);
-    const meal = buildMeal(suggestion);
     if (existing) {
       setPendingAssign({ suggestion, dayIndex, slot, existing });
-      // store the freshly built meal for confirm step
-      (setPendingAssign as any)._meal = meal;
-      setPendingAssign({ suggestion, dayIndex, slot, existing });
     } else {
-      applyAssign(suggestion, dayIndex, slot, meal);
+      applyAssign(suggestion, dayIndex, slot, buildMeal(suggestion));
     }
   };
 

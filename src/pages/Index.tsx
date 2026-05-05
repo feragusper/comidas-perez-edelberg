@@ -53,7 +53,7 @@ export default function Index() {
     const dstDay = parseInt(dstDayStr, 10);
     swapSlots(srcDay, srcSlot as any, dstDay, dstSlot as any);
   };
-  const [showReset, setShowReset] = useState(false);
+  
 
   const { customMeals, saveCustomMeal } = useCustomMeals();
 
@@ -243,19 +243,6 @@ export default function Index() {
         </div>
       )}
 
-      {showReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setShowReset(false)} />
-          <div className="relative z-10 bg-card rounded-2xl p-6 shadow-2xl max-w-sm w-full mx-4 border border-border">
-            <h3 className="text-lg font-bold text-foreground mb-2" style={{ fontFamily: 'Fraunces, serif' }}>¿Reiniciar la semana?</h3>
-            <p className="text-sm text-muted-foreground mb-5">Se borrará toda la planificación y los almuerzos volverán a ser sugeridos automáticamente.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowReset(false)} className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-muted transition-colors">Cancelar</button>
-              <button onClick={() => { resetPlan(); setShowReset(false); }} className="flex-1 py-2.5 rounded-xl bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition-opacity">Reiniciar</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

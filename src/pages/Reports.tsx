@@ -30,7 +30,11 @@ type Section =
 
 type MealGetter = (d: DayPlan) => (Meal | null)[];
 
-function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
+function extractMeals(
+  plans: DayPlan[][],
+  getter: MealGetter,
+  tagResolver: (id: string) => string[]
+): MealCount[] {
   const map = new Map<string, MealCount>();
   for (const week of plans) {
     for (const day of week) {
@@ -40,6 +44,7 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
         if (existing) {
           existing.count++;
         } else {
+          const resolvedTags = tagResolver(meal.id);
           map.set(meal.id, {
             id: meal.id,
             name: meal.name,
@@ -47,7 +52,7 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
             count: 1,
             category: meal.category,
             isKeto: !!meal.isKeto,
-            tags: meal.tags ?? [],
+            tags: resolvedTags.length > 0 ? resolvedTags : (meal.tags ?? []),
           });
         }
       }

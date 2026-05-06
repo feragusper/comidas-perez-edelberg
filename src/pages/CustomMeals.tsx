@@ -8,7 +8,7 @@ import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
-import { FOOD_EMOJIS } from "@/data/foodEmojis";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 

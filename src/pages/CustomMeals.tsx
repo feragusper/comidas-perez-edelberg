@@ -8,7 +8,7 @@ import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
-import { FOOD_EMOJIS } from "@/data/foodEmojis";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
@@ -156,21 +156,12 @@ export default function CustomMeals() {
                   {/* Inline emoji picker */}
                   {emojiOpen && (
                     <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30">
-                      <p className="text-xs text-muted-foreground mb-2 font-medium">Elegí un ícono:</p>
-                      <div className="grid grid-cols-10 sm:grid-cols-12 gap-1">
-                        {FOOD_EMOJIS.map((emoji) => (
-                          <button
-                            key={emoji}
-                            onClick={() => handleEmojiSelect(meal.id, emoji)}
-                            className={cn(
-                              "text-xl p-1.5 rounded-lg transition-all hover:bg-card",
-                              meal.emoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
-                            )}
-                          >
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
+                      <EmojiPicker
+                        value={meal.emoji}
+                        onSelect={(emoji) => handleEmojiSelect(meal.id, emoji)}
+                        gridClassName="grid grid-cols-10 sm:grid-cols-12 gap-1"
+                        buttonClassName="text-xl p-1.5 rounded-lg transition-all hover:bg-card"
+                      />
                     </div>
                   )}
 

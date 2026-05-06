@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
-import { FOOD_EMOJIS } from "@/data/foodEmojis";
 import { TagPicker } from "@/components/TagPicker";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";
@@ -143,20 +143,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
           <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-4">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Ícono</p>
-              <div className="grid grid-cols-8 gap-1.5">
-                {FOOD_EMOJIS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => setSelectedEmoji(emoji)}
-                    className={cn(
-                      "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
-                      selectedEmoji === emoji && "bg-primary/15 ring-2 ring-primary/40"
-                    )}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
+              <EmojiPicker value={selectedEmoji} onSelect={setSelectedEmoji} />
             </div>
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">

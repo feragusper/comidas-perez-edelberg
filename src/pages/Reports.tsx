@@ -8,6 +8,8 @@ import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers
 import { TopNav } from "@/components/TopNav";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
+import { MEALS } from "@/data/meals";
+import { useCustomMeals } from "@/hooks/useCustomMeals";
 
 interface MealCount {
   id: string;

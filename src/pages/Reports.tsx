@@ -192,9 +192,17 @@ export default function Reports() {
   const availableSections = PERSONA_SECTIONS[persona];
   const activeSection: Section = availableSections.includes(section) ? section : "all";
 
+  const { customMeals } = useCustomMeals();
+  const tagResolver = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const m of MEALS) map.set(m.id, m.tags ?? []);
+    for (const m of customMeals) map.set(m.id, m.tags ?? []);
+    return (id: string) => map.get(id) ?? [];
+  }, [customMeals]);
+
   const meals = useMemo(
-    () => extractMeals(allPlans, getterFor(persona, activeSection)),
-    [allPlans, persona, activeSection]
+    () => extractMeals(allPlans, getterFor(persona, activeSection), tagResolver),
+    [allPlans, persona, activeSection, tagResolver]
   );
   const total = meals.reduce((s, m) => s + m.count, 0);
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);

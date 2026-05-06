@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
-import { FOOD_EMOJIS } from "@/data/foodEmojis";
 import { TagPicker } from "@/components/TagPicker";
+import { EmojiPicker } from "@/components/EmojiPicker";
 
 export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";

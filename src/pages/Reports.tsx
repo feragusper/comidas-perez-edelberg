@@ -8,6 +8,8 @@ import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers
 import { TopNav } from "@/components/TopNav";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
+import { MEALS } from "@/data/meals";
+import { useCustomMeals } from "@/hooks/useCustomMeals";
 
 interface MealCount {
   id: string;
@@ -28,7 +30,11 @@ type Section =
 
 type MealGetter = (d: DayPlan) => (Meal | null)[];
 
-function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
+function extractMeals(
+  plans: DayPlan[][],
+  getter: MealGetter,
+  tagResolver: (id: string) => string[]
+): MealCount[] {
   const map = new Map<string, MealCount>();
   for (const week of plans) {
     for (const day of week) {
@@ -38,6 +44,7 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
         if (existing) {
           existing.count++;
         } else {
+          const resolvedTags = tagResolver(meal.id);
           map.set(meal.id, {
             id: meal.id,
             name: meal.name,
@@ -45,7 +52,7 @@ function extractMeals(plans: DayPlan[][], getter: MealGetter): MealCount[] {
             count: 1,
             category: meal.category,
             isKeto: !!meal.isKeto,
-            tags: meal.tags ?? [],
+            tags: resolvedTags.length > 0 ? resolvedTags : (meal.tags ?? []),
           });
         }
       }
@@ -185,9 +192,17 @@ export default function Reports() {
   const availableSections = PERSONA_SECTIONS[persona];
   const activeSection: Section = availableSections.includes(section) ? section : "all";
 
+  const { customMeals } = useCustomMeals();
+  const tagResolver = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const m of MEALS) map.set(m.id, m.tags ?? []);
+    for (const m of customMeals) map.set(m.id, m.tags ?? []);
+    return (id: string) => map.get(id) ?? [];
+  }, [customMeals]);
+
   const meals = useMemo(
-    () => extractMeals(allPlans, getterFor(persona, activeSection)),
-    [allPlans, persona, activeSection]
+    () => extractMeals(allPlans, getterFor(persona, activeSection), tagResolver),
+    [allPlans, persona, activeSection, tagResolver]
   );
   const total = meals.reduce((s, m) => s + m.count, 0);
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);

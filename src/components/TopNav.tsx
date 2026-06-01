@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
-import { UtensilsCrossed, BarChart3, Carrot, ShoppingCart } from "lucide-react";
+import { UtensilsCrossed, BarChart3, Carrot, ShoppingCart, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const items = [
   { to: "/mis-comidas", label: "Mis comidas", icon: UtensilsCrossed },
@@ -11,6 +12,7 @@ const items = [
 
 export function TopNav() {
   const { pathname } = useLocation();
+  const { signOut } = useAuth();
   return (
     <nav className="w-full bg-card/95 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center gap-1 h-11 overflow-x-auto">
@@ -35,6 +37,12 @@ export function TopNav() {
             </Link>
           );
         })}
+        <button
+          onClick={signOut}
+          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+        >
+          <LogOut size={13} /> Salir
+        </button>
       </div>
     </nav>
   );

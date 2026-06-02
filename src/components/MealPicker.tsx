@@ -55,7 +55,11 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
     ...extraMeals.filter((e) => !MEALS.some((m) => m.id === e.id)),
   ];
 
-  const pool = allMeals.filter((m) => isSide ? m.isSide === true : m.isSide !== true);
+  // Custom meals (saved by the user) always appear in both steps,
+  // regardless of whether they were saved as main or side.
+  const pool = allMeals.filter((m) =>
+    m.id.startsWith("custom-") ? true : (isSide ? m.isSide === true : m.isSide !== true)
+  );
   const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
   const filtered = dietFiltered.filter((m) =>

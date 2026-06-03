@@ -7,7 +7,6 @@ import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import heroFood from "@/assets/hero-food.jpg";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";
@@ -68,14 +67,24 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        <img src={heroFood} alt="Cocina familiar" className="w-full h-48 sm:h-64 object-cover" style={{ objectPosition: "center 60%" }} />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 sm:px-8 sm:pb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Menú de la semana 🍽️</h1>
+      {/* Elegant header */}
+      <header className="relative overflow-hidden border-b border-border">
+        <div className="absolute inset-0 bg-gradient-luxe opacity-95" />
+        <div className="absolute -top-16 -right-12 w-56 h-56 rounded-full bg-gold/20 blur-3xl" />
+        <div className="absolute -bottom-20 left-1/4 w-64 h-64 rounded-full bg-primary-glow/20 blur-3xl" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-8 py-9 sm:py-12">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-gold/90 mb-2">
+            Pérez · Edelberg
+          </p>
+          <h1 className="font-display text-3xl sm:text-5xl font-bold text-primary-foreground tracking-tight">
+            Menú de la <span className="text-gradient-gold">semana</span>
+          </h1>
+          <p className="mt-2 text-sm text-primary-foreground/70 max-w-md">
+            Planificá las comidas de la familia con calma y estilo.
+          </p>
         </div>
-      </div>
+      </header>
+
 
       {/* Week navigator + controls */}
       <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">

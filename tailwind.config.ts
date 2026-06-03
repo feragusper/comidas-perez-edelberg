@@ -22,6 +22,11 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          soft: "hsl(var(--gold-soft))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -90,9 +95,14 @@ export default {
           },
         },
       },
+      fontFamily: {
+        display: ["Syne", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "sans-serif"],
+      },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "float-slow": "float-slow 6s ease-in-out infinite",
       },
     },
   },

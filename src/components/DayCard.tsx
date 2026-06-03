@@ -327,7 +327,7 @@ export function DayCard({
         >
           <div className="flex items-center gap-2">
             <span className={cn("text-base font-bold", isEatingOut ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
-              style={{ fontFamily: 'Fraunces, serif' }}>
+              style={{ fontFamily: 'Syne, sans-serif' }}>
               {dayPlan.day}
             </span>
             {isEatingOut && <span className="text-base leading-none">{dinnerEmoji}</span>}

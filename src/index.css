@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,54 +6,65 @@
 
 @layer base {
   :root {
-    /* Warm family kitchen palette */
-    --background: 36 33% 97%;
-    --foreground: 20 25% 18%;
+    /* Emerald Prestige — emerald + gold, elegant & refined */
+    --background: 48 38% 96%;
+    --foreground: 162 30% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 25% 18%;
+    --card-foreground: 162 30% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 25% 18%;
+    --popover-foreground: 162 30% 12%;
 
-    /* Terracotta primary */
-    --primary: 16 65% 52%;
-    --primary-foreground: 36 33% 97%;
+    /* Deep emerald primary */
+    --primary: 162 80% 22%;
+    --primary-foreground: 48 40% 96%;
+    --primary-glow: 162 60% 38%;
 
-    /* Warm olive secondary */
-    --secondary: 78 28% 40%;
-    --secondary-foreground: 36 33% 97%;
+    /* Soft emerald secondary */
+    --secondary: 162 24% 90%;
+    --secondary-foreground: 162 60% 18%;
 
-    --muted: 36 20% 92%;
-    --muted-foreground: 20 15% 50%;
+    --muted: 48 20% 92%;
+    --muted-foreground: 162 12% 42%;
 
-    --accent: 38 80% 68%;
-    --accent-foreground: 20 25% 18%;
+    /* Luxurious gold accent */
+    --accent: 44 56% 52%;
+    --accent-foreground: 162 40% 12%;
+    --gold: 44 56% 52%;
+    --gold-soft: 44 60% 88%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 20% 85%;
-    --input: 30 20% 85%;
-    --ring: 16 65% 52%;
+    --border: 162 14% 86%;
+    --input: 162 14% 86%;
+    --ring: 162 80% 22%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
     /* Warning / stage badge */
     --warning: 38 92% 45%;
 
     /* Custom tokens */
-    --baby-safe: 142 52% 46%;
-    --baby-safe-bg: 142 52% 96%;
-    --baby-caution: 38 92% 50%;
-    --baby-caution-bg: 38 92% 96%;
-    --dinner-bg: 16 65% 97%;
-    --lunch-bg: 78 28% 96%;
-    --sunday-bg: 258 50% 97%;
-    --sunday-accent: 258 50% 58%;
+    --baby-safe: 142 52% 40%;
+    --baby-safe-bg: 142 40% 95%;
+    --baby-caution: 38 80% 48%;
+    --baby-caution-bg: 38 80% 95%;
+    --dinner-bg: 162 30% 96%;
+    --lunch-bg: 48 30% 95%;
+    --sunday-bg: 280 30% 96%;
+    --sunday-accent: 280 40% 52%;
 
-    --shadow-warm: 0 4px 20px -4px hsl(16 65% 52% / 0.15);
-    --shadow-card: 0 2px 12px -2px hsl(20 25% 18% / 0.08);
+    /* Gradients */
+    --gradient-emerald: linear-gradient(135deg, hsl(162 80% 18%), hsl(162 55% 32%));
+    --gradient-gold: linear-gradient(135deg, hsl(44 60% 58%), hsl(38 65% 48%));
+    --gradient-luxe: linear-gradient(135deg, hsl(162 80% 16%) 0%, hsl(168 50% 22%) 55%, hsl(44 45% 30%) 100%);
+
+    /* Shadows */
+    --shadow-luxe: 0 20px 50px -20px hsl(162 80% 16% / 0.35);
+    --shadow-card: 0 4px 24px -8px hsl(162 40% 18% / 0.12);
+    --shadow-gold: 0 8px 30px -10px hsl(44 56% 45% / 0.45);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -73,11 +84,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3 {
-    font-family: 'Fraunces', serif;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -89,4 +103,41 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .bg-gradient-luxe {
+    background: var(--gradient-luxe);
+  }
+
+  .bg-gradient-emerald {
+    background: var(--gradient-emerald);
+  }
+
+  .shadow-luxe {
+    box-shadow: var(--shadow-luxe);
+  }
+
+  .shadow-card-soft {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-gold {
+    box-shadow: var(--shadow-gold);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
 }

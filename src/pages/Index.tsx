@@ -7,7 +7,6 @@ import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import heroFood from "@/assets/hero-food.jpg";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";

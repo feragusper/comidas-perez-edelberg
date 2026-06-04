@@ -360,12 +360,41 @@ export function useMealPlan(weekKey: WeekKey) {
     return { ...dayPlan, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
   });
 
+  // Keep latest computed plan (with inherited values) accessible to setters
+  const planWithLunchRef = useRef(planWithLunch);
+  planWithLunchRef.current = planWithLunch;
+
   const update = (dayIndex: number, patch: Partial<DayPlan>) => {
     setPlan((prev) => {
       const next = prev.map((d, i) => (i === dayIndex ? { ...d, ...patch } : d));
       scheduleSave(next);
       return next;
     });
+  };
+
+  /**
+   * Materialize an inherited (non-overridden) lunch/dinner slot before editing
+   * its side or note, so the change actually persists instead of being discarded
+   * by the recompute step.
+   */
+  const materialize = (
+    i: number,
+    overriddenKey: keyof DayPlan,
+    mealKey: keyof DayPlan,
+    sideKey: keyof DayPlan,
+    noteKey: keyof DayPlan,
+    patch: Partial<DayPlan>
+  ): Partial<DayPlan> => {
+    const raw = plan[i];
+    if (raw[overriddenKey]) return patch;
+    const effective = planWithLunchRef.current[i];
+    return {
+      [overriddenKey]: true,
+      [mealKey]: effective[mealKey],
+      [sideKey]: effective[sideKey],
+      [noteKey]: effective[noteKey],
+      ...patch,
+    } as Partial<DayPlan>;
   };
 
   const setDinner = (i: number, meal: Meal | null) => {

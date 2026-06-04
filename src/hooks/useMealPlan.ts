@@ -408,18 +408,24 @@ export function useMealPlan(weekKey: WeekKey) {
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
   const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
-  const setLunchSide = (i: number, meal: Meal | null) => update(i, { lunchSide: meal });
-  const setLunchNote = (i: number, note: string) => update(i, { lunchNote: note });
+  const setLunchSide = (i: number, meal: Meal | null) =>
+    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", { lunchSide: meal }));
+  const setLunchNote = (i: number, note: string) =>
+    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", { lunchNote: note }));
   const hideLunch = (i: number) => update(i, { lunchHidden: true });
   const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchHidden: false, lunchNote: "" });
   const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true, babyDinnerHidden: false });
-  const setBabyDinnerSide = (i: number, meal: Meal | null) => update(i, { babyDinnerSide: meal });
-  const setBabyDinnerNote = (i: number, note: string) => update(i, { babyDinnerNote: note });
+  const setBabyDinnerSide = (i: number, meal: Meal | null) =>
+    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", { babyDinnerSide: meal }));
+  const setBabyDinnerNote = (i: number, note: string) =>
+    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", { babyDinnerNote: note }));
   const hideBabyDinner = (i: number) => update(i, { babyDinnerHidden: true });
   const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "", babyDinnerOverridden: false, babyDinnerHidden: false });
   const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, babyLunchOverridden: true, babyLunchHidden: false });
-  const setBabyLunchSide = (i: number, meal: Meal | null) => update(i, { babyLunchSide: meal });
-  const setBabyLunchNote = (i: number, note: string) => update(i, { babyLunchNote: note });
+  const setBabyLunchSide = (i: number, meal: Meal | null) =>
+    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", { babyLunchSide: meal }));
+  const setBabyLunchNote = (i: number, note: string) =>
+    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", { babyLunchNote: note }));
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
   const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });

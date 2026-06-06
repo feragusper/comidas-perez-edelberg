@@ -96,8 +96,8 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Syne", "sans-serif"],
-        sans: ["Plus Jakarta Sans", "sans-serif"],
+        display: ["Playfair Display", "serif"],
+        sans: ["Inter", "sans-serif"],
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

@@ -67,19 +67,18 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      {/* Elegant header */}
-      <header className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-luxe opacity-95" />
-        <div className="absolute -top-16 -right-12 w-56 h-56 rounded-full bg-gold/20 blur-3xl" />
-        <div className="absolute -bottom-20 left-1/4 w-64 h-64 rounded-full bg-primary-glow/20 blur-3xl" />
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-8 py-9 sm:py-12">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-gold/90 mb-2">
-            Pérez · Edelberg
-          </p>
-          <h1 className="font-display text-3xl sm:text-5xl font-bold text-primary-foreground tracking-tight">
-            Menú de la <span className="text-gradient-gold">semana</span>
+      {/* Editorial header */}
+      <header className="border-b border-border bg-background">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-10 pb-8 sm:pt-14 sm:pb-10 text-center sm:text-left">
+          <div className="inline-block border-l-2 border-primary pl-3 mb-4">
+            <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-muted-foreground">
+              Pérez · Edelberg
+            </p>
+          </div>
+          <h1 className="font-display text-4xl sm:text-6xl font-bold text-foreground tracking-tight">
+            Menú de la <span className="italic font-normal">semana</span>
           </h1>
-          <p className="mt-2 text-sm text-primary-foreground/70 max-w-md">
+          <p className="mt-3 text-base sm:text-lg font-light text-muted-foreground max-w-md mx-auto sm:mx-0">
             Planificá las comidas de la familia con calma y estilo.
           </p>
         </div>
@@ -98,7 +97,7 @@ export default function Index() {
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
               suggestionsEnabled
-                ? "bg-primary/10 border-primary/30 text-primary"
+                ? "bg-accent/10 border-accent/30 text-accent"
                 : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
             )}
           >

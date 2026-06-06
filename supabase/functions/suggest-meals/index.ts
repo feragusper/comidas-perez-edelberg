@@ -21,29 +21,32 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const currentNames = (currentMeals as string[]).filter(Boolean).join(", ") || "ninguno todavía";
+
+    // Usamos TODO el catálogo (no solo keto) para tener mucha más variedad.
     const mainList = (mealCatalog as { id: string; name: string; category: string; isKeto?: boolean }[])
-      .filter(m => m.isKeto)  // only keto meals
-      .map(m => `${m.id}|${m.name}|${m.category}`)
+      .map(m => `${m.id}|${m.name}|${m.category}${m.isKeto ? "|keto" : ""}`)
       .join("\n");
     const sideList = (sideCatalog as { id: string; name: string; isKeto?: boolean }[])
-      .filter(s => s.isKeto)
-      .map(m => `${m.id}|${m.name}`)
+      .map(m => `${m.id}|${m.name}${m.isKeto ? "|keto" : ""}`)
       .join("\n");
 
     const existing = (existingSuggestions ?? []) as { dayIndex: number; mealId: string; sideId: string }[];
     const existingNames = existing.map(s => s.mealId).join(", ");
 
     const isSingleDay = typeof targetDayIndex === "number";
-
     const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
-    const balanceRule = `
-EQUILIBRIO SEMANAL OBLIGATORIO (distribuir entre los 7 días):
-- 2 comidas con POLLO (filetes plancha, asado, curry...)
-- 2 comidas con PESCADO (salmón, merluza, atún, dorada...)
-- 1-2 comidas con CARNE ROJA (ternera, filete, hamburguesa...)
-- 1 comida VEGETARIANA keto (revuelto, wok, huevos...)
-- El domingo sugerir siempre pasta — pero pasta NO es keto, en su defecto usa pollo al limón o salmón
+    // Semilla de aleatoriedad para que el modelo no devuelva siempre lo mismo.
+    const seed = Math.floor(Math.random() * 1_000_000);
+
+    const creativityRule = `
+OBJETIVO: máxima variedad y creatividad. NO sugieras siempre lo mismo.
+- Mezcla proteínas a lo largo de la semana: pollo, pescado, carne roja, cerdo/pavo, huevos/vegetariano, alguna pasta o legumbre.
+- Evita repetir el mismo plato o proteína dos días seguidos.
+- Aprovecha TODO el catálogo, incluyendo platos menos obvios, no solo los 4 o 5 de siempre.
+- Varía mucho las guarniciones (verduras, ensaladas, asados, purés, etc.).
+- Combinaciones sabrosas y realistas para una familia española.
+- Semilla aleatoria de esta tanda: ${seed} (úsala para elegir opciones distintas a otras veces).
 `;
 
     let prompt: string;
@@ -51,48 +54,49 @@ EQUILIBRIO SEMANAL OBLIGATORIO (distribuir entre los 7 días):
     if (isSingleDay) {
       const dayName = days[targetDayIndex as number];
       const otherMealsContext = [...currentMeals as string[], ...existingNames].filter(Boolean).join(", ");
-      prompt = `Eres un asistente de planificación de menú KETO semanal para una familia española.
+      prompt = `Eres un asistente creativo de planificación de menús semanales para una familia española.
 
 Esta semana ya tienen: ${otherMealsContext || "ninguno todavía"}.
 
-Necesito UNA SOLA sugerencia keto para el ${dayName} que complemente el equilibrio semanal:
-${balanceRule}
+Necesito UNA SOLA sugerencia de cena para el ${dayName}, distinta y variada respecto al resto de la semana.
+${creativityRule}
 
-CATÁLOGO KETO DISPONIBLE (id|nombre|categoría):
+CATÁLOGO DISPONIBLE (id|nombre|categoría):
 ${mainList}
 
-GUARNICIONES KETO (id|nombre):
+GUARNICIONES (id|nombre):
 ${sideList}
 
+Elige SOLO ids que existan en el catálogo.
 Devuelve ÚNICAMENTE un JSON (sin texto adicional, sin markdown):
 {"mealId": "id_del_plato", "sideId": "id_guarnicion"}`;
     } else {
-      prompt = `Eres un asistente de planificación de menú KETO semanal para una familia española.
+      prompt = `Eres un asistente creativo de planificación de menús semanales para una familia española.
 
 Esta semana ya tienen confirmadas estas cenas: ${currentNames}
 
-Sugiere una cena KETO con guarnición KETO para cada uno de los 7 días (lunes a domingo).
-${balanceRule}
+Sugiere una cena con guarnición para cada uno de los 7 días (lunes a domingo), con mucha variedad.
+${creativityRule}
 
-Días ya confirmados NO necesitan sugerencia (devuelve null para esos).
+Los días ya confirmados NO necesitan sugerencia (devuelve null para esos).
 
-CATÁLOGO KETO DISPONIBLE (id|nombre|categoría):
+CATÁLOGO DISPONIBLE (id|nombre|categoría):
 ${mainList}
 
-GUARNICIONES KETO (id|nombre):
+GUARNICIONES (id|nombre):
 ${sideList}
 
-Devuelve ÚNICAMENTE un JSON array con exactamente 7 objetos (sin texto, sin markdown):
+Elige SOLO ids que existan en el catálogo.
+Devuelve ÚNICAMENTE un JSON array con exactamente 7 elementos (sin texto, sin markdown):
 [
   {"mealId": "id_plato", "sideId": "id_guarnicion"},
   null,
   ...
 ]
 
-Reglas adicionales:
-- No repetir el mismo plato principal en la semana
-- El domingo: null (tiene pasta fija)
-- Variedad máxima en guarniciones`;
+Reglas:
+- No repetir el mismo plato principal en la semana.
+- Variar proteínas y guarniciones al máximo.`;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -104,7 +108,8 @@ Reglas adicionales:
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.85,
+        temperature: 1.1,
+        top_p: 0.95,
       }),
     });
 

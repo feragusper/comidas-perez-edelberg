@@ -312,28 +312,28 @@ export function DayCard({
         "rounded-2xl border overflow-hidden shadow-card transition-all",
         isPast && "opacity-50",
         isEatingOut ? "border-warning/40 bg-warning/5"
-          : isToday ? "border-primary/50 bg-card ring-2 ring-primary/20"
-          : "border-border bg-card"
+          : isToday ? "border-accent/30 bg-card ring-4 ring-accent/10"
+          : "border-border bg-card hover:border-stone-300"
       )}>
         {/* Header */}
         <div
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
             isEatingOut ? "bg-warning/10"
-              : isToday ? "bg-primary/8"
-              : "bg-muted/40"
+              : isToday ? "bg-accent/5"
+              : "bg-card hover:bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
           <div className="flex items-center gap-2">
-            <span className={cn("text-base font-bold", isEatingOut ? "text-warning" : isToday ? "text-primary" : "text-foreground")}
-              style={{ fontFamily: 'Syne, sans-serif' }}>
+            <span className={cn("text-lg font-bold", isEatingOut ? "text-warning" : isToday ? "text-foreground" : "text-foreground")}
+              style={{ fontFamily: 'Playfair Display, serif' }}>
               {dayPlan.day}
             </span>
             {isEatingOut && <span className="text-base leading-none">{dinnerEmoji}</span>}
             {isPasta && !isEatingOut && <span className="text-base leading-none" title="Noche de pasta">🍝</span>}
             {isToday && (
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground">
+              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-accent text-accent-foreground">
                 Hoy
               </span>
             )}

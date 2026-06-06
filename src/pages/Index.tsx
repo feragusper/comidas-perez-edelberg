@@ -97,7 +97,7 @@ export default function Index() {
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
               suggestionsEnabled
-                ? "bg-primary/10 border-primary/30 text-primary"
+                ? "bg-accent/10 border-accent/30 text-accent"
                 : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
             )}
           >

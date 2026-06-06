@@ -243,9 +243,9 @@ export default function Index() {
         </DragDropContext>
       )}
 
-      {/* Stage badge — fixed top-right corner */}
+      {/* Stage badge — fixed bottom-right corner (no choca con la barra superior) */}
       {isStage && (
-        <div className="fixed top-2 right-2 z-50 flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning/30 border border-warning/60 text-warning text-[10px] font-semibold pointer-events-none select-none">
+        <div className="fixed bottom-3 right-3 z-50 flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning/30 border border-warning/60 text-warning text-[10px] font-semibold pointer-events-none select-none shadow-sm">
           <FlaskConical size={10} />
           STAGE
         </div>

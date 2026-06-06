@@ -158,7 +158,7 @@ export default function Shopping() {
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-2 mb-1">
           <ShoppingCart className="text-primary" size={22} />
-          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "Syne, sans-serif" }}>
+          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
             Lista de supermercado
           </h1>
         </div>
@@ -256,7 +256,7 @@ export default function Shopping() {
         {showResult && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: "Syne, sans-serif" }}>
+              <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
                 Lo que hay que comprar
               </h2>
               <div className="flex gap-2">

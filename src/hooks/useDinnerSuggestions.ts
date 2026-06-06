@@ -35,11 +35,12 @@ function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
   const usedSideIds = new Set(
     plan.filter((d) => d.dinnerSide !== null).map((d) => d.dinnerSide!.id)
   );
-  const ketoMeals = MAIN_MEALS.filter((m) => m.isKeto);
-  const ketoSides = SIDE_MEALS.filter((m) => m.isKeto);
-  const seed = [...usedDinnerIds].sort().join(",") || "empty";
-  const mealPool = seededShuffle(ketoMeals.filter((m) => !usedDinnerIds.has(m.id)), seed);
-  const sidePool = seededShuffle(ketoSides.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
+  // Variedad: usamos TODO el catálogo (no solo keto) y mezclamos con una semilla
+  // que cambia en cada render para no sugerir siempre lo mismo.
+  const seed =
+    ([...usedDinnerIds].sort().join(",") || "empty") + "_" + Math.floor(Math.random() * 1_000_000);
+  const mealPool = seededShuffle(MAIN_MEALS.filter((m) => !usedDinnerIds.has(m.id)), seed);
+  const sidePool = seededShuffle(SIDE_MEALS.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
   let mealIdx = 0;
   let sideIdx = 0;
   return plan.map((dayPlan) => {

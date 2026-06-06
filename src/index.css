@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,65 +6,65 @@
 
 @layer base {
   :root {
-    /* Emerald Prestige — emerald + gold, elegant & refined */
-    --background: 48 38% 96%;
-    --foreground: 162 30% 12%;
+    /* Editorial Moderno — warm stone neutrals, slate ink, indigo accent */
+    --background: 40 20% 97%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 162 30% 12%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 162 30% 12%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Deep emerald primary */
-    --primary: 162 80% 22%;
-    --primary-foreground: 48 40% 96%;
-    --primary-glow: 162 60% 38%;
+    /* Slate ink primary */
+    --primary: 222 47% 11%;
+    --primary-foreground: 40 20% 98%;
+    --primary-glow: 222 30% 30%;
 
-    /* Soft emerald secondary */
-    --secondary: 162 24% 90%;
-    --secondary-foreground: 162 60% 18%;
+    /* Soft stone secondary */
+    --secondary: 30 10% 94%;
+    --secondary-foreground: 222 40% 18%;
 
-    --muted: 48 20% 92%;
-    --muted-foreground: 162 12% 42%;
+    --muted: 30 8% 95%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Luxurious gold accent */
-    --accent: 44 56% 52%;
-    --accent-foreground: 162 40% 12%;
-    --gold: 44 56% 52%;
-    --gold-soft: 44 60% 88%;
+    /* Indigo accent (today / highlights) */
+    --accent: 243 75% 59%;
+    --accent-foreground: 0 0% 100%;
+    --gold: 243 75% 59%;
+    --gold-soft: 226 100% 96%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 162 14% 86%;
-    --input: 162 14% 86%;
-    --ring: 162 80% 22%;
+    --border: 24 8% 90%;
+    --input: 24 8% 90%;
+    --ring: 243 75% 59%;
 
-    --radius: 1rem;
+    --radius: 0.85rem;
 
     /* Warning / stage badge */
     --warning: 38 92% 45%;
 
     /* Custom tokens */
-    --baby-safe: 142 52% 40%;
-    --baby-safe-bg: 142 40% 95%;
+    --baby-safe: 162 60% 32%;
+    --baby-safe-bg: 162 40% 95%;
     --baby-caution: 38 80% 48%;
     --baby-caution-bg: 38 80% 95%;
-    --dinner-bg: 162 30% 96%;
-    --lunch-bg: 48 30% 95%;
+    --dinner-bg: 222 25% 97%;
+    --lunch-bg: 40 25% 96%;
     --sunday-bg: 280 30% 96%;
     --sunday-accent: 280 40% 52%;
 
     /* Gradients */
-    --gradient-emerald: linear-gradient(135deg, hsl(162 80% 18%), hsl(162 55% 32%));
-    --gradient-gold: linear-gradient(135deg, hsl(44 60% 58%), hsl(38 65% 48%));
-    --gradient-luxe: linear-gradient(135deg, hsl(162 80% 16%) 0%, hsl(168 50% 22%) 55%, hsl(44 45% 30%) 100%);
+    --gradient-emerald: linear-gradient(135deg, hsl(222 47% 13%), hsl(222 30% 28%));
+    --gradient-gold: linear-gradient(120deg, hsl(243 75% 59%), hsl(222 47% 22%));
+    --gradient-luxe: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 38% 18%) 60%, hsl(243 50% 26%) 100%);
 
     /* Shadows */
-    --shadow-luxe: 0 20px 50px -20px hsl(162 80% 16% / 0.35);
-    --shadow-card: 0 4px 24px -8px hsl(162 40% 18% / 0.12);
-    --shadow-gold: 0 8px 30px -10px hsl(44 56% 45% / 0.45);
+    --shadow-luxe: 0 24px 60px -28px hsl(222 47% 11% / 0.28);
+    --shadow-card: 0 4px 22px -12px hsl(222 30% 18% / 0.12);
+    --shadow-gold: 0 10px 34px -14px hsl(243 75% 50% / 0.35);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -84,14 +84,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Playfair Display', serif;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 }
 

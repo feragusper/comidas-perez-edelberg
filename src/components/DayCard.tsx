@@ -221,7 +221,7 @@ function MealDisplay({
           ) : (
             <button
               onClick={onChangeSide}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-secondary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-secondary/50 transition-all"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-lunch-accent border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-lunch-accent/50 transition-all"
             >
               <Plus size={11} /> Agregar guarnición
             </button>
@@ -360,9 +360,9 @@ export function DayCard({
             />
 
             {/* ── LUNCH ── */}
-            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-secondary/20 space-y-3">
+            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-lunch-accent/20 space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">☀ Almuerzo</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-lunch-accent">☀ Almuerzo</span>
                 {!dayPlan.lunchOverridden && dayPlan.lunch && (
                   <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                 )}
@@ -382,7 +382,7 @@ export function DayCard({
                       babySafety showSide
                     />
                     {dayPlan.lunchOverridden && (
-                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
+                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
                         <RotateCcw size={11} /> Restaurar sugerencia
                       </button>
                     )}
@@ -390,7 +390,7 @@ export function DayCard({
                 ) : (
                   <button
                     onClick={() => openMainPicker("lunch")}
-                    className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-secondary/30 rounded-xl p-3 hover:border-secondary/60 hover:text-secondary hover:bg-lunch-bg transition-all"
+                    className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-lunch-accent/30 rounded-xl p-3 hover:border-lunch-accent/60 hover:text-lunch-accent hover:bg-lunch-bg transition-all"
                   >
                     <Plus size={15} /> Elegir almuerzo
                   </button>
@@ -398,7 +398,7 @@ export function DayCard({
               </DraggableMealSlot>
 
               {/* Nico lunch */}
-              <div className="border-t border-secondary/15 pt-2">
+              <div className="border-t border-lunch-accent/15 pt-2">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Baby size={12} className="text-baby-safe" />
                   <span className="text-xs font-semibold text-baby-safe">Nico</span>
@@ -419,7 +419,7 @@ export function DayCard({
                         isBaby showSide
                       />
                       {dayPlan.babyLunchOverridden && (
-                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-secondary transition-colors pl-8">
+                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
                           <RotateCcw size={11} /> Restaurar sugerencia
                         </button>
                       )}

@@ -58,8 +58,6 @@ export default {
         "baby-caution-bg": "hsl(var(--baby-caution-bg))",
         "dinner-bg": "hsl(var(--dinner-bg))",
         "lunch-bg": "hsl(var(--lunch-bg))",
-        "sunday-bg": "hsl(var(--sunday-bg))",
-        "lunch-bg": "hsl(var(--lunch-bg))",
         "lunch-accent": "hsl(var(--lunch-accent))",
         "sunday-bg": "hsl(var(--sunday-bg))",
         "sunday-accent": "hsl(var(--sunday-accent))",

@@ -14,6 +14,7 @@ interface ShoppingItem {
   quantity: string;
   category: string;
   emoji?: string;
+  sources?: string[];
 }
 
 type ItemState = "pending" | "have" | "buy";

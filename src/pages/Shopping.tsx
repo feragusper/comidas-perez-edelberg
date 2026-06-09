@@ -214,7 +214,7 @@ export default function Shopping() {
                         <li
                           key={k}
                           className={cn(
-                            "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
+                            "flex items-start gap-3 px-3 py-2 text-sm transition-colors",
                             st === "have" && "opacity-50 line-through",
                             st === "buy" && "bg-primary/5"
                           )}
@@ -223,11 +223,17 @@ export default function Shopping() {
                             checked={st === "have"}
                             onCheckedChange={() => setState(it, "have")}
                             aria-label="Ya tengo"
+                            className="mt-0.5"
                           />
                           <span className="text-lg shrink-0">{it.emoji ?? "🛒"}</span>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-foreground truncate">{it.name}</p>
                             <p className="text-xs text-muted-foreground">{it.quantity}</p>
+                            {it.sources && it.sources.length > 0 && (
+                              <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
+                                {it.sources.join(" · ")}
+                              </p>
+                            )}
                           </div>
                           <button
                             onClick={() => setState(it, "buy")}

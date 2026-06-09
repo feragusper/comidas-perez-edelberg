@@ -39,8 +39,8 @@ Generá una lista de compras de supermercado consolidada con los ingredientes ne
 
 Devolvé ÚNICAMENTE un JSON array (sin texto, sin markdown), con este formato exacto:
 [
-  {"name": "Pechuga de pollo", "quantity": "1 kg", "category": "Carnes", "emoji": "🍗"},
-  {"name": "Tomate", "quantity": "4 unidades", "category": "Verduras", "emoji": "🍅"},
+  {"name": "Pechuga de pollo", "quantity": "1 kg", "category": "Carnes", "emoji": "🍗", "sources": ["Lunes · Almuerzo: Pollo al horno", "Martes · Cena: Pollo a la plancha"]},
+  {"name": "Tomate", "quantity": "4 unidades", "category": "Verduras", "emoji": "🍅", "sources": ["Lunes · Almuerzo: Ensalada"]},
   ...
 ]
 
@@ -49,8 +49,9 @@ Reglas:
 - quantity: cantidad estimada para una familia de 2 adultos + 1 niño
 - category: una de: "Carnes", "Pescados", "Verduras", "Frutas", "Lácteos", "Panadería", "Despensa", "Congelados", "Otros"
 - emoji: un emoji representativo del ingrediente
+- sources: array con las comidas (de la lista de arriba) que usan ese ingrediente, en formato "Día · Slot: Nombre". Incluí todas las comidas que lo requieran.
 - No incluyas sal, agua, aceite común, ni especias básicas
-- Consolidá ingredientes repetidos en una sola línea
+- Consolidá ingredientes repetidos en una sola línea (sumando sus sources)
 - Máximo 30 ítems`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

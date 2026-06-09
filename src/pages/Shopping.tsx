@@ -294,11 +294,16 @@ export default function Shopping() {
                     <div className="px-3 py-2 bg-muted/40 text-xs font-semibold text-foreground">{cat}</div>
                     <ul className="divide-y divide-border">
                       {list.map((it) => (
-                        <li key={itemKey(it)} className="flex items-center gap-3 px-3 py-2 text-sm">
+                        <li key={itemKey(it)} className="flex items-start gap-3 px-3 py-2 text-sm">
                           <span className="text-lg">{it.emoji ?? "🛒"}</span>
                           <div className="flex-1">
                             <p className="font-medium text-foreground">{it.name}</p>
                             <p className="text-xs text-muted-foreground">{it.quantity}</p>
+                            {it.sources && it.sources.length > 0 && (
+                              <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
+                                {it.sources.join(" · ")}
+                              </p>
+                            )}
                           </div>
                         </li>
                       ))}

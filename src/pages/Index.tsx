@@ -11,6 +11,7 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";
 
+import { useWeekAutocomplete } from "@/hooks/useWeekAutocomplete";
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 

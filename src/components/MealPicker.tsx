@@ -18,6 +18,8 @@ interface MealPickerProps {
   onCustomMeal?: (meal: Meal) => void;
   onClose: () => void;
   onSkipSide?: () => void;
+  /** Override which categories are shown/grouped (e.g. ["Desayunos"] for breakfast). */
+  categories?: string[];
 }
 
 const safetyColors: Record<BabySafety, string> = {

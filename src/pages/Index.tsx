@@ -113,6 +113,23 @@ export default function Index() {
             {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
           </button>
 
+          {/* Autocomplete whole week */}
+          <button
+            onClick={runAutocomplete}
+            disabled={loadingAutocomplete}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
+              "bg-primary/10 border-primary/30 text-primary hover:bg-primary/15 disabled:opacity-60 disabled:cursor-not-allowed"
+            )}
+            title="Completa cena, desayuno y merienda de toda la semana según vuestro historial + ideas nuevas de IA"
+          >
+            {loadingAutocomplete
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Wand2 size={12} />
+            }
+            {loadingAutocomplete ? "Autocompletando…" : "Autocompletar semana"}
+          </button>
+
           {/* View toggle */}
           <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
             <button

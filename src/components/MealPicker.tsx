@@ -35,7 +35,7 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide, categories }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name

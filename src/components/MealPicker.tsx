@@ -87,7 +87,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
 
   // Rest grouped by category
   const rest = filtered.filter((m) => !prevRelatedIds.has(m.id) && !customIds.has(m.id));
-  const grouped = MEAL_CATEGORIES.reduce<Record<string, Meal[]>>((acc, cat) => {
+  const grouped = (categories ?? MEAL_CATEGORIES).reduce<Record<string, Meal[]>>((acc, cat) => {
     const meals = rest.filter((m) => m.category === cat);
     if (meals.length) acc[cat] = meals;
     return acc;

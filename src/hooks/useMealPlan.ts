@@ -481,6 +481,36 @@ export function useMealPlan(weekKey: WeekKey) {
     scheduleSave(initial);
   };
 
+  /**
+   * Fill the whole week at once from an autocomplete result.
+   * Only fills EMPTY slots (keeps anything the user already chose).
+   * Lunch / baby slots are left to inherit automatically from dinner.
+   */
+  interface AutocompleteEntry {
+    dinner: Meal | null;
+    dinnerSide: Meal | null;
+    breakfast: Meal | null;
+    snack: Meal | null;
+  }
+  const autocompleteWeek = (entries: (AutocompleteEntry | null)[]) => {
+    setPlan((prev) => {
+      const next = prev.map((d, i) => {
+        const e = entries[i];
+        if (!e) return d;
+        const patch: Partial<DayPlan> = {};
+        if (d.dinner == null && e.dinner) {
+          patch.dinner = e.dinner;
+          patch.dinnerSide = isEatingOutMeal(e.dinner) ? null : e.dinnerSide;
+        }
+        if (d.breakfast == null && e.breakfast) patch.breakfast = e.breakfast;
+        if (d.snack == null && e.snack) patch.snack = e.snack;
+        return { ...d, ...patch };
+      });
+      scheduleSave(next);
+      return next;
+    });
+  };
+
   return {
     plan: planWithLunch,
     loading,

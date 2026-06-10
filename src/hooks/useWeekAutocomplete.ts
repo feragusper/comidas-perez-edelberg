@@ -24,7 +24,7 @@ export function useWeekAutocomplete(
   const [loading, setLoading] = useState(false);
 
   const lookup = useCallback(
-    (id: string | undefined | null, pool: Meal[]): Meal | null => {
+    (id: string | undefined | null): Meal | null => {
       if (!id) return null;
       return MEALS.find((m) => m.id === id) ?? customMeals.find((m) => m.id === id) ?? null;
     },

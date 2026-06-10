@@ -130,9 +130,32 @@ export const MEALS: Meal[] = [
   { id: "side-judias-verdes", name: "Judías verdes", emoji: "🫛", babySafety: "safe", babyNote: "Sin sal, bien cocidas", category: "Guarniciones", isSide: true, isKeto: true, tags: T("Verdura/Otras") },
   { id: "side-pisto", name: "Pisto", emoji: "🥘", babySafety: "safe", babyNote: "Sin sal, bien cocinado", category: "Guarniciones", isSide: true, tags: T("Verdura/Solanáceas") },
   { id: "side-aguacate", name: "Aguacate", emoji: "🥑", babySafety: "safe", babyNote: "Excelente para bebés, en puré", category: "Guarniciones", isSide: true, isKeto: true, tags: T("Fruta/Aguacate") },
+
+  // ── Desayunos ──
+  { id: "des-avena", name: "Avena con fruta", emoji: "🥣", babySafety: "safe", babyNote: "Sin azúcar, fruta blanda", category: "Desayunos", tags: T("Carbohidratos/Cereales", "Fruta/Otras") },
+  { id: "des-yogur", name: "Yogur con fruta", emoji: "🥛", babySafety: "safe", babyNote: "Yogur natural sin azúcar", category: "Desayunos", tags: T("Lácteo/Yogur", "Fruta/Otras") },
+  { id: "des-tostada-aguacate", name: "Tostada con aguacate", emoji: "🥑", babySafety: "caution", babyNote: "Pan con gluten, en trozos pequeños", category: "Desayunos", tags: T("Carbohidratos/Pan", "Fruta/Aguacate") },
+  { id: "des-tortitas", name: "Tortitas de avena", emoji: "🥞", babySafety: "safe", babyNote: "Sin azúcar añadido", category: "Desayunos", tags: T("Carbohidratos/Cereales") },
+  { id: "des-fruta", name: "Fruta variada", emoji: "🍓", babySafety: "safe", babyNote: "En trozos blandos", category: "Desayunos", tags: T("Fruta/Otras") },
+  { id: "des-huevo", name: "Huevo revuelto", emoji: "🥚", babySafety: "safe", babyNote: "Bien cocido, sin sal", category: "Desayunos", tags: T("Proteína/Huevo") },
+  { id: "des-pan-tomate", name: "Pan con tomate", emoji: "🍅", babySafety: "caution", babyNote: "Pan con gluten, sin sal", category: "Desayunos", tags: T("Carbohidratos/Pan", "Verdura/Solanáceas") },
+  { id: "des-pancakes-platano", name: "Tortitas de plátano", emoji: "🍌", babySafety: "safe", babyNote: "Solo plátano y huevo", category: "Desayunos", tags: T("Fruta/Otras", "Proteína/Huevo") },
+
+  // ── Meriendas ──
+  { id: "mer-fruta", name: "Fruta", emoji: "🍎", babySafety: "safe", babyNote: "En trozos blandos", category: "Meriendas", tags: T("Fruta/Otras") },
+  { id: "mer-yogur", name: "Yogur", emoji: "🥛", babySafety: "safe", babyNote: "Natural sin azúcar", category: "Meriendas", tags: T("Lácteo/Yogur") },
+  { id: "mer-queso", name: "Queso con pan", emoji: "🧀", babySafety: "caution", babyNote: "Queso suave, pan con gluten", category: "Meriendas", tags: T("Lácteo/Queso", "Carbohidratos/Pan") },
+  { id: "mer-galletas-avena", name: "Galletas de avena", emoji: "🍪", babySafety: "safe", babyNote: "Caseras sin azúcar", category: "Meriendas", tags: T("Carbohidratos/Cereales") },
+  { id: "mer-batido", name: "Batido de fruta", emoji: "🥤", babySafety: "safe", babyNote: "Fruta y leche, sin azúcar", category: "Meriendas", tags: T("Fruta/Otras", "Lácteo/Leche") },
+  { id: "mer-platano", name: "Plátano", emoji: "🍌", babySafety: "safe", babyNote: "Maduro y blando", category: "Meriendas", tags: T("Fruta/Otras") },
+  { id: "mer-hummus", name: "Hummus con palitos", emoji: "🥕", babySafety: "caution", babyNote: "Verduras blandas, hummus suave", category: "Meriendas", tags: T("Carbohidratos/Legumbres", "Verdura/Otras") },
+  { id: "mer-tostada-queso", name: "Tostada con queso", emoji: "🧀", babySafety: "caution", babyNote: "Pan con gluten, queso suave", category: "Meriendas", tags: T("Carbohidratos/Pan", "Lácteo/Queso") },
 ];
 
 export const MEAL_CATEGORIES = ["Pastas", "Carnes", "Vegetariano", "Arroces", "Sopas", "Especiales"];
+
+export const BREAKFASTS = MEALS.filter((m) => m.category === "Desayunos");
+export const SNACKS = MEALS.filter((m) => m.category === "Meriendas");
 
 export const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 

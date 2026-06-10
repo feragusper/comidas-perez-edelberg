@@ -5,12 +5,13 @@ import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
+import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2, Wand2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";
 
+import { useWeekAutocomplete } from "@/hooks/useWeekAutocomplete";
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
@@ -38,6 +39,7 @@ export default function Index() {
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     swapSlots,
+    autocompleteWeek,
   } = useMealPlan(activeWeek);
 
   const handleDragEnd = (result: DropResult) => {
@@ -57,6 +59,9 @@ export default function Index() {
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
+
+  const { run: runAutocomplete, loading: loadingAutocomplete } =
+    useWeekAutocomplete(plan, activeWeek, autocompleteWeek, customMeals);
 
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
@@ -106,6 +111,23 @@ export default function Index() {
               : <Sparkles size={12} />
             }
             {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
+          </button>
+
+          {/* Autocomplete whole week */}
+          <button
+            onClick={runAutocomplete}
+            disabled={loadingAutocomplete}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
+              "bg-primary/10 border-primary/30 text-primary hover:bg-primary/15 disabled:opacity-60 disabled:cursor-not-allowed"
+            )}
+            title="Completa cena, desayuno y merienda de toda la semana según vuestro historial + ideas nuevas de IA"
+          >
+            {loadingAutocomplete
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Wand2 size={12} />
+            }
+            {loadingAutocomplete ? "Autocompletando…" : "Autocompletar semana"}
           </button>
 
           {/* View toggle */}

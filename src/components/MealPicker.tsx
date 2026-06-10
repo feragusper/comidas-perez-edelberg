@@ -18,6 +18,8 @@ interface MealPickerProps {
   onCustomMeal?: (meal: Meal) => void;
   onClose: () => void;
   onSkipSide?: () => void;
+  /** Override which categories are shown/grouped (e.g. ["Desayunos"] for breakfast). */
+  categories?: string[];
 }
 
 const safetyColors: Record<BabySafety, string> = {
@@ -33,7 +35,7 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, onCustomMeal, onClose, onSkipSide, categories }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
@@ -57,9 +59,11 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
 
   // Custom meals (saved by the user) always appear in both steps,
   // regardless of whether they were saved as main or side.
-  const pool = allMeals.filter((m) =>
-    m.id.startsWith("custom-") ? true : (isSide ? m.isSide === true : m.isSide !== true)
-  );
+  const pool = allMeals.filter((m) => {
+    const stepOk = m.id.startsWith("custom-") ? true : (isSide ? m.isSide === true : m.isSide !== true);
+    const catOk = categories ? (m.id.startsWith("custom-") || categories.includes(m.category)) : true;
+    return stepOk && catOk;
+  });
   const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
   const filtered = dietFiltered.filter((m) =>
@@ -83,7 +87,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
 
   // Rest grouped by category
   const rest = filtered.filter((m) => !prevRelatedIds.has(m.id) && !customIds.has(m.id));
-  const grouped = MEAL_CATEGORIES.reduce<Record<string, Meal[]>>((acc, cat) => {
+  const grouped = (categories ?? MEAL_CATEGORIES).reduce<Record<string, Meal[]>>((acc, cat) => {
     const meals = rest.filter((m) => m.category === cat);
     if (meals.length) acc[cat] = meals;
     return acc;

@@ -592,6 +592,11 @@ export function DayCard({
           onSelect={handlePickerSelect}
           onClose={() => setPickerTarget(null)}
           onSkipSide={() => setPickerTarget(null)}
+          categories={
+            pickerTarget === "breakfast" ? ["Desayunos"]
+            : pickerTarget === "snack" ? ["Meriendas"]
+            : undefined
+          }
         />
       )}
     </>

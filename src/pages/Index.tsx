@@ -60,6 +60,9 @@ export default function Index() {
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
 
+  const { run: runAutocomplete, loading: loadingAutocomplete } =
+    useWeekAutocomplete(plan, activeWeek, autocompleteWeek, customMeals);
+
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;

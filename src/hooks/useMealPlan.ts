@@ -522,5 +522,6 @@ export function useMealPlan(weekKey: WeekKey) {
     setNotes,
     swapSlots,
     resetPlan,
+    autocompleteWeek,
   };
 }

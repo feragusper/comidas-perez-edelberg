@@ -66,10 +66,10 @@ export function useWeekAutocomplete(
       const entries: (AutocompleteEntry | null)[] = (data.week as any[]).slice(0, 7).map((raw) => {
         if (!raw) return null;
         return {
-          dinner: lookup(raw.dinnerId, MAIN_MEALS),
-          dinnerSide: lookup(raw.sideId, SIDE_MEALS),
-          breakfast: lookup(raw.breakfastId, BREAKFASTS),
-          snack: lookup(raw.snackId, SNACKS),
+          dinner: lookup(raw.dinnerId),
+          dinnerSide: lookup(raw.sideId),
+          breakfast: lookup(raw.breakfastId),
+          snack: lookup(raw.snackId),
         };
       });
 

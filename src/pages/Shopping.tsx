@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Sparkles, Loader2, Check, ClipboardCopy, RotateCcw } from "lucide-react";
+import { ShoppingCart, Sparkles, Loader2, ClipboardCopy, RotateCcw, CheckCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -17,14 +17,12 @@ interface ShoppingItem {
   sources?: string[];
 }
 
-type ItemState = "pending" | "have" | "buy";
-
 const STORAGE_KEY = "shopping_list_v1";
 
 interface StoredList {
   weekKey: string;
   items: ShoppingItem[];
-  states: Record<string, ItemState>; // key = `${category}|${name}`
+  have: Record<string, boolean>; // key = `${category}|${name}`
 }
 
 const itemKey = (it: ShoppingItem) => `${it.category}|${it.name}`;
@@ -37,8 +35,7 @@ export default function Shopping() {
 
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<ShoppingItem[]>([]);
-  const [states, setStates] = useState<Record<string, ItemState>>({});
-  const [showResult, setShowResult] = useState(false);
+  const [have, setHave] = useState<Record<string, boolean>>({});
 
   // Load saved
   useEffect(() => {
@@ -48,7 +45,7 @@ export default function Shopping() {
       const parsed = JSON.parse(raw) as StoredList;
       if (parsed.weekKey === weekKey) {
         setItems(parsed.items ?? []);
-        setStates(parsed.states ?? {});
+        setHave(parsed.have ?? {});
       }
     } catch {}
   }, [weekKey]);
@@ -56,9 +53,9 @@ export default function Shopping() {
   // Persist
   useEffect(() => {
     if (items.length === 0) return;
-    const payload: StoredList = { weekKey, items, states };
+    const payload: StoredList = { weekKey, items, have };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  }, [items, states, weekKey]);
+  }, [items, have, weekKey]);
 
   const upcomingMeals = useMemo(() => {
     const out: { day: string; slot: string; name: string; emoji?: string }[] = [];
@@ -89,7 +86,6 @@ export default function Shopping() {
       return;
     }
     setLoading(true);
-    setShowResult(false);
     try {
       const { data, error } = await supabase.functions.invoke("generate-shopping-list", {
         body: { meals: upcomingMeals },
@@ -105,7 +101,7 @@ export default function Shopping() {
       }
       const newItems: ShoppingItem[] = Array.isArray(data?.items) ? data.items : [];
       setItems(newItems);
-      setStates({});
+      setHave({});
     } catch (e) {
       console.error(e);
       toast({ title: "Error generando lista", variant: "destructive" });
@@ -114,12 +110,24 @@ export default function Shopping() {
     }
   };
 
-  const setState = (it: ShoppingItem, s: ItemState) => {
-    setStates((prev) => {
-      const k = itemKey(it);
+  const toggleHave = (it: ShoppingItem) => {
+    const k = itemKey(it);
+    setHave((prev) => {
       const next = { ...prev };
-      if (next[k] === s) delete next[k];
-      else next[k] = s;
+      if (next[k]) delete next[k];
+      else next[k] = true;
+      return next;
+    });
+  };
+
+  const markAllHave = (list: ShoppingItem[], value: boolean) => {
+    setHave((prev) => {
+      const next = { ...prev };
+      for (const it of list) {
+        const k = itemKey(it);
+        if (value) next[k] = true;
+        else delete next[k];
+      }
       return next;
     });
   };
@@ -134,9 +142,8 @@ export default function Shopping() {
     return Array.from(map.entries());
   }, [items]);
 
-  const toBuy = items.filter((it) => states[itemKey(it)] !== "have");
-  const haveCount = items.filter((it) => states[itemKey(it)] === "have").length;
-  const buyCount = items.filter((it) => states[itemKey(it)] === "buy").length;
+  const toBuy = items.filter((it) => !have[itemKey(it)]);
+  const haveCount = items.filter((it) => have[itemKey(it)]).length;
 
   const copyList = () => {
     const text = toBuy
@@ -148,10 +155,11 @@ export default function Shopping() {
 
   const reset = () => {
     setItems([]);
-    setStates({});
-    setShowResult(false);
+    setHave({});
     localStorage.removeItem(STORAGE_KEY);
   };
+
+  const allDone = items.length > 0 && toBuy.length === 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,7 +172,7 @@ export default function Shopping() {
           </h1>
         </div>
         <p className="text-sm text-muted-foreground mb-5">
-          Generá la lista basada en las comidas planificadas a futuro y marcá lo que ya tenés.
+          Generá la lista basada en las comidas planificadas a futuro y tachá lo que ya tenés.
         </p>
 
         <div className="rounded-xl border border-border bg-card p-4 mb-4">
@@ -190,129 +198,76 @@ export default function Shopping() {
           )}
         </div>
 
-        {items.length > 0 && !showResult && (
+        {items.length > 0 && (
           <>
-            <div className="mt-6 mb-3 flex items-center gap-3 text-xs">
-              <span className="text-muted-foreground">
+            <div className="mt-6 mb-3 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">{haveCount}</span>/{items.length} ya tengo
+                {allDone && " · ¡Listo!"}
               </span>
-              <span className="text-muted-foreground">·</span>
-              <span className="text-muted-foreground">
-                <span className="font-semibold text-foreground">{buyCount}</span> a comprar
-              </span>
+              <Button size="sm" variant="ghost" onClick={copyList} disabled={toBuy.length === 0}>
+                <ClipboardCopy size={14} className="mr-1.5" /> Copiar faltantes
+              </Button>
             </div>
 
             <div className="space-y-4">
-              {grouped.map(([cat, list]) => (
-                <div key={cat} className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/40 text-xs font-semibold text-foreground">{cat}</div>
-                  <ul className="divide-y divide-border">
-                    {list.map((it) => {
-                      const k = itemKey(it);
-                      const st = states[k];
-                      return (
-                        <li
-                          key={k}
-                          className={cn(
-                            "flex items-start gap-3 px-3 py-2 text-sm transition-colors",
-                            st === "have" && "opacity-50 line-through",
-                            st === "buy" && "bg-primary/5"
-                          )}
-                        >
-                          <Checkbox
-                            checked={st === "have"}
-                            onCheckedChange={() => setState(it, "have")}
-                            aria-label="Ya tengo"
-                            className="mt-0.5"
-                          />
-                          <span className="text-lg shrink-0">{it.emoji ?? "🛒"}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-foreground truncate">{it.name}</p>
-                            <p className="text-xs text-muted-foreground">{it.quantity}</p>
-                            {it.sources && it.sources.length > 0 && (
-                              <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
-                                {it.sources.join(" · ")}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => setState(it, "buy")}
+              {grouped.map(([cat, list]) => {
+                const catAllHave = list.every((it) => have[itemKey(it)]);
+                return (
+                  <div key={cat} className="rounded-xl border border-border bg-card overflow-hidden">
+                    <div className="px-3 py-2 bg-muted/40 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-foreground">{cat}</span>
+                      <button
+                        onClick={() => markAllHave(list, !catAllHave)}
+                        className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
+                      >
+                        {catAllHave ? "Desmarcar todo" : "Ya tengo todo"}
+                      </button>
+                    </div>
+                    <ul className="divide-y divide-border">
+                      {list.map((it) => {
+                        const k = itemKey(it);
+                        const got = have[k];
+                        return (
+                          <li
+                            key={k}
                             className={cn(
-                              "text-[10px] px-2 py-1 rounded-full border font-medium transition-colors shrink-0",
-                              st === "buy"
-                                ? "bg-primary text-primary-foreground border-primary"
-                                : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                              "flex items-start gap-3 px-3 py-2 text-sm transition-colors",
+                              got && "opacity-50 line-through"
                             )}
                           >
-                            comprar
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <Button onClick={() => setShowResult(true)} className="w-full mt-6">
-              <Check size={16} className="mr-2" /> Ver lista final ({toBuy.length})
-            </Button>
-          </>
-        )}
-
-        {showResult && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
-                Lo que hay que comprar
-              </h2>
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={copyList}>
-                  <ClipboardCopy size={14} className="mr-1.5" /> Copiar
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setShowResult(false)}>
-                  Volver
-                </Button>
-              </div>
-            </div>
-
-            {toBuy.length === 0 ? (
-              <div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
-                ¡Ya tenés todo! 🎉
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {Array.from(
-                  toBuy.reduce((acc, it) => {
-                    const arr = acc.get(it.category) ?? [];
-                    arr.push(it);
-                    acc.set(it.category, arr);
-                    return acc;
-                  }, new Map<string, ShoppingItem[]>())
-                ).map(([cat, list]) => (
-                  <div key={cat} className="rounded-xl border border-border bg-card overflow-hidden">
-                    <div className="px-3 py-2 bg-muted/40 text-xs font-semibold text-foreground">{cat}</div>
-                    <ul className="divide-y divide-border">
-                      {list.map((it) => (
-                        <li key={itemKey(it)} className="flex items-start gap-3 px-3 py-2 text-sm">
-                          <span className="text-lg">{it.emoji ?? "🛒"}</span>
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground">{it.name}</p>
-                            <p className="text-xs text-muted-foreground">{it.quantity}</p>
-                            {it.sources && it.sources.length > 0 && (
-                              <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
-                                {it.sources.join(" · ")}
-                              </p>
-                            )}
-                          </div>
-                        </li>
-                      ))}
+                            <Checkbox
+                              checked={got}
+                              onCheckedChange={() => toggleHave(it)}
+                              aria-label="Ya tengo"
+                              className="mt-0.5"
+                            />
+                            <span className="text-lg shrink-0">{it.emoji ?? "🛒"}</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-foreground truncate">{it.name}</p>
+                              <p className="text-xs text-muted-foreground">{it.quantity}</p>
+                              {it.sources && it.sources.length > 0 && (
+                                <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
+                                  {it.sources.join(" · ")}
+                                </p>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
-                ))}
+                );
+              })}
+            </div>
+
+            {allDone && (
+              <div className="mt-6 rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+                <CheckCheck size={20} className="mx-auto mb-2 text-primary" />
+                ¡Ya tenés todo! No hace falta ir al super 🎉
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
     </div>

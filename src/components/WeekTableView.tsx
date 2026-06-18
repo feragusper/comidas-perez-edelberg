@@ -95,7 +95,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
       <div className="flex items-start gap-1">
         <span className="text-sm shrink-0">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className={cn("text-xs font-medium leading-tight", textColor)}>{meal.name}</p>
+          <p className={cn("text-xs font-medium leading-tight break-words", textColor)}>{meal.name}</p>
         </div>
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           <button onClick={onPickMain} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">

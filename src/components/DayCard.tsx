@@ -131,7 +131,7 @@ function SimpleMealSlot({
           <div className="flex items-center gap-2">
             <span className="text-lg shrink-0">{meal.emoji}</span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">{meal.name}</p>
+              <p className="text-sm font-medium text-foreground break-words">{meal.name}</p>
               <div className="flex items-center gap-2">
                 <NoteInput value={note} onChange={onChangeNote} placeholder="Detalle..." />
                 <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
@@ -183,7 +183,7 @@ function MealDisplay({
       <div className="flex items-start gap-2">
         <span className="text-xl">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-medium", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
+          <p className={cn("text-sm font-medium break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
           {isDelivery && (
             <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
           )}

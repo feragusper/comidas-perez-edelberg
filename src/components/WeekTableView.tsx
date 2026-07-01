@@ -239,6 +239,12 @@ export function WeekTableView({
 
   const handlePickerSelect = (meal: Meal) => {
     if (pickerDay === null || !pickerSlot) return;
+    if (extraEdit !== undefined) {
+      if (extraEdit === null) onAddExtra(pickerDay, pickerSlot, meal);
+      else onSetExtra(pickerDay, pickerSlot, extraEdit, meal);
+      closePicker();
+      return;
+    }
     if (pickerStep === "main") {
       getMainSetter(pickerSlot, pickerDay)(meal);
       if (slotHasSide(pickerSlot)) setPickerStep("side");
@@ -248,6 +254,7 @@ export function WeekTableView({
       closePicker();
     }
   };
+
 
   const pickerMode: PickerMode = (pickerSlot === "babyDinner" || pickerSlot === "babyLunch") ? "baby" : "adult";
   const pickerPrevDinner = (pickerSlot === "lunch" || pickerSlot === "babyLunch") && pickerDay !== null && pickerDay > 0

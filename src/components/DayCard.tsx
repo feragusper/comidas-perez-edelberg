@@ -705,8 +705,8 @@ export function DayCard({
           extraMeals={extraMeals}
           onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
-          onClose={() => setPickerTarget(null)}
-          onSkipSide={() => setPickerTarget(null)}
+          onClose={closePicker}
+          onSkipSide={closePicker}
           categories={
             pickerTarget === "breakfast" ? ["Desayunos"]
             : pickerTarget === "snack" ? ["Meriendas"]

@@ -324,63 +324,71 @@ export function useMealPlan(weekKey: WeekKey) {
 
     let effectivePrevDinner: Meal | null;
     let effectivePrevSide: Meal | null;
+    let effectivePrevExtras: Meal[];
     let effectivePrevNote: string;
     if (isPrevDelivery) {
       effectivePrevDinner = DELIVERY_LEFTOVERS;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else if (isPrevTakeaway) {
       effectivePrevDinner = TAKEAWAY_LEFTOVERS;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else if (isPrevRestaurant) {
       // Restaurant doesn't produce leftovers — no inheritance
       effectivePrevDinner = null;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else {
       effectivePrevDinner = prevDinner;
       effectivePrevSide = prevDay?.dinnerSide ?? null;
+      effectivePrevExtras = prevDay?.dinnerExtras ?? [];
       effectivePrevNote = prevDay?.dinnerNote ?? "";
     }
 
-    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
+    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchExtras" | "lunchNote">;
     if (dayPlan.lunchOverridden) {
-      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchNote: dayPlan.lunchNote };
+      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchExtras: dayPlan.lunchExtras, lunchNote: dayPlan.lunchNote };
     } else if (dayPlan.lunchHidden) {
-      adultLunch = { lunch: null, lunchSide: null, lunchNote: "" };
+      adultLunch = { lunch: null, lunchSide: null, lunchExtras: [], lunchNote: "" };
     } else {
       adultLunch = {
         lunch: effectivePrevDinner ?? null,
         lunchSide: effectivePrevDinner ? effectivePrevSide : null,
+        lunchExtras: effectivePrevDinner ? effectivePrevExtras : [],
         lunchNote: effectivePrevDinner ? effectivePrevNote : "",
       };
     }
 
-    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerNote">;
+    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerExtras" | "babyDinnerNote">;
     if (dayPlan.babyDinnerOverridden) {
-      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerNote: dayPlan.babyDinnerNote };
+      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerExtras: dayPlan.babyDinnerExtras, babyDinnerNote: dayPlan.babyDinnerNote };
     } else if (dayPlan.babyDinnerHidden) {
-      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
+      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerExtras: [], babyDinnerNote: "" };
     } else {
       const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyDinnerSuggested = {
         babyDinner: babyPrev,
         babyDinnerSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyDinnerExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
         babyDinnerNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }
 
-    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchNote">;
+    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchExtras" | "babyLunchNote">;
     if (dayPlan.babyLunchOverridden) {
-      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchNote: dayPlan.babyLunchNote };
+      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchExtras: dayPlan.babyLunchExtras, babyLunchNote: dayPlan.babyLunchNote };
     } else if (dayPlan.babyLunchHidden) {
-      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchNote: "" };
+      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchExtras: [], babyLunchNote: "" };
     } else {
       const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyLunchSuggested = {
         babyLunch: babyPrev,
         babyLunchSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyLunchExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
         babyLunchNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }

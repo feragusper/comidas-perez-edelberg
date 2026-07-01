@@ -183,67 +183,55 @@ function MealDisplay({
   const isEatingOut = isEatingOutMeal(meal);
 
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-start gap-2">
-        <span className="text-xl">{meal.emoji}</span>
-        <div className="flex-1 min-w-0">
-          <p className={cn("text-sm font-medium break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
-          {isDelivery && (
-            <p className="text-xs text-muted-foreground">Al día siguiente: sobras del delivery al almuerzo</p>
-          )}
-          {isTakeaway && (
-            <p className="text-xs text-muted-foreground">Al día siguiente: sobras del takeaway al almuerzo</p>
-          )}
-          {isRestaurant && (
-            <p className="text-xs text-muted-foreground">Comemos afuera — sin sobras</p>
-          )}
-          {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
-            <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block mt-0.5", safetyBg[meal.babySafety])}>
-              {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
-            </span>
-          )}
-        </div>
-        <button onClick={onRemove} className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-          <Trash2 size={13} />
-        </button>
-      </div>
-
-      {/* Side dish — hide for eating-out meals */}
-      {showSide && !isEatingOut && (
-        <div className="pl-8">
-          {side ? (
-            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
-              <span className="text-base">{side.emoji}</span>
-              <p className="text-xs text-foreground flex-1">{side.name}</p>
-              <button onClick={onChangeSide} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-                Cambiar
-              </button>
-              <button onClick={onRemoveSide} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors">
-                <Trash2 size={11} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={onChangeSide}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-lunch-accent border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-lunch-accent/50 transition-all"
-            >
-              <Plus size={11} /> Agregar guarnición
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Note + change */}
-      <div className="flex items-center gap-2 pl-8">
-        <NoteInput
-          value={note}
-          onChange={onChangeNote}
-          placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
-        />
+    <div className="space-y-1">
+      {/* Main item — same visual level as the rest */}
+      <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+        <span className="text-base shrink-0">{meal.emoji}</span>
+        <p className={cn("text-xs flex-1 break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
         <button onClick={onChangeMeal} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
           Cambiar
         </button>
+        <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+          <Trash2 size={11} />
+        </button>
       </div>
+
+      {/* Eating-out notes / baby safety badge */}
+      {isDelivery && (
+        <p className="text-xs text-muted-foreground pl-1">Al día siguiente: sobras del delivery al almuerzo</p>
+      )}
+      {isTakeaway && (
+        <p className="text-xs text-muted-foreground pl-1">Al día siguiente: sobras del takeaway al almuerzo</p>
+      )}
+      {isRestaurant && (
+        <p className="text-xs text-muted-foreground pl-1">Comemos afuera — sin sobras</p>
+      )}
+      {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
+        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block", safetyBg[meal.babySafety])}>
+          {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
+        </span>
+      )}
+
+      {/* Side dish — same visual level, shown only when set */}
+      {showSide && !isEatingOut && side && (
+        <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+          <span className="text-base shrink-0">{side.emoji}</span>
+          <p className="text-xs text-foreground flex-1 break-words">{side.name}</p>
+          <button onClick={onChangeSide} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+            Cambiar
+          </button>
+          <button onClick={onRemoveSide} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
+            <Trash2 size={11} />
+          </button>
+        </div>
+      )}
+
+      {/* Note */}
+      <NoteInput
+        value={note}
+        onChange={onChangeNote}
+        placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
+      />
     </div>
   );
 }

@@ -84,7 +84,7 @@ interface CellProps {
 }
 
 
-function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote }: CellProps) {
+function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote, onAddExtra, onEditExtra, onRemoveExtra }: CellProps) {
   const textColor = isBaby ? "text-baby-safe" : "text-foreground";
 
   if (!meal) {
@@ -97,6 +97,9 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
       </button>
     );
   }
+
+  const usedSlots = 1 + (side ? 1 : 0) + extras.length;
+  const canAddMore = usedSlots < MAX_MEAL_ITEMS && !isEatingOutMeal(meal);
 
   return (
     <div className="space-y-1 group relative">
@@ -117,7 +120,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
       </div>
 
       {/* Side */}
-      {side ? (
+      {hasSideSlot && (side ? (
         <div className="flex items-center gap-1 pl-5">
           <span className="text-xs text-muted-foreground">{side.emoji}</span>
           <span className="text-xs text-muted-foreground flex-1 leading-tight">{side.name}</span>
@@ -137,6 +140,30 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
         >
           <Plus size={9} /> guarnición
         </button>
+      ))}
+
+      {/* Extras */}
+      {extras.map((ex, exIdx) => (
+        <div key={exIdx} className="flex items-center gap-1 pl-5">
+          <span className="text-xs text-muted-foreground">{ex.emoji}</span>
+          <span className="text-xs text-muted-foreground flex-1 leading-tight break-words">{ex.name}</span>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => onEditExtra(exIdx)} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
+              <Pencil size={9} />
+            </button>
+            <button onClick={() => onRemoveExtra(exIdx)} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+              <Trash2 size={9} />
+            </button>
+          </div>
+        </div>
+      ))}
+      {canAddMore && (
+        <button
+          onClick={onAddExtra}
+          className="ml-5 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary transition-all"
+        >
+          <Plus size={9} /> alimento
+        </button>
       )}
 
       {/* Note */}
@@ -150,6 +177,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
     </div>
   );
 }
+
 
 
 export function WeekTableView({

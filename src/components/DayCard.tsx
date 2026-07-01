@@ -575,6 +575,15 @@ export function DayCard({
                       onRemoveSide={() => onSetDinnerSide(null)}
                       babySafety showSide
                     />
+                    {!isEatingOutMeal(dayPlan.dinner) && (
+                      <ExtraItems
+                        extras={dayPlan.dinnerExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("dinner", idx)}
+                        onRemove={(idx) => onRemoveExtra("dinner", idx)}
+                        onAdd={() => openExtraPicker("dinner", null)}
+                      />
+                    )}
                   </div>
                 ) : dinnerSuggestion ? (
                   /* ── Suggested dinner + side chip ── */

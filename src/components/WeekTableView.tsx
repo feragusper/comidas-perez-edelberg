@@ -166,7 +166,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         value={note}
         onChange={(e) => onChangeNote(e.target.value)}
         placeholder="nota..."
-        className="w-full pl-5 text-xs bg-transparent border-0 border-b border-transparent focus:border-border focus:outline-none placeholder:text-muted-foreground/30 text-muted-foreground/70 py-0 transition-colors"
+        className="w-full text-xs bg-transparent border-0 border-b border-transparent focus:border-border focus:outline-none placeholder:text-muted-foreground/30 text-muted-foreground/70 py-0 transition-colors"
       />
     </div>
   );

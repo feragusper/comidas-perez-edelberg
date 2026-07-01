@@ -353,12 +353,15 @@ export function WeekTableView({
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <EditableCell
-                                          meal={meal} side={side} note={note} isBaby={row.isBaby}
+                                          meal={meal} side={side} extras={extras} note={note} isBaby={row.isBaby} hasSideSlot={hasSideSlot}
                                           onPickMain={() => openMain(idx, row.slot)}
                                           onPickSide={() => openSide(idx, row.slot)}
                                           onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
                                           onRemoveSide={() => getSideSetter(row.slot, idx)(null)}
                                           onChangeNote={getNoteSetter(row.slot, idx)}
+                                          onAddExtra={() => openExtra(idx, row.slot, null)}
+                                          onEditExtra={(exIdx) => openExtra(idx, row.slot, exIdx)}
+                                          onRemoveExtra={(exIdx) => onRemoveExtra(idx, row.slot, exIdx)}
                                         />
                                       </div>
                                     </div>

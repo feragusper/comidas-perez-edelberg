@@ -267,7 +267,7 @@ function ExtraItems({
           onClick={onAdd}
           className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-primary/50 transition-all"
         >
-          <Plus size={11} /> Agregar alimento
+          <Plus size={11} /> Elegir alimento
         </button>
       )}
     </div>

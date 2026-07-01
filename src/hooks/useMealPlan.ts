@@ -529,22 +529,27 @@ export function useMealPlan(weekKey: WeekKey) {
 
       const srcMeal = next[srcDay][sf.meal];
       const srcSide = sf.side ? next[srcDay][sf.side] : null;
+      const srcExtras = next[srcDay][sf.extras];
       const srcNote = next[srcDay][sf.note];
       const dstMeal = next[dstDay][df.meal];
       const dstSide = df.side ? next[dstDay][df.side] : null;
+      const dstExtras = next[dstDay][df.extras];
       const dstNote = next[dstDay][df.note];
 
       (next[dstDay] as any)[df.meal] = srcMeal;
       if (df.side) (next[dstDay] as any)[df.side] = srcSide;
+      (next[dstDay] as any)[df.extras] = srcExtras;
       (next[dstDay] as any)[df.note] = srcNote;
       if (df.overridden) (next[dstDay] as any)[df.overridden] = srcMeal != null;
       if (df.hidden) (next[dstDay] as any)[df.hidden] = false;
 
       (next[srcDay] as any)[sf.meal] = dstMeal;
       if (sf.side) (next[srcDay] as any)[sf.side] = dstSide;
+      (next[srcDay] as any)[sf.extras] = dstExtras;
       (next[srcDay] as any)[sf.note] = dstNote;
       if (sf.overridden) (next[srcDay] as any)[sf.overridden] = dstMeal != null;
       if (sf.hidden) (next[srcDay] as any)[sf.hidden] = false;
+
 
       scheduleSave(next);
       return next;

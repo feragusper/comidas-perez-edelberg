@@ -41,6 +41,8 @@ export const MAX_MEAL_ITEMS = 5;
 
 export type WeekKey = string;
 
+export type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
+
 /** Helper: is this meal the delivery sentinel? */
 export function isDeliveryMeal(meal: Meal | null): boolean {
   return meal?.id === "delivery";

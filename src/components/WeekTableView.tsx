@@ -103,11 +103,11 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
 
   return (
     <div className="space-y-1 group relative">
-      {/* Main meal */}
+      {/* Main item */}
       <div className="flex items-start gap-1">
         <span className="text-sm shrink-0">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
-          <p className={cn("text-xs font-medium leading-tight break-words", textColor)}>{meal.name}</p>
+          <p className={cn("text-xs leading-tight break-words", textColor)}>{meal.name}</p>
         </div>
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
           <button onClick={onPickMain} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
@@ -119,40 +119,33 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         </div>
       </div>
 
-      {/* Side */}
-      {hasSideSlot && (side ? (
-        <div className="flex items-center gap-1 pl-5">
-          <span className="text-xs text-muted-foreground">{side.emoji}</span>
-          <span className="text-xs text-muted-foreground flex-1 leading-tight">{side.name}</span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Side — same visual level, shown only when set */}
+      {hasSideSlot && side && (
+        <div className="flex items-start gap-1">
+          <span className="text-sm shrink-0">{side.emoji}</span>
+          <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{side.name}</span>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={onPickSide} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
-              <Pencil size={9} />
+              <Pencil size={10} />
             </button>
             <button onClick={onRemoveSide} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-              <Trash2 size={9} />
+              <Trash2 size={10} />
             </button>
           </div>
         </div>
-      ) : (
-        <button
-          onClick={onPickSide}
-          className="ml-5 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-secondary transition-all"
-        >
-          <Plus size={9} /> guarnición
-        </button>
-      ))}
+      )}
 
-      {/* Extras */}
+      {/* Extras — same visual level */}
       {extras.map((ex, exIdx) => (
-        <div key={exIdx} className="flex items-center gap-1 pl-5">
-          <span className="text-xs text-muted-foreground">{ex.emoji}</span>
-          <span className="text-xs text-muted-foreground flex-1 leading-tight break-words">{ex.name}</span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div key={exIdx} className="flex items-start gap-1">
+          <span className="text-sm shrink-0">{ex.emoji}</span>
+          <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{ex.name}</span>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={() => onEditExtra(exIdx)} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
-              <Pencil size={9} />
+              <Pencil size={10} />
             </button>
             <button onClick={() => onRemoveExtra(exIdx)} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
-              <Trash2 size={9} />
+              <Trash2 size={10} />
             </button>
           </div>
         </div>
@@ -160,11 +153,12 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
       {canAddMore && (
         <button
           onClick={onAddExtra}
-          className="ml-5 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary transition-all"
+          className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary transition-all"
         >
-          <Plus size={9} /> alimento
+          <Plus size={9} /> Elegir alimento
         </button>
       )}
+
 
       {/* Note */}
       <input

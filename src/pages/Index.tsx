@@ -260,6 +260,9 @@ export default function Index() {
                 onSetBreakfastNote={setBreakfastNote}
                 onSetSnack={setSnack}
                 onSetSnackNote={setSnackNote}
+                onAddExtra={addExtra}
+                onSetExtra={setExtraAt}
+                onRemoveExtra={removeExtraAt}
                 extraMeals={customMeals}
                 onCustomMeal={saveCustomMeal}
               />

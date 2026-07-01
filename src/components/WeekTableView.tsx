@@ -57,26 +57,32 @@ const ROWS: {
   { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
 ];
 
-function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; note: string } {
-  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             note: d.breakfastNote };
-  if (slot === "snack")      return { meal: d.snack,      side: null,             note: d.snackNote };
-  if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      note: d.lunchNote };
-  if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  note: d.babyLunchNote };
-  if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     note: d.dinnerNote };
-  /* babyDinner */           return { meal: d.babyDinner, side: d.babyDinnerSide, note: d.babyDinnerNote };
+function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; extras: Meal[]; note: string } {
+  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             extras: d.breakfastExtras ?? [],  note: d.breakfastNote };
+  if (slot === "snack")      return { meal: d.snack,      side: null,             extras: d.snackExtras ?? [],      note: d.snackNote };
+  if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      extras: d.lunchExtras ?? [],      note: d.lunchNote };
+  if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  extras: d.babyLunchExtras ?? [],  note: d.babyLunchNote };
+  if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     extras: d.dinnerExtras ?? [],     note: d.dinnerNote };
+  /* babyDinner */           return { meal: d.babyDinner, side: d.babyDinnerSide, extras: d.babyDinnerExtras ?? [], note: d.babyDinnerNote };
 }
 
 interface CellProps {
   meal: Meal | null;
   side: Meal | null;
+  extras: Meal[];
   note: string;
   isBaby: boolean;
+  hasSideSlot: boolean;
   onPickMain: () => void;
   onPickSide: () => void;
   onRemove: () => void;
   onRemoveSide: () => void;
   onChangeNote: (v: string) => void;
+  onAddExtra: () => void;
+  onEditExtra: (idx: number) => void;
+  onRemoveExtra: (idx: number) => void;
 }
+
 
 function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote }: CellProps) {
   const textColor = isBaby ? "text-baby-safe" : "text-foreground";

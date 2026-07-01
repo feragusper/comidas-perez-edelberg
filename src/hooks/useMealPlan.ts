@@ -7,28 +7,37 @@ export interface DayPlan {
   day: string;
   dinner: Meal | null;
   dinnerSide: Meal | null;
+  dinnerExtras: Meal[];
   dinnerNote: string;
   lunch: Meal | null;
   lunchSide: Meal | null;
+  lunchExtras: Meal[];
   lunchNote: string;
   lunchOverridden: boolean;
   lunchHidden: boolean;
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
+  babyDinnerExtras: Meal[];
   babyDinnerNote: string;
   babyDinnerOverridden: boolean;
   babyDinnerHidden: boolean;
   babyLunch: Meal | null;
   babyLunchSide: Meal | null;
+  babyLunchExtras: Meal[];
   babyLunchNote: string;
   babyLunchOverridden: boolean;
   babyLunchHidden: boolean;
   breakfast: Meal | null;
+  breakfastExtras: Meal[];
   breakfastNote: string;
   snack: Meal | null;
+  snackExtras: Meal[];
   snackNote: string;
   notes: string;
 }
+
+/** Max total foods per meal slot (main + side + extras counted together). */
+export const MAX_MEAL_ITEMS = 5;
 
 export type WeekKey = string;
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
+import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
@@ -29,6 +29,9 @@ interface WeekTableViewProps {
   onSetBreakfastNote: (i: number, v: string) => void;
   onSetSnack: (i: number, meal: Meal | null) => void;
   onSetSnackNote: (i: number, v: string) => void;
+  onAddExtra: (i: number, slot: MealSlot, meal: Meal) => void;
+  onSetExtra: (i: number, slot: MealSlot, idx: number, meal: Meal) => void;
+  onRemoveExtra: (i: number, slot: MealSlot, idx: number) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {

@@ -296,9 +296,13 @@ export function DayCard({
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
+  onAddExtra, onSetExtra, onRemoveExtra,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
+  // When set, the picker is choosing an "extra" food for the target slot.
+  // idx === null means adding a new extra; a number means editing that extra.
+  const [extraEdit, setExtraEdit] = useState<{ idx: number | null } | null>(null);
   const isSunday = dayPlan.day === "Domingo";
   const isDelivery = isDeliveryMeal(dayPlan.dinner);
   const isTakeaway = isTakeawayMeal(dayPlan.dinner);
@@ -308,7 +312,16 @@ export function DayCard({
   const dinnerLabel = isDelivery ? "Delivery" : isTakeaway ? "Takeaway" : isRestaurant ? "Restaurante" : "Cena";
   const isPasta = dayPlan.dinner?.id === "pasta-domingo" || dayPlan.dinner?.id === "pasta";
 
+  const closePicker = () => { setPickerTarget(null); setExtraEdit(null); };
+
   const handlePickerSelect = (meal: Meal) => {
+    // Extra-food flow: add or replace an extra, then close.
+    if (extraEdit && pickerTarget) {
+      if (extraEdit.idx === null) onAddExtra(pickerTarget as MealSlot, meal);
+      else onSetExtra(pickerTarget as MealSlot, extraEdit.idx, meal);
+      closePicker();
+      return;
+    }
     if (pickerStep === "main") {
       if (pickerTarget === "dinner") onSetDinner(meal);
       else if (pickerTarget === "lunch") onSetLunch(meal);
@@ -332,13 +345,21 @@ export function DayCard({
   };
 
   const openMainPicker = (target: PickerTarget) => {
+    setExtraEdit(null);
     setPickerTarget(target);
     setPickerStep("main");
   };
 
   const openSidePicker = (target: "dinner" | "lunch" | "babyDinner" | "babyLunch") => {
+    setExtraEdit(null);
     setPickerTarget(target);
     setPickerStep("side");
+  };
+
+  const openExtraPicker = (target: MealSlot, idx: number | null) => {
+    setExtraEdit({ idx });
+    setPickerTarget(target);
+    setPickerStep("main");
   };
 
   const pickerMode: PickerMode =

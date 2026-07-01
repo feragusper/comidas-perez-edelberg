@@ -71,12 +71,15 @@ function serializePlan(plan: DayPlan[]) {
     ...day,
     lunch: day.lunchOverridden ? day.lunch : null,
     lunchSide: day.lunchOverridden ? day.lunchSide : null,
+    lunchExtras: day.lunchOverridden ? day.lunchExtras : [],
     lunchNote: day.lunchOverridden ? day.lunchNote : "",
     babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
     babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
+    babyDinnerExtras: day.babyDinnerOverridden ? day.babyDinnerExtras : [],
     babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
     babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
     babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
+    babyLunchExtras: day.babyLunchOverridden ? day.babyLunchExtras : [],
     babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
   }));
 }

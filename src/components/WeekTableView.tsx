@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
+import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
@@ -29,6 +29,9 @@ interface WeekTableViewProps {
   onSetBreakfastNote: (i: number, v: string) => void;
   onSetSnack: (i: number, meal: Meal | null) => void;
   onSetSnackNote: (i: number, v: string) => void;
+  onAddExtra: (i: number, slot: MealSlot, meal: Meal) => void;
+  onSetExtra: (i: number, slot: MealSlot, idx: number, meal: Meal) => void;
+  onRemoveExtra: (i: number, slot: MealSlot, idx: number) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -54,28 +57,34 @@ const ROWS: {
   { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
 ];
 
-function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; note: string } {
-  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             note: d.breakfastNote };
-  if (slot === "snack")      return { meal: d.snack,      side: null,             note: d.snackNote };
-  if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      note: d.lunchNote };
-  if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  note: d.babyLunchNote };
-  if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     note: d.dinnerNote };
-  /* babyDinner */           return { meal: d.babyDinner, side: d.babyDinnerSide, note: d.babyDinnerNote };
+function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; extras: Meal[]; note: string } {
+  if (slot === "breakfast")  return { meal: d.breakfast,  side: null,             extras: d.breakfastExtras ?? [],  note: d.breakfastNote };
+  if (slot === "snack")      return { meal: d.snack,      side: null,             extras: d.snackExtras ?? [],      note: d.snackNote };
+  if (slot === "lunch")      return { meal: d.lunch,      side: d.lunchSide,      extras: d.lunchExtras ?? [],      note: d.lunchNote };
+  if (slot === "babyLunch")  return { meal: d.babyLunch,  side: d.babyLunchSide,  extras: d.babyLunchExtras ?? [],  note: d.babyLunchNote };
+  if (slot === "dinner")     return { meal: d.dinner,     side: d.dinnerSide,     extras: d.dinnerExtras ?? [],     note: d.dinnerNote };
+  /* babyDinner */           return { meal: d.babyDinner, side: d.babyDinnerSide, extras: d.babyDinnerExtras ?? [], note: d.babyDinnerNote };
 }
 
 interface CellProps {
   meal: Meal | null;
   side: Meal | null;
+  extras: Meal[];
   note: string;
   isBaby: boolean;
+  hasSideSlot: boolean;
   onPickMain: () => void;
   onPickSide: () => void;
   onRemove: () => void;
   onRemoveSide: () => void;
   onChangeNote: (v: string) => void;
+  onAddExtra: () => void;
+  onEditExtra: (idx: number) => void;
+  onRemoveExtra: (idx: number) => void;
 }
 
-function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote }: CellProps) {
+
+function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote, onAddExtra, onEditExtra, onRemoveExtra }: CellProps) {
   const textColor = isBaby ? "text-baby-safe" : "text-foreground";
 
   if (!meal) {
@@ -88,6 +97,9 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
       </button>
     );
   }
+
+  const usedSlots = 1 + (side ? 1 : 0) + extras.length;
+  const canAddMore = usedSlots < MAX_MEAL_ITEMS && !isEatingOutMeal(meal);
 
   return (
     <div className="space-y-1 group relative">
@@ -108,7 +120,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
       </div>
 
       {/* Side */}
-      {side ? (
+      {hasSideSlot && (side ? (
         <div className="flex items-center gap-1 pl-5">
           <span className="text-xs text-muted-foreground">{side.emoji}</span>
           <span className="text-xs text-muted-foreground flex-1 leading-tight">{side.name}</span>
@@ -128,6 +140,30 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
         >
           <Plus size={9} /> guarnición
         </button>
+      ))}
+
+      {/* Extras */}
+      {extras.map((ex, exIdx) => (
+        <div key={exIdx} className="flex items-center gap-1 pl-5">
+          <span className="text-xs text-muted-foreground">{ex.emoji}</span>
+          <span className="text-xs text-muted-foreground flex-1 leading-tight break-words">{ex.name}</span>
+          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={() => onEditExtra(exIdx)} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
+              <Pencil size={9} />
+            </button>
+            <button onClick={() => onRemoveExtra(exIdx)} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+              <Trash2 size={9} />
+            </button>
+          </div>
+        </div>
+      ))}
+      {canAddMore && (
+        <button
+          onClick={onAddExtra}
+          className="ml-5 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary transition-all"
+        >
+          <Plus size={9} /> alimento
+        </button>
       )}
 
       {/* Note */}
@@ -143,6 +179,7 @@ function EditableCell({ meal, side, note, isBaby, onPickMain, onPickSide, onRemo
 }
 
 
+
 export function WeekTableView({
   plan,
   todayIdx = -1,
@@ -153,18 +190,27 @@ export function WeekTableView({
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
+  onAddExtra, onSetExtra, onRemoveExtra,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
+  const [extraEdit, setExtraEdit] = useState<number | null | undefined>(undefined);
 
   const openMain = (dayIdx: number, slot: SlotKey) => {
+    setExtraEdit(undefined);
     setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("main");
   };
   const openSide = (dayIdx: number, slot: SlotKey) => {
+    setExtraEdit(undefined);
     setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("side");
   };
-  const closePicker = () => { setPickerDay(null); setPickerSlot(null); };
+  const openExtra = (dayIdx: number, slot: SlotKey, idx: number | null) => {
+    setExtraEdit(idx);
+    setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("main");
+  };
+  const closePicker = () => { setPickerDay(null); setPickerSlot(null); setExtraEdit(undefined); };
+
 
   const getMainSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
     if (slot === "breakfast")  onSetBreakfast(i, meal);
@@ -193,6 +239,12 @@ export function WeekTableView({
 
   const handlePickerSelect = (meal: Meal) => {
     if (pickerDay === null || !pickerSlot) return;
+    if (extraEdit !== undefined) {
+      if (extraEdit === null) onAddExtra(pickerDay, pickerSlot, meal);
+      else onSetExtra(pickerDay, pickerSlot, extraEdit, meal);
+      closePicker();
+      return;
+    }
     if (pickerStep === "main") {
       getMainSetter(pickerSlot, pickerDay)(meal);
       if (slotHasSide(pickerSlot)) setPickerStep("side");
@@ -202,6 +254,7 @@ export function WeekTableView({
       closePicker();
     }
   };
+
 
   const pickerMode: PickerMode = (pickerSlot === "babyDinner" || pickerSlot === "babyLunch") ? "baby" : "adult";
   const pickerPrevDinner = (pickerSlot === "lunch" || pickerSlot === "babyLunch") && pickerDay !== null && pickerDay > 0
@@ -267,7 +320,8 @@ export function WeekTableView({
                 {plan.map((dayPlan, idx) => {
                   const isToday = todayIdx === idx;
                   const isPast = todayIdx !== -1 && idx < todayIdx;
-                  const { meal, side, note } = getSlotData(dayPlan, row.slot);
+                  const { meal, side, extras, note } = getSlotData(dayPlan, row.slot);
+                  const hasSideSlot = row.slot !== "breakfast" && row.slot !== "snack";
                   return (
                     <td
                       key={dayPlan.day}
@@ -299,12 +353,15 @@ export function WeekTableView({
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <EditableCell
-                                          meal={meal} side={side} note={note} isBaby={row.isBaby}
+                                          meal={meal} side={side} extras={extras} note={note} isBaby={row.isBaby} hasSideSlot={hasSideSlot}
                                           onPickMain={() => openMain(idx, row.slot)}
                                           onPickSide={() => openSide(idx, row.slot)}
                                           onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
                                           onRemoveSide={() => getSideSetter(row.slot, idx)(null)}
                                           onChangeNote={getNoteSetter(row.slot, idx)}
+                                          onAddExtra={() => openExtra(idx, row.slot, null)}
+                                          onEditExtra={(exIdx) => openExtra(idx, row.slot, exIdx)}
+                                          onRemoveExtra={(exIdx) => onRemoveExtra(idx, row.slot, exIdx)}
                                         />
                                       </div>
                                     </div>
@@ -313,12 +370,15 @@ export function WeekTableView({
                               </Draggable>
                             ) : (
                               <EditableCell
-                                meal={null} side={null} note="" isBaby={row.isBaby}
+                                meal={null} side={null} extras={[]} note="" isBaby={row.isBaby} hasSideSlot={hasSideSlot}
                                 onPickMain={() => openMain(idx, row.slot)}
                                 onPickSide={() => openSide(idx, row.slot)}
                                 onRemove={() => {}}
                                 onRemoveSide={() => {}}
                                 onChangeNote={() => {}}
+                                onAddExtra={() => {}}
+                                onEditExtra={() => {}}
+                                onRemoveExtra={() => {}}
                               />
                             )}
                             {provided.placeholder}

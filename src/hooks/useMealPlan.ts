@@ -7,30 +7,41 @@ export interface DayPlan {
   day: string;
   dinner: Meal | null;
   dinnerSide: Meal | null;
+  dinnerExtras: Meal[];
   dinnerNote: string;
   lunch: Meal | null;
   lunchSide: Meal | null;
+  lunchExtras: Meal[];
   lunchNote: string;
   lunchOverridden: boolean;
   lunchHidden: boolean;
   babyDinner: Meal | null;
   babyDinnerSide: Meal | null;
+  babyDinnerExtras: Meal[];
   babyDinnerNote: string;
   babyDinnerOverridden: boolean;
   babyDinnerHidden: boolean;
   babyLunch: Meal | null;
   babyLunchSide: Meal | null;
+  babyLunchExtras: Meal[];
   babyLunchNote: string;
   babyLunchOverridden: boolean;
   babyLunchHidden: boolean;
   breakfast: Meal | null;
+  breakfastExtras: Meal[];
   breakfastNote: string;
   snack: Meal | null;
+  snackExtras: Meal[];
   snackNote: string;
   notes: string;
 }
 
+/** Max total foods per meal slot (main + side + extras counted together). */
+export const MAX_MEAL_ITEMS = 5;
+
 export type WeekKey = string;
+
+export type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
 
 /** Helper: is this meal the delivery sentinel? */
 export function isDeliveryMeal(meal: Meal | null): boolean {
@@ -62,12 +73,15 @@ function serializePlan(plan: DayPlan[]) {
     ...day,
     lunch: day.lunchOverridden ? day.lunch : null,
     lunchSide: day.lunchOverridden ? day.lunchSide : null,
+    lunchExtras: day.lunchOverridden ? day.lunchExtras : [],
     lunchNote: day.lunchOverridden ? day.lunchNote : "",
     babyDinner: day.babyDinnerOverridden ? day.babyDinner : null,
     babyDinnerSide: day.babyDinnerOverridden ? day.babyDinnerSide : null,
+    babyDinnerExtras: day.babyDinnerOverridden ? day.babyDinnerExtras : [],
     babyDinnerNote: day.babyDinnerOverridden ? day.babyDinnerNote : "",
     babyLunch: day.babyLunchOverridden ? day.babyLunch : null,
     babyLunchSide: day.babyLunchOverridden ? day.babyLunchSide : null,
+    babyLunchExtras: day.babyLunchOverridden ? day.babyLunchExtras : [],
     babyLunchNote: day.babyLunchOverridden ? day.babyLunchNote : "",
   }));
 }
@@ -116,25 +130,31 @@ const buildInitialPlan = (): DayPlan[] => {
     day,
     dinner: null,
     dinnerSide: null,
+    dinnerExtras: [],
     dinnerNote: "",
     lunch: null,
     lunchSide: null,
+    lunchExtras: [],
     lunchNote: "",
     lunchOverridden: false,
     lunchHidden: false,
     babyDinner: null,
     babyDinnerSide: null,
+    babyDinnerExtras: [],
     babyDinnerNote: "",
     babyDinnerOverridden: false,
     babyDinnerHidden: false,
     babyLunch: null,
     babyLunchSide: null,
+    babyLunchExtras: [],
     babyLunchNote: "",
     babyLunchOverridden: false,
     babyLunchHidden: false,
     breakfast: null,
+    breakfastExtras: [],
     breakfastNote: "",
     snack: null,
+    snackExtras: [],
     snackNote: "",
     notes: "",
   }));
@@ -203,6 +223,10 @@ export function useMealPlan(weekKey: WeekKey) {
             // Migration: convert old isDelivery flag to delivery meal
             const wasDelivery = day.isDelivery ?? false;
             const dinner = wasDelivery && !day.dinner ? DELIVERY_DINNER : day.dinner;
+            const arr = (v: unknown): Meal[] => (Array.isArray(v) ? (v as Meal[]) : []);
+            const lunchOn = (day.lunchOverridden && day.lunch != null);
+            const babyDinnerOn = (day.babyDinnerOverridden && day.babyDinner != null);
+            const babyLunchOn = (day.babyLunchOverridden && day.babyLunch != null);
             return {
               ...day,
               dinner,
@@ -214,19 +238,25 @@ export function useMealPlan(weekKey: WeekKey) {
               babyDinnerHidden: day.babyDinnerHidden ?? false,
               babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
               babyLunchHidden: day.babyLunchHidden ?? false,
-              lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
-              lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
-              lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
-              babyDinner: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinner : null,
-              babyDinnerSide: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerSide : null,
-              babyDinnerNote: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerNote : "",
-              babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
-              babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
-              babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
+              dinnerExtras: arr(day.dinnerExtras),
+              lunch: lunchOn ? day.lunch : null,
+              lunchSide: lunchOn ? day.lunchSide : null,
+              lunchExtras: lunchOn ? arr(day.lunchExtras) : [],
+              lunchNote: lunchOn ? day.lunchNote : "",
+              babyDinner: babyDinnerOn ? day.babyDinner : null,
+              babyDinnerSide: babyDinnerOn ? day.babyDinnerSide : null,
+              babyDinnerExtras: babyDinnerOn ? arr(day.babyDinnerExtras) : [],
+              babyDinnerNote: babyDinnerOn ? day.babyDinnerNote : "",
+              babyLunch: babyLunchOn ? day.babyLunch : null,
+              babyLunchSide: babyLunchOn ? day.babyLunchSide : null,
+              babyLunchExtras: babyLunchOn ? arr(day.babyLunchExtras) : [],
+              babyLunchNote: babyLunchOn ? day.babyLunchNote : "",
               // Migration: old string -> Meal|null. If non-empty string, drop (can't reconstruct meal).
               breakfast: typeof day.breakfast === "object" ? (day.breakfast ?? null) : null,
+              breakfastExtras: arr(day.breakfastExtras),
               breakfastNote: typeof day.breakfastNote === "string" ? day.breakfastNote : "",
               snack: typeof day.snack === "object" ? (day.snack ?? null) : null,
+              snackExtras: arr(day.snackExtras),
               snackNote: typeof day.snackNote === "string" ? day.snackNote : "",
             } as DayPlan;
           });
@@ -296,63 +326,71 @@ export function useMealPlan(weekKey: WeekKey) {
 
     let effectivePrevDinner: Meal | null;
     let effectivePrevSide: Meal | null;
+    let effectivePrevExtras: Meal[];
     let effectivePrevNote: string;
     if (isPrevDelivery) {
       effectivePrevDinner = DELIVERY_LEFTOVERS;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else if (isPrevTakeaway) {
       effectivePrevDinner = TAKEAWAY_LEFTOVERS;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else if (isPrevRestaurant) {
       // Restaurant doesn't produce leftovers — no inheritance
       effectivePrevDinner = null;
       effectivePrevSide = null;
+      effectivePrevExtras = [];
       effectivePrevNote = "";
     } else {
       effectivePrevDinner = prevDinner;
       effectivePrevSide = prevDay?.dinnerSide ?? null;
+      effectivePrevExtras = prevDay?.dinnerExtras ?? [];
       effectivePrevNote = prevDay?.dinnerNote ?? "";
     }
 
-    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchNote">;
+    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchExtras" | "lunchNote">;
     if (dayPlan.lunchOverridden) {
-      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchNote: dayPlan.lunchNote };
+      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchExtras: dayPlan.lunchExtras, lunchNote: dayPlan.lunchNote };
     } else if (dayPlan.lunchHidden) {
-      adultLunch = { lunch: null, lunchSide: null, lunchNote: "" };
+      adultLunch = { lunch: null, lunchSide: null, lunchExtras: [], lunchNote: "" };
     } else {
       adultLunch = {
         lunch: effectivePrevDinner ?? null,
         lunchSide: effectivePrevDinner ? effectivePrevSide : null,
+        lunchExtras: effectivePrevDinner ? effectivePrevExtras : [],
         lunchNote: effectivePrevDinner ? effectivePrevNote : "",
       };
     }
 
-    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerNote">;
+    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerExtras" | "babyDinnerNote">;
     if (dayPlan.babyDinnerOverridden) {
-      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerNote: dayPlan.babyDinnerNote };
+      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerExtras: dayPlan.babyDinnerExtras, babyDinnerNote: dayPlan.babyDinnerNote };
     } else if (dayPlan.babyDinnerHidden) {
-      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "" };
+      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerExtras: [], babyDinnerNote: "" };
     } else {
       const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyDinnerSuggested = {
         babyDinner: babyPrev,
         babyDinnerSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyDinnerExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
         babyDinnerNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }
 
-    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchNote">;
+    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchExtras" | "babyLunchNote">;
     if (dayPlan.babyLunchOverridden) {
-      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchNote: dayPlan.babyLunchNote };
+      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchExtras: dayPlan.babyLunchExtras, babyLunchNote: dayPlan.babyLunchNote };
     } else if (dayPlan.babyLunchHidden) {
-      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchNote: "" };
+      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchExtras: [], babyLunchNote: "" };
     } else {
       const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
       babyLunchSuggested = {
         babyLunch: babyPrev,
         babyLunchSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
+        babyLunchExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
         babyLunchNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
       };
     }
@@ -383,6 +421,7 @@ export function useMealPlan(weekKey: WeekKey) {
     mealKey: keyof DayPlan,
     sideKey: keyof DayPlan,
     noteKey: keyof DayPlan,
+    extrasKey: keyof DayPlan,
     patch: Partial<DayPlan>
   ): Partial<DayPlan> => {
     const raw = plan[i];
@@ -393,56 +432,94 @@ export function useMealPlan(weekKey: WeekKey) {
       [mealKey]: effective[mealKey],
       [sideKey]: effective[sideKey],
       [noteKey]: effective[noteKey],
+      [extrasKey]: effective[extrasKey],
       ...patch,
     } as Partial<DayPlan>;
   };
 
   const setDinner = (i: number, meal: Meal | null) => {
-    // When setting eating-out meal, clear side dish
-    if (isEatingOutMeal(meal)) {
-      update(i, { dinner: meal, dinnerSide: null });
+    // When setting eating-out meal or clearing, drop side + extras
+    if (!meal || isEatingOutMeal(meal)) {
+      update(i, { dinner: meal, dinnerSide: null, dinnerExtras: [] });
     } else {
       update(i, { dinner: meal });
     }
   };
   const setDinnerSide = (i: number, meal: Meal | null) => update(i, { dinnerSide: meal });
   const setDinnerNote = (i: number, note: string) => update(i, { dinnerNote: note });
-  const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, lunchOverridden: true, lunchHidden: false });
+  const setLunch = (i: number, meal: Meal | null) => update(i, { lunch: meal, ...(meal ? {} : { lunchExtras: [] }), lunchOverridden: true, lunchHidden: false });
   const setLunchSide = (i: number, meal: Meal | null) =>
-    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", { lunchSide: meal }));
+    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", "lunchExtras", { lunchSide: meal }));
   const setLunchNote = (i: number, note: string) =>
-    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", { lunchNote: note }));
+    update(i, materialize(i, "lunchOverridden", "lunch", "lunchSide", "lunchNote", "lunchExtras", { lunchNote: note }));
   const hideLunch = (i: number) => update(i, { lunchHidden: true });
-  const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchOverridden: false, lunchHidden: false, lunchNote: "" });
-  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, babyDinnerOverridden: true, babyDinnerHidden: false });
+  const resetLunch = (i: number) => update(i, { lunch: null, lunchSide: null, lunchExtras: [], lunchOverridden: false, lunchHidden: false, lunchNote: "" });
+  const setBabyDinner = (i: number, meal: Meal | null) => update(i, { babyDinner: meal, ...(meal ? {} : { babyDinnerExtras: [] }), babyDinnerOverridden: true, babyDinnerHidden: false });
   const setBabyDinnerSide = (i: number, meal: Meal | null) =>
-    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", { babyDinnerSide: meal }));
+    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", "babyDinnerExtras", { babyDinnerSide: meal }));
   const setBabyDinnerNote = (i: number, note: string) =>
-    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", { babyDinnerNote: note }));
+    update(i, materialize(i, "babyDinnerOverridden", "babyDinner", "babyDinnerSide", "babyDinnerNote", "babyDinnerExtras", { babyDinnerNote: note }));
   const hideBabyDinner = (i: number) => update(i, { babyDinnerHidden: true });
-  const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerNote: "", babyDinnerOverridden: false, babyDinnerHidden: false });
-  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, babyLunchOverridden: true, babyLunchHidden: false });
+  const resetBabyDinner = (i: number) => update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerExtras: [], babyDinnerNote: "", babyDinnerOverridden: false, babyDinnerHidden: false });
+  const setBabyLunch = (i: number, meal: Meal | null) => update(i, { babyLunch: meal, ...(meal ? {} : { babyLunchExtras: [] }), babyLunchOverridden: true, babyLunchHidden: false });
   const setBabyLunchSide = (i: number, meal: Meal | null) =>
-    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", { babyLunchSide: meal }));
+    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", "babyLunchExtras", { babyLunchSide: meal }));
   const setBabyLunchNote = (i: number, note: string) =>
-    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", { babyLunchNote: note }));
+    update(i, materialize(i, "babyLunchOverridden", "babyLunch", "babyLunchSide", "babyLunchNote", "babyLunchExtras", { babyLunchNote: note }));
   const hideBabyLunch = (i: number) => update(i, { babyLunchHidden: true });
-  const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
+  const resetBabyLunch = (i: number) => update(i, { babyLunch: null, babyLunchSide: null, babyLunchExtras: [], babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: false });
   const setNotes = (i: number, notes: string) => update(i, { notes });
-  const setBreakfast = (i: number, meal: Meal | null) => update(i, { breakfast: meal });
+  const setBreakfast = (i: number, meal: Meal | null) => update(i, { breakfast: meal, ...(meal ? {} : { breakfastExtras: [] }) });
   const setBreakfastNote = (i: number, note: string) => update(i, { breakfastNote: note });
-  const setSnack = (i: number, meal: Meal | null) => update(i, { snack: meal });
+  const setSnack = (i: number, meal: Meal | null) => update(i, { snack: meal, ...(meal ? {} : { snackExtras: [] }) });
   const setSnackNote = (i: number, note: string) => update(i, { snackNote: note });
 
-  type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
 
   const slotFields = (slot: MealSlot) => {
-    if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", note: "dinnerNote", overridden: null, hidden: null } as const;
-    if (slot === "lunch") return { meal: "lunch", side: "lunchSide", note: "lunchNote", overridden: "lunchOverridden", hidden: "lunchHidden" } as const;
-    if (slot === "babyDinner") return { meal: "babyDinner", side: "babyDinnerSide", note: "babyDinnerNote", overridden: "babyDinnerOverridden", hidden: "babyDinnerHidden" } as const;
-    if (slot === "babyLunch") return { meal: "babyLunch", side: "babyLunchSide", note: "babyLunchNote", overridden: "babyLunchOverridden", hidden: "babyLunchHidden" } as const;
-    if (slot === "breakfast") return { meal: "breakfast", side: null, note: "breakfastNote", overridden: null, hidden: null } as const;
-    return { meal: "snack", side: null, note: "snackNote", overridden: null, hidden: null } as const;
+    if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", extras: "dinnerExtras", note: "dinnerNote", overridden: null, hidden: null } as const;
+    if (slot === "lunch") return { meal: "lunch", side: "lunchSide", extras: "lunchExtras", note: "lunchNote", overridden: "lunchOverridden", hidden: "lunchHidden" } as const;
+    if (slot === "babyDinner") return { meal: "babyDinner", side: "babyDinnerSide", extras: "babyDinnerExtras", note: "babyDinnerNote", overridden: "babyDinnerOverridden", hidden: "babyDinnerHidden" } as const;
+    if (slot === "babyLunch") return { meal: "babyLunch", side: "babyLunchSide", extras: "babyLunchExtras", note: "babyLunchNote", overridden: "babyLunchOverridden", hidden: "babyLunchHidden" } as const;
+    if (slot === "breakfast") return { meal: "breakfast", side: null, extras: "breakfastExtras", note: "breakfastNote", overridden: null, hidden: null } as const;
+    return { meal: "snack", side: null, extras: "snackExtras", note: "snackNote", overridden: null, hidden: null } as const;
+  };
+
+  const extrasKeyFor = (slot: MealSlot) => slotFields(slot).extras as keyof DayPlan;
+
+  /** Update the extras array for a slot, materializing inherited lunch/baby slots. */
+  const updateExtras = (i: number, slot: MealSlot, newExtras: Meal[]) => {
+    const f = slotFields(slot);
+    const ek = f.extras as keyof DayPlan;
+    if (f.overridden && f.side) {
+      update(i, materialize(i, f.overridden, f.meal, f.side, f.note, ek, { [ek]: newExtras } as Partial<DayPlan>));
+    } else {
+      update(i, { [ek]: newExtras } as Partial<DayPlan>);
+    }
+  };
+
+  const currentExtras = (i: number, slot: MealSlot): Meal[] => {
+    const v = planWithLunchRef.current[i][extrasKeyFor(slot)];
+    return Array.isArray(v) ? (v as Meal[]) : [];
+  };
+
+  const addExtra = (i: number, slot: MealSlot, meal: Meal) => {
+    const cur = currentExtras(i, slot);
+    const f = slotFields(slot);
+    const base = 1 + (f.side ? 1 : 0); // main (+ side slot)
+    if (base + cur.length >= MAX_MEAL_ITEMS) return;
+    updateExtras(i, slot, [...cur, meal]);
+  };
+  const setExtraAt = (i: number, slot: MealSlot, idx: number, meal: Meal) => {
+    const cur = [...currentExtras(i, slot)];
+    if (idx < 0 || idx >= cur.length) return;
+    cur[idx] = meal;
+    updateExtras(i, slot, cur);
+  };
+  const removeExtraAt = (i: number, slot: MealSlot, idx: number) => {
+    const cur = [...currentExtras(i, slot)];
+    if (idx < 0 || idx >= cur.length) return;
+    cur.splice(idx, 1);
+    updateExtras(i, slot, cur);
   };
 
   const swapSlots = (srcDay: number, srcSlot: MealSlot, dstDay: number, dstSlot: MealSlot) => {
@@ -453,22 +530,27 @@ export function useMealPlan(weekKey: WeekKey) {
 
       const srcMeal = next[srcDay][sf.meal];
       const srcSide = sf.side ? next[srcDay][sf.side] : null;
+      const srcExtras = next[srcDay][sf.extras];
       const srcNote = next[srcDay][sf.note];
       const dstMeal = next[dstDay][df.meal];
       const dstSide = df.side ? next[dstDay][df.side] : null;
+      const dstExtras = next[dstDay][df.extras];
       const dstNote = next[dstDay][df.note];
 
       (next[dstDay] as any)[df.meal] = srcMeal;
       if (df.side) (next[dstDay] as any)[df.side] = srcSide;
+      (next[dstDay] as any)[df.extras] = srcExtras;
       (next[dstDay] as any)[df.note] = srcNote;
       if (df.overridden) (next[dstDay] as any)[df.overridden] = srcMeal != null;
       if (df.hidden) (next[dstDay] as any)[df.hidden] = false;
 
       (next[srcDay] as any)[sf.meal] = dstMeal;
       if (sf.side) (next[srcDay] as any)[sf.side] = dstSide;
+      (next[srcDay] as any)[sf.extras] = dstExtras;
       (next[srcDay] as any)[sf.note] = dstNote;
       if (sf.overridden) (next[srcDay] as any)[sf.overridden] = dstMeal != null;
       if (sf.hidden) (next[srcDay] as any)[sf.hidden] = false;
+
 
       scheduleSave(next);
       return next;
@@ -520,6 +602,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     setNotes,
+    addExtra, setExtraAt, removeExtraAt,
     swapSlots,
     resetPlan,
     autocompleteWeek,

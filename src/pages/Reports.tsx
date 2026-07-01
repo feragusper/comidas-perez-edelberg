@@ -108,22 +108,24 @@ function buildTaxonomyBreakdown(meals: MealCount[]): CatCount[] {
 }
 
 const US_GETTERS = {
-  all: (d: DayPlan) => [d.dinner, d.dinnerSide, d.lunch, d.lunchSide],
-  dinners: (d: DayPlan) => [d.dinner, d.dinnerSide],
-  lunches: (d: DayPlan) => [d.lunch, d.lunchSide],
+  all: (d: DayPlan) => [d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? []), d.lunch, d.lunchSide, ...(d.lunchExtras ?? [])],
+  dinners: (d: DayPlan) => [d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? [])],
+  lunches: (d: DayPlan) => [d.lunch, d.lunchSide, ...(d.lunchExtras ?? [])],
 } as const;
 
 const NICO_GETTERS = {
   all: (d: DayPlan) => [
-    d.breakfast, d.snack,
-    d.babyDinner, d.babyDinnerSide,
-    d.babyLunch, d.babyLunchSide,
+    d.breakfast, ...(d.breakfastExtras ?? []),
+    d.snack, ...(d.snackExtras ?? []),
+    d.babyDinner, d.babyDinnerSide, ...(d.babyDinnerExtras ?? []),
+    d.babyLunch, d.babyLunchSide, ...(d.babyLunchExtras ?? []),
   ],
-  breakfasts: (d: DayPlan) => [d.breakfast],
-  snacks: (d: DayPlan) => [d.snack],
-  babyDinners: (d: DayPlan) => [d.babyDinner, d.babyDinnerSide],
-  babyLunches: (d: DayPlan) => [d.babyLunch, d.babyLunchSide],
+  breakfasts: (d: DayPlan) => [d.breakfast, ...(d.breakfastExtras ?? [])],
+  snacks: (d: DayPlan) => [d.snack, ...(d.snackExtras ?? [])],
+  babyDinners: (d: DayPlan) => [d.babyDinner, d.babyDinnerSide, ...(d.babyDinnerExtras ?? [])],
+  babyLunches: (d: DayPlan) => [d.babyLunch, d.babyLunchSide, ...(d.babyLunchExtras ?? [])],
 } as const;
+
 
 const ALL_GETTERS = {
   all: (d: DayPlan) => [...US_GETTERS.all(d), ...NICO_GETTERS.all(d)],

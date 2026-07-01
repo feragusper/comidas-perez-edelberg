@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
+import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
@@ -44,6 +44,9 @@ interface DayCardProps {
   onSetBreakfastNote: (note: string) => void;
   onSetSnack: (meal: Meal | null) => void;
   onSetSnackNote: (note: string) => void;
+  onAddExtra: (slot: MealSlot, meal: Meal) => void;
+  onSetExtra: (slot: MealSlot, idx: number, meal: Meal) => void;
+  onRemoveExtra: (slot: MealSlot, idx: number) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -111,6 +114,7 @@ function NoteInput({ value, onChange, placeholder }: { value: string; onChange: 
 function SimpleMealSlot({
   icon, label, accent, bgClass, borderClass,
   meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
+  extras,
 }: {
   icon: string; label: string; accent: string; bgClass: string; borderClass: string;
   meal: Meal | null; note: string;
@@ -119,6 +123,7 @@ function SimpleMealSlot({
   onRemove: () => void;
   droppableId: string;
   dayIndex: number;
+  extras?: React.ReactNode;
 }) {
   return (
     <div className={cn("rounded-xl px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
@@ -152,6 +157,7 @@ function SimpleMealSlot({
           </button>
         )}
       </DraggableMealSlot>
+      {meal && extras}
     </div>
   );
 }
@@ -244,6 +250,44 @@ function MealDisplay({
   );
 }
 
+/** Renders extra food items for a meal slot + an "add" button (up to the max). */
+function ExtraItems({
+  extras, hasSideSlot, onEdit, onRemove, onAdd,
+}: {
+  extras: Meal[];
+  hasSideSlot: boolean;
+  onEdit: (idx: number) => void;
+  onRemove: (idx: number) => void;
+  onAdd: () => void;
+}) {
+  const base = 1 + (hasSideSlot ? 1 : 0);
+  const canAdd = base + extras.length < MAX_MEAL_ITEMS;
+  return (
+    <div className="pl-8 space-y-1">
+      {extras.map((m, idx) => (
+        <div key={idx} className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+          <span className="text-base shrink-0">{m.emoji}</span>
+          <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
+          <button onClick={() => onEdit(idx)} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+            Cambiar
+          </button>
+          <button onClick={() => onRemove(idx)} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors">
+            <Trash2 size={11} />
+          </button>
+        </div>
+      ))}
+      {canAdd && (
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-primary/50 transition-all"
+        >
+          <Plus size={11} /> Agregar alimento
+        </button>
+      )}
+    </div>
+  );
+}
+
 export function DayCard({
   dayPlan, dayIndex, prevDinner,
   isToday = false, isPast = false,
@@ -255,9 +299,13 @@ export function DayCard({
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
+  onAddExtra, onSetExtra, onRemoveExtra,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
+  // When set, the picker is choosing an "extra" food for the target slot.
+  // idx === null means adding a new extra; a number means editing that extra.
+  const [extraEdit, setExtraEdit] = useState<{ idx: number | null } | null>(null);
   const isSunday = dayPlan.day === "Domingo";
   const isDelivery = isDeliveryMeal(dayPlan.dinner);
   const isTakeaway = isTakeawayMeal(dayPlan.dinner);
@@ -267,7 +315,16 @@ export function DayCard({
   const dinnerLabel = isDelivery ? "Delivery" : isTakeaway ? "Takeaway" : isRestaurant ? "Restaurante" : "Cena";
   const isPasta = dayPlan.dinner?.id === "pasta-domingo" || dayPlan.dinner?.id === "pasta";
 
+  const closePicker = () => { setPickerTarget(null); setExtraEdit(null); };
+
   const handlePickerSelect = (meal: Meal) => {
+    // Extra-food flow: add or replace an extra, then close.
+    if (extraEdit && pickerTarget) {
+      if (extraEdit.idx === null) onAddExtra(pickerTarget as MealSlot, meal);
+      else onSetExtra(pickerTarget as MealSlot, extraEdit.idx, meal);
+      closePicker();
+      return;
+    }
     if (pickerStep === "main") {
       if (pickerTarget === "dinner") onSetDinner(meal);
       else if (pickerTarget === "lunch") onSetLunch(meal);
@@ -291,13 +348,21 @@ export function DayCard({
   };
 
   const openMainPicker = (target: PickerTarget) => {
+    setExtraEdit(null);
     setPickerTarget(target);
     setPickerStep("main");
   };
 
   const openSidePicker = (target: "dinner" | "lunch" | "babyDinner" | "babyLunch") => {
+    setExtraEdit(null);
     setPickerTarget(target);
     setPickerStep("side");
+  };
+
+  const openExtraPicker = (target: MealSlot, idx: number | null) => {
+    setExtraEdit({ idx });
+    setPickerTarget(target);
+    setPickerStep("main");
   };
 
   const pickerMode: PickerMode =
@@ -357,6 +422,15 @@ export function DayCard({
               onRemove={() => onSetBreakfast(null)}
               droppableId={`${dayIndex}-breakfast`}
               dayIndex={dayIndex}
+              extras={
+                <ExtraItems
+                  extras={dayPlan.breakfastExtras ?? []}
+                  hasSideSlot={false}
+                  onEdit={(idx) => openExtraPicker("breakfast", idx)}
+                  onRemove={(idx) => onRemoveExtra("breakfast", idx)}
+                  onAdd={() => openExtraPicker("breakfast", null)}
+                />
+              }
             />
 
             {/* ── LUNCH ── */}
@@ -381,6 +455,15 @@ export function DayCard({
                       onRemoveSide={() => onSetLunchSide(null)}
                       babySafety showSide
                     />
+                    {!isEatingOutMeal(dayPlan.lunch) && (
+                      <ExtraItems
+                        extras={dayPlan.lunchExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("lunch", idx)}
+                        onRemove={(idx) => onRemoveExtra("lunch", idx)}
+                        onAdd={() => openExtraPicker("lunch", null)}
+                      />
+                    )}
                     {dayPlan.lunchOverridden && (
                       <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
                         <RotateCcw size={11} /> Restaurar sugerencia
@@ -418,6 +501,13 @@ export function DayCard({
                         onRemoveSide={() => onSetBabyLunchSide(null)}
                         isBaby showSide
                       />
+                      <ExtraItems
+                        extras={dayPlan.babyLunchExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("babyLunch", idx)}
+                        onRemove={(idx) => onRemoveExtra("babyLunch", idx)}
+                        onAdd={() => openExtraPicker("babyLunch", null)}
+                      />
                       {dayPlan.babyLunchOverridden && (
                         <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
                           <RotateCcw size={11} /> Restaurar sugerencia
@@ -450,6 +540,15 @@ export function DayCard({
               onRemove={() => onSetSnack(null)}
               droppableId={`${dayIndex}-snack`}
               dayIndex={dayIndex}
+              extras={
+                <ExtraItems
+                  extras={dayPlan.snackExtras ?? []}
+                  hasSideSlot={false}
+                  onEdit={(idx) => openExtraPicker("snack", idx)}
+                  onRemove={(idx) => onRemoveExtra("snack", idx)}
+                  onAdd={() => openExtraPicker("snack", null)}
+                />
+              }
             />
 
             {/* ── DINNER ── */}
@@ -476,6 +575,15 @@ export function DayCard({
                       onRemoveSide={() => onSetDinnerSide(null)}
                       babySafety showSide
                     />
+                    {!isEatingOutMeal(dayPlan.dinner) && (
+                      <ExtraItems
+                        extras={dayPlan.dinnerExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("dinner", idx)}
+                        onRemove={(idx) => onRemoveExtra("dinner", idx)}
+                        onAdd={() => openExtraPicker("dinner", null)}
+                      />
+                    )}
                   </div>
                 ) : dinnerSuggestion ? (
                   /* ── Suggested dinner + side chip ── */
@@ -561,6 +669,13 @@ export function DayCard({
                         onRemoveSide={() => onSetBabyDinnerSide(null)}
                         isBaby showSide
                       />
+                      <ExtraItems
+                        extras={dayPlan.babyDinnerExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("babyDinner", idx)}
+                        onRemove={(idx) => onRemoveExtra("babyDinner", idx)}
+                        onAdd={() => openExtraPicker("babyDinner", null)}
+                      />
                       {dayPlan.babyDinnerOverridden && (
                         <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
                           <RotateCcw size={11} /> Restaurar sugerencia
@@ -590,8 +705,8 @@ export function DayCard({
           extraMeals={extraMeals}
           onCustomMeal={onCustomMeal}
           onSelect={handlePickerSelect}
-          onClose={() => setPickerTarget(null)}
-          onSkipSide={() => setPickerTarget(null)}
+          onClose={closePicker}
+          onSkipSide={closePicker}
           categories={
             pickerTarget === "breakfast" ? ["Desayunos"]
             : pickerTarget === "snack" ? ["Meriendas"]

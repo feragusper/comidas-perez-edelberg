@@ -38,6 +38,7 @@ export default function Index() {
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
+    addExtra, setExtraAt, removeExtraAt,
     swapSlots,
     autocompleteWeek,
   } = useMealPlan(activeWeek);
@@ -230,6 +231,9 @@ export default function Index() {
                   onSetBreakfastNote={(v) => setBreakfastNote(idx, v)}
                   onSetSnack={(meal) => setSnack(idx, meal)}
                   onSetSnackNote={(v) => setSnackNote(idx, v)}
+                  onAddExtra={(slot, meal) => addExtra(idx, slot, meal)}
+                  onSetExtra={(slot, exIdx, meal) => setExtraAt(idx, slot, exIdx, meal)}
+                  onRemoveExtra={(slot, exIdx) => removeExtraAt(idx, slot, exIdx)}
                   extraMeals={customMeals}
                   onCustomMeal={saveCustomMeal}
                 />
@@ -256,6 +260,9 @@ export default function Index() {
                 onSetBreakfastNote={setBreakfastNote}
                 onSetSnack={setSnack}
                 onSetSnackNote={setSnackNote}
+                onAddExtra={addExtra}
+                onSetExtra={setExtraAt}
+                onRemoveExtra={removeExtraAt}
                 extraMeals={customMeals}
                 onCustomMeal={saveCustomMeal}
               />

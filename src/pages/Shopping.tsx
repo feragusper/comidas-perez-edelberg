@@ -63,13 +63,19 @@ export default function Shopping() {
       const d = plan[i];
       const slots: Array<[string, any]> = [
         ["Desayuno", d.breakfast],
+        ...((d.breakfastExtras ?? []).map((m) => ["Desayuno", m] as [string, any])),
         ["Almuerzo", d.lunch],
         ["Almuerzo guarnición", d.lunchSide],
+        ...((d.lunchExtras ?? []).map((m) => ["Almuerzo", m] as [string, any])),
         ["Almuerzo Nico", d.babyLunch],
+        ...((d.babyLunchExtras ?? []).map((m) => ["Almuerzo Nico", m] as [string, any])),
         ["Merienda", d.snack],
+        ...((d.snackExtras ?? []).map((m) => ["Merienda", m] as [string, any])),
         ["Cena", d.dinner],
         ["Cena guarnición", d.dinnerSide],
+        ...((d.dinnerExtras ?? []).map((m) => ["Cena", m] as [string, any])),
         ["Cena Nico", d.babyDinner],
+        ...((d.babyDinnerExtras ?? []).map((m) => ["Cena Nico", m] as [string, any])),
       ];
       for (const [slot, meal] of slots) {
         if (meal && meal.id !== "delivery" && meal.id !== "takeaway" && meal.id !== "restaurante" && meal.id !== "delivery-leftovers" && meal.id !== "takeaway-leftovers") {

@@ -284,6 +284,8 @@ function ExtraItems({
     </div>
   );
 }
+
+export function DayCard({
   dayPlan, dayIndex, prevDinner,
   isToday = false, isPast = false,
   expanded, onToggleExpanded,

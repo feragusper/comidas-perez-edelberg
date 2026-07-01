@@ -38,6 +38,7 @@ export default function Index() {
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
     setBabyLunch, setBabyLunchSide, setBabyLunchNote, hideBabyLunch, resetBabyLunch,
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
+    addExtra, setExtraAt, removeExtraAt,
     swapSlots,
     autocompleteWeek,
   } = useMealPlan(activeWeek);

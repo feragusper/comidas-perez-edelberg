@@ -475,12 +475,50 @@ export function useMealPlan(weekKey: WeekKey) {
   type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
 
   const slotFields = (slot: MealSlot) => {
-    if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", note: "dinnerNote", overridden: null, hidden: null } as const;
-    if (slot === "lunch") return { meal: "lunch", side: "lunchSide", note: "lunchNote", overridden: "lunchOverridden", hidden: "lunchHidden" } as const;
-    if (slot === "babyDinner") return { meal: "babyDinner", side: "babyDinnerSide", note: "babyDinnerNote", overridden: "babyDinnerOverridden", hidden: "babyDinnerHidden" } as const;
-    if (slot === "babyLunch") return { meal: "babyLunch", side: "babyLunchSide", note: "babyLunchNote", overridden: "babyLunchOverridden", hidden: "babyLunchHidden" } as const;
-    if (slot === "breakfast") return { meal: "breakfast", side: null, note: "breakfastNote", overridden: null, hidden: null } as const;
-    return { meal: "snack", side: null, note: "snackNote", overridden: null, hidden: null } as const;
+    if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", extras: "dinnerExtras", note: "dinnerNote", overridden: null, hidden: null } as const;
+    if (slot === "lunch") return { meal: "lunch", side: "lunchSide", extras: "lunchExtras", note: "lunchNote", overridden: "lunchOverridden", hidden: "lunchHidden" } as const;
+    if (slot === "babyDinner") return { meal: "babyDinner", side: "babyDinnerSide", extras: "babyDinnerExtras", note: "babyDinnerNote", overridden: "babyDinnerOverridden", hidden: "babyDinnerHidden" } as const;
+    if (slot === "babyLunch") return { meal: "babyLunch", side: "babyLunchSide", extras: "babyLunchExtras", note: "babyLunchNote", overridden: "babyLunchOverridden", hidden: "babyLunchHidden" } as const;
+    if (slot === "breakfast") return { meal: "breakfast", side: null, extras: "breakfastExtras", note: "breakfastNote", overridden: null, hidden: null } as const;
+    return { meal: "snack", side: null, extras: "snackExtras", note: "snackNote", overridden: null, hidden: null } as const;
+  };
+
+  const extrasKeyFor = (slot: MealSlot) => slotFields(slot).extras as keyof DayPlan;
+
+  /** Update the extras array for a slot, materializing inherited lunch/baby slots. */
+  const updateExtras = (i: number, slot: MealSlot, newExtras: Meal[]) => {
+    const f = slotFields(slot);
+    const ek = f.extras as keyof DayPlan;
+    if (f.overridden && f.side) {
+      update(i, materialize(i, f.overridden, f.meal, f.side, f.note, ek, { [ek]: newExtras } as Partial<DayPlan>));
+    } else {
+      update(i, { [ek]: newExtras } as Partial<DayPlan>);
+    }
+  };
+
+  const currentExtras = (i: number, slot: MealSlot): Meal[] => {
+    const v = planWithLunchRef.current[i][extrasKeyFor(slot)];
+    return Array.isArray(v) ? (v as Meal[]) : [];
+  };
+
+  const addExtra = (i: number, slot: MealSlot, meal: Meal) => {
+    const cur = currentExtras(i, slot);
+    const f = slotFields(slot);
+    const base = 1 + (f.side ? 1 : 0); // main (+ side slot)
+    if (base + cur.length >= MAX_MEAL_ITEMS) return;
+    updateExtras(i, slot, [...cur, meal]);
+  };
+  const setExtraAt = (i: number, slot: MealSlot, idx: number, meal: Meal) => {
+    const cur = [...currentExtras(i, slot)];
+    if (idx < 0 || idx >= cur.length) return;
+    cur[idx] = meal;
+    updateExtras(i, slot, cur);
+  };
+  const removeExtraAt = (i: number, slot: MealSlot, idx: number) => {
+    const cur = [...currentExtras(i, slot)];
+    if (idx < 0 || idx >= cur.length) return;
+    cur.splice(idx, 1);
+    updateExtras(i, slot, cur);
   };
 
   const swapSlots = (srcDay: number, srcSlot: MealSlot, dstDay: number, dstSlot: MealSlot) => {

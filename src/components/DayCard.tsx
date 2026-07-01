@@ -451,7 +451,7 @@ export function DayCard({
                       />
                     )}
                     {dayPlan.lunchOverridden && (
-                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
+                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-1">
                         <RotateCcw size={11} /> Restaurar sugerencia
                       </button>
                     )}
@@ -461,7 +461,7 @@ export function DayCard({
                     onClick={() => openMainPicker("lunch")}
                     className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-lunch-accent/30 rounded-xl p-3 hover:border-lunch-accent/60 hover:text-lunch-accent hover:bg-lunch-bg transition-all"
                   >
-                    <Plus size={15} /> Elegir almuerzo
+                    <Plus size={15} /> Elegir alimento
                   </button>
                 )}
               </DraggableMealSlot>
@@ -495,7 +495,7 @@ export function DayCard({
                         onAdd={() => openExtraPicker("babyLunch", null)}
                       />
                       {dayPlan.babyLunchOverridden && (
-                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
+                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-1">
                           <RotateCcw size={11} /> Restaurar sugerencia
                         </button>
                       )}
@@ -505,7 +505,7 @@ export function DayCard({
                       onClick={() => openMainPicker("babyLunch")}
                       className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
                     >
-                      <Plus size={13} /> Elegir comida de Nico
+                      <Plus size={13} /> Elegir alimento
                     </button>
                   )}
                 </DraggableMealSlot>
@@ -629,7 +629,7 @@ export function DayCard({
                     onClick={() => openMainPicker("dinner")}
                     className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-border rounded-xl p-3 hover:border-primary/50 hover:text-primary hover:bg-dinner-bg transition-all"
                   >
-                    <Plus size={16} /> Elegir cena
+                    <Plus size={16} /> Elegir alimento
                   </button>
                 )}
               </DraggableMealSlot>
@@ -663,7 +663,7 @@ export function DayCard({
                         onAdd={() => openExtraPicker("babyDinner", null)}
                       />
                       {dayPlan.babyDinnerOverridden && (
-                        <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-8">
+                        <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-1">
                           <RotateCcw size={11} /> Restaurar sugerencia
                         </button>
                       )}
@@ -673,7 +673,7 @@ export function DayCard({
                       onClick={() => openMainPicker("babyDinner")}
                       className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
                     >
-                      <Plus size={13} /> Elegir cena de Nico
+                      <Plus size={13} /> Elegir alimento
                     </button>
                   )}
                 </DraggableMealSlot>

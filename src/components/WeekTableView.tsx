@@ -320,7 +320,8 @@ export function WeekTableView({
                 {plan.map((dayPlan, idx) => {
                   const isToday = todayIdx === idx;
                   const isPast = todayIdx !== -1 && idx < todayIdx;
-                  const { meal, side, note } = getSlotData(dayPlan, row.slot);
+                  const { meal, side, extras, note } = getSlotData(dayPlan, row.slot);
+                  const hasSideSlot = row.slot !== "breakfast" && row.slot !== "snack";
                   return (
                     <td
                       key={dayPlan.day}

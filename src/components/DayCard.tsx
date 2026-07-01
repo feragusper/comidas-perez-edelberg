@@ -540,6 +540,15 @@ export function DayCard({
               onRemove={() => onSetSnack(null)}
               droppableId={`${dayIndex}-snack`}
               dayIndex={dayIndex}
+              extras={
+                <ExtraItems
+                  extras={dayPlan.snackExtras ?? []}
+                  hasSideSlot={false}
+                  onEdit={(idx) => openExtraPicker("snack", idx)}
+                  onRemove={(idx) => onRemoveExtra("snack", idx)}
+                  onAdd={() => openExtraPicker("snack", null)}
+                />
+              }
             />
 
             {/* ── DINNER ── */}

@@ -370,12 +370,15 @@ export function WeekTableView({
                               </Draggable>
                             ) : (
                               <EditableCell
-                                meal={null} side={null} note="" isBaby={row.isBaby}
+                                meal={null} side={null} extras={[]} note="" isBaby={row.isBaby} hasSideSlot={hasSideSlot}
                                 onPickMain={() => openMain(idx, row.slot)}
                                 onPickSide={() => openSide(idx, row.slot)}
                                 onRemove={() => {}}
                                 onRemoveSide={() => {}}
                                 onChangeNote={() => {}}
+                                onAddExtra={() => {}}
+                                onEditExtra={() => {}}
+                                onRemoveExtra={() => {}}
                               />
                             )}
                             {provided.placeholder}

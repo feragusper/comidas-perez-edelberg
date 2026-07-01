@@ -114,6 +114,7 @@ function NoteInput({ value, onChange, placeholder }: { value: string; onChange: 
 function SimpleMealSlot({
   icon, label, accent, bgClass, borderClass,
   meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
+  extras,
 }: {
   icon: string; label: string; accent: string; bgClass: string; borderClass: string;
   meal: Meal | null; note: string;
@@ -122,6 +123,7 @@ function SimpleMealSlot({
   onRemove: () => void;
   droppableId: string;
   dayIndex: number;
+  extras?: React.ReactNode;
 }) {
   return (
     <div className={cn("rounded-xl px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
@@ -155,6 +157,7 @@ function SimpleMealSlot({
           </button>
         )}
       </DraggableMealSlot>
+      {meal && extras}
     </div>
   );
 }

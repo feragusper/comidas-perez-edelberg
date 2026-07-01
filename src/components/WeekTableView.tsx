@@ -190,18 +190,27 @@ export function WeekTableView({
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
+  onAddExtra, onSetExtra, onRemoveExtra,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
+  const [extraEdit, setExtraEdit] = useState<number | null | undefined>(undefined);
 
   const openMain = (dayIdx: number, slot: SlotKey) => {
+    setExtraEdit(undefined);
     setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("main");
   };
   const openSide = (dayIdx: number, slot: SlotKey) => {
+    setExtraEdit(undefined);
     setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("side");
   };
-  const closePicker = () => { setPickerDay(null); setPickerSlot(null); };
+  const openExtra = (dayIdx: number, slot: SlotKey, idx: number | null) => {
+    setExtraEdit(idx);
+    setPickerDay(dayIdx); setPickerSlot(slot); setPickerStep("main");
+  };
+  const closePicker = () => { setPickerDay(null); setPickerSlot(null); setExtraEdit(undefined); };
+
 
   const getMainSetter = (slot: SlotKey, i: number) => (meal: Meal | null) => {
     if (slot === "breakfast")  onSetBreakfast(i, meal);

@@ -474,7 +474,6 @@ export function useMealPlan(weekKey: WeekKey) {
   const setSnack = (i: number, meal: Meal | null) => update(i, { snack: meal, ...(meal ? {} : { snackExtras: [] }) });
   const setSnackNote = (i: number, note: string) => update(i, { snackNote: note });
 
-  type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
 
   const slotFields = (slot: MealSlot) => {
     if (slot === "dinner") return { meal: "dinner", side: "dinnerSide", extras: "dinnerExtras", note: "dinnerNote", overridden: null, hidden: null } as const;

@@ -249,7 +249,7 @@ function ExtraItems({
   const base = 1 + (hasSideSlot ? 1 : 0);
   const canAdd = base + extras.length < MAX_MEAL_ITEMS;
   return (
-    <div className="pl-8 space-y-1">
+    <div className="space-y-1">
       {extras.map((m, idx) => (
         <div key={idx} className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
           <span className="text-base shrink-0">{m.emoji}</span>

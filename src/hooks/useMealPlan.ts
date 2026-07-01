@@ -221,6 +221,10 @@ export function useMealPlan(weekKey: WeekKey) {
             // Migration: convert old isDelivery flag to delivery meal
             const wasDelivery = day.isDelivery ?? false;
             const dinner = wasDelivery && !day.dinner ? DELIVERY_DINNER : day.dinner;
+            const arr = (v: unknown): Meal[] => (Array.isArray(v) ? (v as Meal[]) : []);
+            const lunchOn = (day.lunchOverridden && day.lunch != null);
+            const babyDinnerOn = (day.babyDinnerOverridden && day.babyDinner != null);
+            const babyLunchOn = (day.babyLunchOverridden && day.babyLunch != null);
             return {
               ...day,
               dinner,
@@ -232,19 +236,25 @@ export function useMealPlan(weekKey: WeekKey) {
               babyDinnerHidden: day.babyDinnerHidden ?? false,
               babyLunchOverridden: (day.babyLunchOverridden ?? false) && day.babyLunch != null,
               babyLunchHidden: day.babyLunchHidden ?? false,
-              lunch: (day.lunchOverridden && day.lunch != null) ? day.lunch : null,
-              lunchSide: (day.lunchOverridden && day.lunch != null) ? day.lunchSide : null,
-              lunchNote: (day.lunchOverridden && day.lunch != null) ? day.lunchNote : "",
-              babyDinner: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinner : null,
-              babyDinnerSide: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerSide : null,
-              babyDinnerNote: (day.babyDinnerOverridden && day.babyDinner != null) ? day.babyDinnerNote : "",
-              babyLunch: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunch : null,
-              babyLunchSide: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchSide : null,
-              babyLunchNote: (day.babyLunchOverridden && day.babyLunch != null) ? day.babyLunchNote : "",
+              dinnerExtras: arr(day.dinnerExtras),
+              lunch: lunchOn ? day.lunch : null,
+              lunchSide: lunchOn ? day.lunchSide : null,
+              lunchExtras: lunchOn ? arr(day.lunchExtras) : [],
+              lunchNote: lunchOn ? day.lunchNote : "",
+              babyDinner: babyDinnerOn ? day.babyDinner : null,
+              babyDinnerSide: babyDinnerOn ? day.babyDinnerSide : null,
+              babyDinnerExtras: babyDinnerOn ? arr(day.babyDinnerExtras) : [],
+              babyDinnerNote: babyDinnerOn ? day.babyDinnerNote : "",
+              babyLunch: babyLunchOn ? day.babyLunch : null,
+              babyLunchSide: babyLunchOn ? day.babyLunchSide : null,
+              babyLunchExtras: babyLunchOn ? arr(day.babyLunchExtras) : [],
+              babyLunchNote: babyLunchOn ? day.babyLunchNote : "",
               // Migration: old string -> Meal|null. If non-empty string, drop (can't reconstruct meal).
               breakfast: typeof day.breakfast === "object" ? (day.breakfast ?? null) : null,
+              breakfastExtras: arr(day.breakfastExtras),
               breakfastNote: typeof day.breakfastNote === "string" ? day.breakfastNote : "",
               snack: typeof day.snack === "object" ? (day.snack ?? null) : null,
+              snackExtras: arr(day.snackExtras),
               snackNote: typeof day.snackNote === "string" ? day.snackNote : "",
             } as DayPlan;
           });

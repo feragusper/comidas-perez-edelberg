@@ -455,6 +455,15 @@ export function DayCard({
                       onRemoveSide={() => onSetLunchSide(null)}
                       babySafety showSide
                     />
+                    {!isEatingOutMeal(dayPlan.lunch) && (
+                      <ExtraItems
+                        extras={dayPlan.lunchExtras ?? []}
+                        hasSideSlot
+                        onEdit={(idx) => openExtraPicker("lunch", idx)}
+                        onRemove={(idx) => onRemoveExtra("lunch", idx)}
+                        onAdd={() => openExtraPicker("lunch", null)}
+                      />
+                    )}
                     {dayPlan.lunchOverridden && (
                       <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-8">
                         <RotateCcw size={11} /> Restaurar sugerencia

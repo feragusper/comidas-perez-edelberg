@@ -247,7 +247,43 @@ function MealDisplay({
   );
 }
 
-export function DayCard({
+/** Renders extra food items for a meal slot + an "add" button (up to the max). */
+function ExtraItems({
+  extras, hasSideSlot, onEdit, onRemove, onAdd,
+}: {
+  extras: Meal[];
+  hasSideSlot: boolean;
+  onEdit: (idx: number) => void;
+  onRemove: (idx: number) => void;
+  onAdd: () => void;
+}) {
+  const base = 1 + (hasSideSlot ? 1 : 0);
+  const canAdd = base + extras.length < MAX_MEAL_ITEMS;
+  return (
+    <div className="pl-8 space-y-1">
+      {extras.map((m, idx) => (
+        <div key={idx} className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+          <span className="text-base shrink-0">{m.emoji}</span>
+          <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
+          <button onClick={() => onEdit(idx)} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+            Cambiar
+          </button>
+          <button onClick={() => onRemove(idx)} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors">
+            <Trash2 size={11} />
+          </button>
+        </div>
+      ))}
+      {canAdd && (
+        <button
+          onClick={onAdd}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-primary/50 transition-all"
+        >
+          <Plus size={11} /> Agregar alimento
+        </button>
+      )}
+    </div>
+  );
+}
   dayPlan, dayIndex, prevDinner,
   isToday = false, isPast = false,
   expanded, onToggleExpanded,

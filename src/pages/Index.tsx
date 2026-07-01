@@ -231,6 +231,9 @@ export default function Index() {
                   onSetBreakfastNote={(v) => setBreakfastNote(idx, v)}
                   onSetSnack={(meal) => setSnack(idx, meal)}
                   onSetSnackNote={(v) => setSnackNote(idx, v)}
+                  onAddExtra={(slot, meal) => addExtra(idx, slot, meal)}
+                  onSetExtra={(slot, exIdx, meal) => setExtraAt(idx, slot, exIdx, meal)}
+                  onRemoveExtra={(slot, exIdx) => removeExtraAt(idx, slot, exIdx)}
                   extraMeals={customMeals}
                   onCustomMeal={saveCustomMeal}
                 />

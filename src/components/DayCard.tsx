@@ -4,7 +4,8 @@ import { Meal, BabySafety } from "@/data/meals";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Plus, Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
+import { Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
+import { AddMealButton } from "./AddMealButton";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface DayCardProps {
@@ -132,12 +133,7 @@ function SimpleMealSlot({
             </button>
           </div>
         ) : (
-          <button
-            onClick={onPickMain}
-            className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-border rounded-lg px-3 py-2 hover:border-primary/50 hover:text-primary hover:bg-muted/40 transition-all"
-          >
-            <Plus size={13} /> Elegir alimento
-          </button>
+          <AddMealButton onClick={onPickMain} />
         )}
       </DraggableMealSlot>
       {meal && extras}
@@ -236,12 +232,7 @@ function ExtraItems({
         </div>
       ))}
       {canAdd && (
-        <button
-          onClick={onAdd}
-          className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-3 py-2 hover:border-primary/50 hover:bg-muted/40 transition-all"
-        >
-          <Plus size={11} /> Elegir alimento
-        </button>
+        <AddMealButton onClick={onAdd} />
       )}
     </div>
   );
@@ -430,12 +421,7 @@ export function DayCard({
                     )}
                   </div>
                 ) : (
-                  <button
-                    onClick={() => openMainPicker("lunch")}
-                    className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-lunch-accent/30 rounded-xl p-3 hover:border-lunch-accent/60 hover:text-lunch-accent hover:bg-lunch-bg transition-all"
-                  >
-                    <Plus size={15} /> Elegir alimento
-                  </button>
+                  <AddMealButton onClick={() => openMainPicker("lunch")} />
                 )}
               </DraggableMealSlot>
 
@@ -474,12 +460,7 @@ export function DayCard({
                       )}
                     </div>
                   ) : (
-                    <button
-                      onClick={() => openMainPicker("babyLunch")}
-                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
-                    >
-                      <Plus size={13} /> Elegir alimento
-                    </button>
+                    <AddMealButton onClick={() => openMainPicker("babyLunch")} />
                   )}
                 </DraggableMealSlot>
               </div>
@@ -598,12 +579,7 @@ export function DayCard({
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => openMainPicker("dinner")}
-                    className="w-full flex items-center gap-2 text-sm text-muted-foreground border-2 border-dashed border-border rounded-xl p-3 hover:border-primary/50 hover:text-primary hover:bg-dinner-bg transition-all"
-                  >
-                    <Plus size={16} /> Elegir alimento
-                  </button>
+                  <AddMealButton onClick={() => openMainPicker("dinner")} />
                 )}
               </DraggableMealSlot>
 
@@ -642,12 +618,7 @@ export function DayCard({
                       )}
                     </div>
                   ) : (
-                    <button
-                      onClick={() => openMainPicker("babyDinner")}
-                      className="w-full flex items-center gap-2 text-xs text-muted-foreground border border-dashed border-baby-safe/30 rounded-xl px-3 py-2 hover:border-baby-safe/60 hover:text-baby-safe hover:bg-baby-safe-bg/40 transition-all"
-                    >
-                      <Plus size={13} /> Elegir alimento
-                    </button>
+                    <AddMealButton onClick={() => openMainPicker("babyDinner")} />
                   )}
                 </DraggableMealSlot>
               </div>

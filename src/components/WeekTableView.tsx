@@ -5,6 +5,7 @@ import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
+import { AddMealButton } from "./AddMealButton";
 
 type SlotKey = "breakfast" | "lunch" | "babyLunch" | "snack" | "dinner" | "babyDinner";
 
@@ -151,12 +152,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         </div>
       ))}
       {canAddMore && (
-        <button
-          onClick={onAddExtra}
-          className="w-full flex items-center justify-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary border border-dashed border-border/60 rounded-lg py-1 hover:border-primary/40 transition-all"
-        >
-          <Plus size={9} /> Elegir alimento
-        </button>
+        <AddMealButton onClick={onAddExtra} />
       )}
     </div>
   );

@@ -99,18 +99,6 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
   );
 }
 
-function NoteInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder ?? "Agregar detalle..."}
-      className="flex-1 min-w-0 text-xs bg-transparent border-0 border-b border-border focus:border-primary/50 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5 transition-colors"
-    />
-  );
-}
-
 function SimpleMealSlot({
   icon, label, accent, bgClass, borderClass,
   meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,

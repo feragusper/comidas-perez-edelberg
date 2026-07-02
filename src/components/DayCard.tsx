@@ -238,7 +238,7 @@ function ExtraItems({
       {canAdd && (
         <button
           onClick={onAdd}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-primary/50 transition-all"
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-3 py-2 hover:border-primary/50 hover:bg-muted/40 transition-all"
         >
           <Plus size={11} /> Elegir alimento
         </button>

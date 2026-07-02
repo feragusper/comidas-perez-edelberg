@@ -153,21 +153,11 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
       {canAddMore && (
         <button
           onClick={onAddExtra}
-          className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary transition-all"
+          className="w-full flex items-center justify-center gap-0.5 text-xs text-muted-foreground/60 hover:text-primary border border-dashed border-border/60 rounded-lg py-1 hover:border-primary/40 transition-all"
         >
           <Plus size={9} /> Elegir alimento
         </button>
       )}
-
-
-      {/* Note */}
-      <input
-        type="text"
-        value={note}
-        onChange={(e) => onChangeNote(e.target.value)}
-        placeholder="nota..."
-        className="w-full text-xs bg-transparent border-0 border-b border-transparent focus:border-border focus:outline-none placeholder:text-muted-foreground/30 text-muted-foreground/70 py-0 transition-colors"
-      />
     </div>
   );
 }

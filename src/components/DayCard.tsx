@@ -99,18 +99,6 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
   );
 }
 
-function NoteInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder ?? "Agregar detalle..."}
-      className="flex-1 min-w-0 text-xs bg-transparent border-0 border-b border-border focus:border-primary/50 focus:outline-none placeholder:text-muted-foreground/50 text-foreground py-0.5 transition-colors"
-    />
-  );
-}
-
 function SimpleMealSlot({
   icon, label, accent, bgClass, borderClass,
   meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
@@ -133,18 +121,15 @@ function SimpleMealSlot({
       </div>
       <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal}>
         {meal ? (
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
-              <span className="text-base shrink-0">{meal.emoji}</span>
-              <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
-              <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-                Cambiar
-              </button>
-              <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
-                <Trash2 size={11} />
-              </button>
-            </div>
-            <NoteInput value={note} onChange={onChangeNote} placeholder="Detalle..." />
+          <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+            <span className="text-base shrink-0">{meal.emoji}</span>
+            <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
+            <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+              Cambiar
+            </button>
+            <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+              <Trash2 size={11} />
+            </button>
           </div>
         ) : (
           <button
@@ -196,7 +181,7 @@ function MealDisplay({
         </button>
       </div>
 
-      {/* Eating-out notes / baby safety badge */}
+      {/* Eating-out notes */}
       {isDelivery && (
         <p className="text-xs text-muted-foreground pl-1">Al día siguiente: sobras del delivery al almuerzo</p>
       )}
@@ -205,11 +190,6 @@ function MealDisplay({
       )}
       {isRestaurant && (
         <p className="text-xs text-muted-foreground pl-1">Comemos afuera — sin sobras</p>
-      )}
-      {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
-        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block", safetyBg[meal.babySafety])}>
-          {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
-        </span>
       )}
 
       {/* Side dish — same visual level, shown only when set */}
@@ -225,13 +205,6 @@ function MealDisplay({
           </button>
         </div>
       )}
-
-      {/* Note */}
-      <NoteInput
-        value={note}
-        onChange={onChangeNote}
-        placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
-      />
     </div>
   );
 }
@@ -265,7 +238,7 @@ function ExtraItems({
       {canAdd && (
         <button
           onClick={onAdd}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-2.5 py-1.5 hover:border-primary/50 transition-all"
+          className="w-full flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-primary border border-dashed border-border rounded-lg px-3 py-2 hover:border-primary/50 hover:bg-muted/40 transition-all"
         >
           <Plus size={11} /> Elegir alimento
         </button>

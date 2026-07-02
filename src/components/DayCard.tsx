@@ -121,18 +121,15 @@ function SimpleMealSlot({
       </div>
       <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal}>
         {meal ? (
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
-              <span className="text-base shrink-0">{meal.emoji}</span>
-              <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
-              <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-                Cambiar
-              </button>
-              <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
-                <Trash2 size={11} />
-              </button>
-            </div>
-            <NoteInput value={note} onChange={onChangeNote} placeholder="Detalle..." />
+          <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+            <span className="text-base shrink-0">{meal.emoji}</span>
+            <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
+            <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+              Cambiar
+            </button>
+            <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+              <Trash2 size={11} />
+            </button>
           </div>
         ) : (
           <button

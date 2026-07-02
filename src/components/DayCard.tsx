@@ -181,7 +181,7 @@ function MealDisplay({
         </button>
       </div>
 
-      {/* Eating-out notes / baby safety badge */}
+      {/* Eating-out notes */}
       {isDelivery && (
         <p className="text-xs text-muted-foreground pl-1">Al día siguiente: sobras del delivery al almuerzo</p>
       )}
@@ -190,11 +190,6 @@ function MealDisplay({
       )}
       {isRestaurant && (
         <p className="text-xs text-muted-foreground pl-1">Comemos afuera — sin sobras</p>
-      )}
-      {!isEatingOut && babySafety && meal.babySafety !== "unsafe" && (
-        <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-block", safetyBg[meal.babySafety])}>
-          {safetyIcon[meal.babySafety]} {isBaby ? "Apto" : "Apto bebé"}
-        </span>
       )}
 
       {/* Side dish — same visual level, shown only when set */}
@@ -210,13 +205,6 @@ function MealDisplay({
           </button>
         </div>
       )}
-
-      {/* Note */}
-      <NoteInput
-        value={note}
-        onChange={onChangeNote}
-        placeholder={isDelivery ? "¿Qué vas a pedir?" : isTakeaway ? "¿De dónde lo traemos?" : isRestaurant ? "¿A qué restaurante?" : "Agregar detalle..."}
-      />
     </div>
   );
 }

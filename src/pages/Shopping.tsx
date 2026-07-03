@@ -241,6 +241,7 @@ export default function Shopping() {
                       {list.map((it) => {
                         const k = itemKey(it);
                         const got = have[k];
+                        const inPantry = pantryHasName(pantryItems, it.name);
                         return (
                           <li
                             key={k}
@@ -257,8 +258,16 @@ export default function Shopping() {
                             />
                             <span className="text-lg shrink-0">{it.emoji ?? "🛒"}</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground truncate">{it.name}</p>
+                              <p className="font-medium text-foreground truncate">
+                                {it.name}
+                                {inPantry && (
+                                  <span className="ml-2 inline-flex items-center gap-1 align-middle text-[10px] font-medium text-primary bg-primary/10 rounded-full px-1.5 py-0.5 no-underline">
+                                    <Warehouse size={10} /> Don Bacilio
+                                  </span>
+                                )}
+                              </p>
                               <p className="text-xs text-muted-foreground">{it.quantity}</p>
+
                               {it.sources && it.sources.length > 0 && (
                                 <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
                                   {it.sources.join(" · ")}

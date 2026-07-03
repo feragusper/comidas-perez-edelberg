@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
-import { UtensilsCrossed, BarChart3, Carrot, ShoppingCart, LogOut } from "lucide-react";
+import { UtensilsCrossed, BarChart3, Carrot, ShoppingCart, LogOut, Warehouse } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 const items = [
   { to: "/mis-comidas", label: "Mis comidas", icon: UtensilsCrossed },
   { to: "/ingredientes", label: "Ingredientes", icon: Carrot },
+  { to: "/don-bacilio", label: "Don Bacilio", icon: Warehouse },
   { to: "/super", label: "Súper", icon: ShoppingCart },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
 ];

@@ -3,9 +3,10 @@ import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMealPlan } from "@/hooks/useMealPlan";
+import { usePantry, pantryHasName } from "@/hooks/usePantry";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Sparkles, Loader2, ClipboardCopy, RotateCcw, CheckCheck } from "lucide-react";
+import { ShoppingCart, Sparkles, Loader2, ClipboardCopy, RotateCcw, CheckCheck, Warehouse } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,7 @@ const itemKey = (it: ShoppingItem) => `${it.category}|${it.name}`;
 export default function Shopping() {
   const weekKey = currentWeekKey();
   const { plan } = useMealPlan(weekKey);
+  const { items: pantryItems } = usePantry();
   const todayIdx = todayDayIndex(weekKey);
   const fromIdx = todayIdx === -1 ? 0 : todayIdx;
 
@@ -107,7 +109,12 @@ export default function Shopping() {
       }
       const newItems: ShoppingItem[] = Array.isArray(data?.items) ? data.items : [];
       setItems(newItems);
-      setHave({});
+      // Pre-mark as "ya tengo" whatever is already in Don Bacilio (la despensa)
+      const preHave: Record<string, boolean> = {};
+      for (const it of newItems) {
+        if (pantryHasName(pantryItems, it.name)) preHave[itemKey(it)] = true;
+      }
+      setHave(preHave);
     } catch (e) {
       console.error(e);
       toast({ title: "Error generando lista", variant: "destructive" });
@@ -234,6 +241,7 @@ export default function Shopping() {
                       {list.map((it) => {
                         const k = itemKey(it);
                         const got = have[k];
+                        const inPantry = pantryHasName(pantryItems, it.name);
                         return (
                           <li
                             key={k}
@@ -250,8 +258,16 @@ export default function Shopping() {
                             />
                             <span className="text-lg shrink-0">{it.emoji ?? "🛒"}</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground truncate">{it.name}</p>
+                              <p className="font-medium text-foreground truncate">
+                                {it.name}
+                                {inPantry && (
+                                  <span className="ml-2 inline-flex items-center gap-1 align-middle text-[10px] font-medium text-primary bg-primary/10 rounded-full px-1.5 py-0.5 no-underline">
+                                    <Warehouse size={10} /> Don Bacilio
+                                  </span>
+                                )}
+                              </p>
                               <p className="text-xs text-muted-foreground">{it.quantity}</p>
+
                               {it.sources && it.sources.length > 0 && (
                                 <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">
                                   {it.sources.join(" · ")}

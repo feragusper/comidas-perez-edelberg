@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Reports from "./pages/Reports";
 import CustomMeals from "./pages/CustomMeals";
 import Ingredients from "./pages/Ingredients";
+import DonBacilio from "./pages/DonBacilio";
 import Shopping from "./pages/Shopping";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";

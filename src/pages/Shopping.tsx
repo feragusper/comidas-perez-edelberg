@@ -3,9 +3,10 @@ import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMealPlan } from "@/hooks/useMealPlan";
+import { usePantry, pantryHasName } from "@/hooks/usePantry";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 import { supabase } from "@/integrations/supabase/client";
-import { ShoppingCart, Sparkles, Loader2, ClipboardCopy, RotateCcw, CheckCheck } from "lucide-react";
+import { ShoppingCart, Sparkles, Loader2, ClipboardCopy, RotateCcw, CheckCheck, Warehouse } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 

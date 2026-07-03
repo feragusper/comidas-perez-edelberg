@@ -92,6 +92,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pantry: {
+        Row: {
+          env: string
+          items: Json
+          updated_at: string
+        }
+        Insert: {
+          env: string
+          items?: Json
+          updated_at?: string
+        }
+        Update: {
+          env?: string
+          items?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

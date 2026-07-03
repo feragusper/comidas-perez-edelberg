@@ -31,6 +31,7 @@ const itemKey = (it: ShoppingItem) => `${it.category}|${it.name}`;
 export default function Shopping() {
   const weekKey = currentWeekKey();
   const { plan } = useMealPlan(weekKey);
+  const { items: pantryItems } = usePantry();
   const todayIdx = todayDayIndex(weekKey);
   const fromIdx = todayIdx === -1 ? 0 : todayIdx;
 

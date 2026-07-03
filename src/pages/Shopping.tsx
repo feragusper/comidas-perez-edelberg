@@ -109,7 +109,12 @@ export default function Shopping() {
       }
       const newItems: ShoppingItem[] = Array.isArray(data?.items) ? data.items : [];
       setItems(newItems);
-      setHave({});
+      // Pre-mark as "ya tengo" whatever is already in Don Bacilio (la despensa)
+      const preHave: Record<string, boolean> = {};
+      for (const it of newItems) {
+        if (pantryHasName(pantryItems, it.name)) preHave[itemKey(it)] = true;
+      }
+      setHave(preHave);
     } catch (e) {
       console.error(e);
       toast({ title: "Error generando lista", variant: "destructive" });

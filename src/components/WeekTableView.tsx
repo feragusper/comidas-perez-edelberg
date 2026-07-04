@@ -50,12 +50,12 @@ const ROWS: {
   borderColor: string;
   icon?: string;
 }[] = [
-  { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-amber-50/60",  headerText: "text-baby-safe",  cellBg: "bg-amber-50/20",  borderColor: "border-baby-safe/20",  icon: "🥐" },
-  { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-lunch-bg",     headerText: "text-secondary",  cellBg: "bg-lunch-bg/40",  borderColor: "border-secondary/20" },
-  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-lunch-bg/60",  headerText: "text-baby-safe",  cellBg: "bg-lunch-bg/20",  borderColor: "border-baby-safe/20" },
-  { slot: "snack",      label: "Merienda · Nico", isBaby: true,  headerBg: "bg-amber-50/60",  headerText: "text-baby-safe",  cellBg: "bg-amber-50/20", borderColor: "border-baby-safe/20",  icon: "🫖" },
-  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-dinner-bg",    headerText: "text-primary",    cellBg: "bg-dinner-bg/40", borderColor: "border-primary/20"   },
-  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-dinner-bg/60", headerText: "text-baby-safe",  cellBg: "bg-dinner-bg/20", borderColor: "border-baby-safe/20" },
+  { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border",  icon: "🥐" },
+  { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
+  { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
+  { slot: "snack",      label: "Merienda · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border",  icon: "🫖" },
+  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
+  { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
 ];
 
 function getSlotData(d: DayPlan, slot: SlotKey): { meal: Meal | null; side: Meal | null; extras: Meal[]; note: string } {
@@ -86,7 +86,7 @@ interface CellProps {
 
 
 function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMain, onPickSide, onRemove, onRemoveSide, onChangeNote, onAddExtra, onEditExtra, onRemoveExtra }: CellProps) {
-  const textColor = isBaby ? "text-baby-safe" : "text-foreground";
+  const textColor = "text-foreground";
 
   if (!meal) {
     return (
@@ -292,7 +292,7 @@ export function WeekTableView({
               <tr key={row.slot}>
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">
-                    {row.isBaby && <Baby size={11} className="text-baby-safe shrink-0" />}
+                    {row.isBaby && <Baby size={11} className="text-muted-foreground shrink-0" />}
                     {row.icon && <span className="text-sm">{row.icon}</span>}
                     <span className={cn("text-xs font-semibold whitespace-nowrap", row.headerText)}>{row.label}</span>
                   </div>

@@ -1,9 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
-import { UtensilsCrossed, BarChart3, Carrot, ShoppingCart, LogOut, Warehouse } from "lucide-react";
+import { useState } from "react";
+import {
+  UtensilsCrossed,
+  BarChart3,
+  Carrot,
+  ShoppingCart,
+  LogOut,
+  Warehouse,
+  Menu as MenuIcon,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 const items = [
+  { to: "/", label: "Menú", icon: UtensilsCrossed },
   { to: "/mis-comidas", label: "Mis comidas", icon: UtensilsCrossed },
   { to: "/ingredientes", label: "Ingredientes", icon: Carrot },
   { to: "/don-bacilio", label: "Don Bacilio", icon: Warehouse },
@@ -14,37 +25,83 @@ const items = [
 export function TopNav() {
   const { pathname } = useLocation();
   const { signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+
+  const itemClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0",
+      active
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+    );
+
   return (
     <nav className="w-full bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center gap-1 h-12 overflow-x-auto scrollbar-hide">
-        <Link to="/" className="font-display text-base font-bold text-foreground mr-3 shrink-0 tracking-tight">
-          🍽️ <span className="text-gradient-gold">Menú</span>
-        </Link>
-        {items.map((it) => {
-          const Icon = it.icon;
-          const active = pathname === it.to;
-          return (
-            <Link
-              key={it.to}
-              to={it.to}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0",
-                active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <Icon size={13} /> {it.label}
-            </Link>
-          );
-        })}
-        <button
-          onClick={signOut}
-          className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-        >
-          <LogOut size={13} /> Salir
-        </button>
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 h-12 flex items-center">
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-1 w-full">
+          {items.map((it) => {
+            const Icon = it.icon;
+            const active = pathname === it.to;
+            return (
+              <Link key={it.to} to={it.to} className={itemClass(active)}>
+                <Icon size={13} /> {it.label}
+              </Link>
+            );
+          })}
+          <button
+            onClick={signOut}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+          >
+            <LogOut size={13} /> Salir
+          </button>
+        </div>
+
+        {/* Mobile header */}
+        <div className="flex md:hidden items-center justify-between w-full">
+          <Link to="/" className="font-display text-base font-bold text-foreground tracking-tight">
+            🍽️ <span className="text-gradient-gold">Menú</span>
+          </Link>
+          <button
+            onClick={() => setOpen((o) => !o)}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
+            className="flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            {open ? <X size={18} /> : <MenuIcon size={18} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile dropdown */}
+      {open && (
+        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-md">
+          <div className="max-w-5xl mx-auto px-4 py-2 flex flex-col gap-1">
+            {items.map((it) => {
+              const Icon = it.icon;
+              const active = pathname === it.to;
+              return (
+                <Link
+                  key={it.to}
+                  to={it.to}
+                  onClick={() => setOpen(false)}
+                  className={itemClass(active)}
+                >
+                  <Icon size={13} /> {it.label}
+                </Link>
+              );
+            })}
+            <button
+              onClick={() => {
+                setOpen(false);
+                signOut();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <LogOut size={13} /> Salir
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

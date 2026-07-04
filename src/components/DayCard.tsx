@@ -362,9 +362,9 @@ export function DayCard({
             <SimpleMealSlot
               icon="🥐"
               label="Desayuno · Nico"
-              accent="text-baby-safe"
-              bgClass="bg-amber-50/40"
-              borderClass="border-baby-safe/30"
+              accent="text-foreground"
+              bgClass="bg-muted/40"
+              borderClass="border-border"
               meal={dayPlan.breakfast}
               note={dayPlan.breakfastNote}
               onPickMain={() => openMainPicker("breakfast")}
@@ -384,9 +384,9 @@ export function DayCard({
             />
 
             {/* ── LUNCH ── */}
-            <div className="rounded-xl bg-lunch-bg/70 p-3 border border-lunch-accent/20 space-y-3">
+            <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-lunch-accent">☀ Almuerzo</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">☀ Almuerzo</span>
                 {!dayPlan.lunchOverridden && dayPlan.lunch && (
                   <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                 )}
@@ -415,7 +415,7 @@ export function DayCard({
                       />
                     )}
                     {dayPlan.lunchOverridden && (
-                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-1">
+                      <button onClick={onResetLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-1">
                         <RotateCcw size={11} /> Restaurar sugerencia
                       </button>
                     )}
@@ -426,10 +426,10 @@ export function DayCard({
               </DraggableMealSlot>
 
               {/* Nico lunch */}
-              <div className="border-t border-lunch-accent/15 pt-2">
+              <div className="border-t border-border pt-2">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <Baby size={12} className="text-baby-safe" />
-                  <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  <Baby size={12} className="text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground">Nico</span>
                   {!dayPlan.babyLunchOverridden && dayPlan.babyLunch && (
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
@@ -454,7 +454,7 @@ export function DayCard({
                         onAdd={() => openExtraPicker("babyLunch", null)}
                       />
                       {dayPlan.babyLunchOverridden && (
-                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-lunch-accent transition-colors pl-1">
+                        <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-1">
                           <RotateCcw size={11} /> Restaurar sugerencia
                         </button>
                       )}
@@ -470,9 +470,9 @@ export function DayCard({
             <SimpleMealSlot
               icon="🫖"
               label="Merienda · Nico"
-              accent="text-baby-safe"
-              bgClass="bg-amber-50/40"
-              borderClass="border-baby-safe/30"
+              accent="text-foreground"
+              bgClass="bg-muted/40"
+              borderClass="border-border"
               meal={dayPlan.snack}
               note={dayPlan.snackNote}
               onPickMain={() => openMainPicker("snack")}
@@ -492,12 +492,9 @@ export function DayCard({
             />
 
             {/* ── DINNER ── */}
-            <div className={cn(
-              "rounded-xl p-3 border space-y-3",
-              isEatingOut ? "bg-warning/5 border-warning/30" : "bg-dinner-bg/70 border-primary/20"
-            )}>
+            <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <span className={cn("text-xs font-semibold uppercase tracking-wider", isEatingOut ? "text-warning" : "text-primary")}>
+                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
                   {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "🌙 Cena"}
                 </span>
               </div>
@@ -584,10 +581,10 @@ export function DayCard({
               </DraggableMealSlot>
 
               {/* Nico dinner */}
-              <div className="border-t border-primary/15 pt-2">
+              <div className="border-t border-border pt-2">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <Baby size={12} className="text-baby-safe" />
-                  <span className="text-xs font-semibold text-baby-safe">Nico</span>
+                  <Baby size={12} className="text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground">Nico</span>
                   {!dayPlan.babyDinnerOverridden && dayPlan.babyDinner && (
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
@@ -612,7 +609,7 @@ export function DayCard({
                         onAdd={() => openExtraPicker("babyDinner", null)}
                       />
                       {dayPlan.babyDinnerOverridden && (
-                        <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors pl-1">
+                        <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-1">
                           <RotateCcw size={11} /> Restaurar sugerencia
                         </button>
                       )}

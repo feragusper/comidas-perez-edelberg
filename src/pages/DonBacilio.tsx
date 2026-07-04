@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { usePantry } from "@/hooks/usePantry";
+import { useCustomMeals } from "@/hooks/useCustomMeals";
 import { supabase } from "@/integrations/supabase/client";
-import { searchEmojis } from "@/data/foodEmojis";
-import { EmojiPicker } from "@/components/EmojiPicker";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MealPicker } from "@/components/MealPicker";
 import { Plus, X, Sparkles, Loader2, Warehouse } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -17,31 +15,12 @@ interface Suggestion {
   isKeto?: boolean;
 }
 
-function guessEmoji(name: string): string {
-  const results = searchEmojis(name);
-  return results[0]?.emoji ?? "🥫";
-}
-
 export default function DonBacilio() {
   const { items, addItem, removeItem } = usePantry();
-  const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState("🥫");
-  const [emojiTouched, setEmojiTouched] = useState(false);
+  const { customMeals } = useCustomMeals();
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-
-  const handleNameChange = (v: string) => {
-    setName(v);
-    if (!emojiTouched) setEmoji(guessEmoji(v));
-  };
-
-  const handleAdd = () => {
-    if (!name.trim()) return;
-    addItem({ name: name.trim(), emoji });
-    setName("");
-    setEmoji("🥫");
-    setEmojiTouched(false);
-  };
 
   const handleGenerate = async () => {
     if (items.length === 0) {
@@ -86,31 +65,19 @@ export default function DonBacilio() {
           Lo que ya tenemos en casa. Se usa para las sugerencias y para marcar lo que ya tenés en la lista del súper.
         </p>
 
-        <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="shrink-0 w-11 h-11 rounded-lg border border-border bg-card text-xl flex items-center justify-center hover:border-primary/50 transition-colors">
-                {emoji}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <EmojiPicker
-                value={emoji}
-                onSelect={(e) => { setEmoji(e); setEmojiTouched(true); }}
-              />
-            </PopoverContent>
-          </Popover>
-          <Input
-            value={name}
-            onChange={(e) => handleNameChange(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
-            placeholder="pollo congelado, fideos, cus cus…"
-            className="flex-1"
+        <Button variant="outline" className="w-full" onClick={() => setPickerOpen(true)}>
+          <Plus size={16} className="mr-1" /> Agregar alimento
+        </Button>
+
+        {pickerOpen && (
+          <MealPicker
+            mode="adult"
+            step="main"
+            extraMeals={customMeals}
+            onSelect={(meal) => addItem({ name: meal.name, emoji: meal.emoji })}
+            onClose={() => setPickerOpen(false)}
           />
-          <Button onClick={handleAdd} disabled={!name.trim()} className="shrink-0">
-            <Plus size={16} className="mr-1" /> Agregar
-          </Button>
-        </div>
+        )}
 
         <div className="mt-5">
           {items.length === 0 ? (

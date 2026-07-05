@@ -71,6 +71,42 @@ export type Database = {
         }
         Relationships: []
       }
+      ingredients: {
+        Row: {
+          baby_note: string | null
+          baby_safety: string
+          created_at: string
+          emoji: string
+          id: string
+          ingredient_id: string
+          is_keto: boolean
+          name: string
+          tags: string[]
+        }
+        Insert: {
+          baby_note?: string | null
+          baby_safety?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          ingredient_id: string
+          is_keto?: boolean
+          name: string
+          tags?: string[]
+        }
+        Update: {
+          baby_note?: string | null
+          baby_safety?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          ingredient_id?: string
+          is_keto?: boolean
+          name?: string
+          tags?: string[]
+        }
+        Relationships: []
+      }
       meal_plan: {
         Row: {
           id: string
@@ -89,6 +125,51 @@ export type Database = {
           plan?: Json
           updated_at?: string
           week_key?: string
+        }
+        Relationships: []
+      }
+      meals: {
+        Row: {
+          baby_note: string | null
+          baby_safety: string
+          category: string
+          created_at: string
+          emoji: string
+          id: string
+          ingredient_ids: string[]
+          is_keto: boolean
+          is_side: boolean
+          meal_id: string
+          name: string
+          tags: string[]
+        }
+        Insert: {
+          baby_note?: string | null
+          baby_safety?: string
+          category?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          ingredient_ids?: string[]
+          is_keto?: boolean
+          is_side?: boolean
+          meal_id: string
+          name: string
+          tags?: string[]
+        }
+        Update: {
+          baby_note?: string | null
+          baby_safety?: string
+          category?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          ingredient_ids?: string[]
+          is_keto?: boolean
+          is_side?: boolean
+          meal_id?: string
+          name?: string
+          tags?: string[]
         }
         Relationships: []
       }

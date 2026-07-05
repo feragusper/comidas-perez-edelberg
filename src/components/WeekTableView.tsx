@@ -34,7 +34,6 @@ interface WeekTableViewProps {
   onSetExtra: (i: number, slot: MealSlot, idx: number, meal: Meal) => void;
   onRemoveExtra: (i: number, slot: MealSlot, idx: number) => void;
   onRemoveMain: (i: number, slot: MealSlot) => void;
-  onClearSlot: (i: number, slot: MealSlot) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -176,7 +175,7 @@ export function WeekTableView({
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
   onAddExtra, onSetExtra, onRemoveExtra,
-  onRemoveMain, onClearSlot,
+  onRemoveMain,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -332,17 +331,8 @@ export function WeekTableView({
                                     className={cn("rounded-lg border border-border/50 bg-card/40 p-1 transition-shadow", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
                                   >
                                     <div className="flex items-start gap-0.5">
-                                      <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
-                                        <div {...dragProvided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground" title="Mover">
-                                          <GripVertical size={10} />
-                                        </div>
-                                        <button
-                                          onClick={() => onClearSlot(idx, row.slot)}
-                                          className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors"
-                                          title="Eliminar todo"
-                                        >
-                                          <Trash2 size={10} />
-                                        </button>
+                                      <div {...dragProvided.dragHandleProps} className="pt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0" title="Mover">
+                                        <GripVertical size={10} />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <EditableCell

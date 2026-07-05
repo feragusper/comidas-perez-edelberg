@@ -635,7 +635,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     setNotes,
     addExtra, setExtraAt, removeExtraAt,
-    removeMainOnly, clearSlot,
+    removeMainOnly,
     swapSlots,
     resetPlan,
     autocompleteWeek,

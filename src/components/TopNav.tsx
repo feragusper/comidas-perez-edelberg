@@ -35,6 +35,15 @@ export function TopNav() {
         : "text-muted-foreground hover:text-foreground hover:bg-muted"
     );
 
+  // Mobile: touch target of at least 44px per item
+  const mobileItemClass = (active: boolean) =>
+    cn(
+      "flex items-center gap-2.5 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors",
+      active
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+    );
+
   return (
     <nav className="w-full bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 sm:px-8 h-12 flex items-center">
@@ -59,15 +68,15 @@ export function TopNav() {
 
         {/* Mobile header */}
         <div className="flex md:hidden items-center justify-between w-full">
-          <Link to="/" className="font-display text-base font-bold text-foreground tracking-tight">
+          <Link to="/" className="text-base font-bold text-foreground tracking-tight">
             🍽️ <span className="text-gradient-gold">Menú</span>
           </Link>
           <button
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            className="flex items-center justify-center p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="flex items-center justify-center h-11 w-11 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            {open ? <X size={18} /> : <MenuIcon size={18} />}
+            {open ? <X size={20} /> : <MenuIcon size={20} />}
           </button>
         </div>
       </div>
@@ -84,9 +93,9 @@ export function TopNav() {
                   key={it.to}
                   to={it.to}
                   onClick={() => setOpen(false)}
-                  className={itemClass(active)}
+                  className={mobileItemClass(active)}
                 >
-                  <Icon size={13} /> {it.label}
+                  <Icon size={16} /> {it.label}
                 </Link>
               );
             })}
@@ -95,9 +104,9 @@ export function TopNav() {
                 setOpen(false);
                 signOut();
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
-              <LogOut size={13} /> Salir
+              <LogOut size={16} /> Salir
             </button>
           </div>
         </div>

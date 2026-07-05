@@ -362,8 +362,7 @@ export function DayCard({
           onClick={() => onToggleExpanded()}
         >
           <div className="flex items-center gap-2">
-            <span className={cn("text-lg font-bold", isEatingOut ? "text-warning" : isToday ? "text-foreground" : "text-foreground")}
-              style={{ fontFamily: 'Playfair Display, serif' }}>
+            <span className={cn("text-lg font-bold", isEatingOut ? "text-warning" : isToday ? "text-foreground" : "text-foreground")}>
               {dayPlan.day}
             </span>
             {isEatingOut && <span className="text-base leading-none">{dinnerEmoji}</span>}

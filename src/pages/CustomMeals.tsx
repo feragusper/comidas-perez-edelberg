@@ -35,7 +35,7 @@ export default function CustomMeals() {
       <TopNav />
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
+          <h1 className="text-2xl font-bold text-foreground">
             Mis comidas personalizadas
           </h1>
           <Button

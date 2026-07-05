@@ -275,7 +275,6 @@ export function WeekTableView({
                           className={cn("text-xs font-bold uppercase tracking-wider",
                             isDel ? "text-warning" : isToday ? "text-primary" : "text-foreground"
                           )}
-                          style={{ fontFamily: "Playfair Display, serif" }}
                         >
                           {SHORT_DAYS[d.day] ?? d.day}
                         </span>

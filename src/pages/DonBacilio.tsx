@@ -57,7 +57,7 @@ export default function DonBacilio() {
       <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
         <div className="flex items-center gap-2 mb-1">
           <Warehouse className="text-primary" size={22} />
-          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "Playfair Display, serif" }}>
+          <h1 className="text-2xl font-bold text-foreground">
             Don Bacilio
           </h1>
         </div>

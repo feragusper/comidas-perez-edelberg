@@ -129,7 +129,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
           <div className="flex items-center justify-between p-5 pb-3">
             <div className="flex items-center gap-2">
               <ChefHat size={18} className="text-primary" />
-              <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+              <h3 className="text-xl font-semibold text-foreground">
                 {title}
               </h3>
             </div>
@@ -188,7 +188,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], onSelect, 
               ? <span className="text-base">🥗</span>
               : <ChefHat size={18} className="text-primary" />
             }
-            <h3 className="text-xl font-semibold text-foreground" style={{ fontFamily: 'Playfair Display, serif' }}>
+            <h3 className="text-xl font-semibold text-foreground">
               {title}
             </h3>
           </div>

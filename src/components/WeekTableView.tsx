@@ -248,11 +248,11 @@ export function WeekTableView({
 
   return (
     <>
-      <div className="rounded-2xl border border-border shadow-card">
+      <div className="rounded-2xl border border-border shadow-card overflow-x-auto">
         <table className="w-full border-collapse table-fixed">
           <thead>
             <tr>
-              <th className="w-[130px] min-w-[130px] bg-muted/60 border-b border-r border-border" />
+              <th className="w-9 min-w-[36px] md:w-[130px] md:min-w-[130px] sticky left-0 z-20 bg-muted md:bg-muted/60 border-b border-r border-border" />
               {plan.map((d, idx) => {
                 const isToday = todayIdx === idx;
                 const isPast = todayIdx !== -1 && idx < todayIdx;
@@ -263,7 +263,7 @@ export function WeekTableView({
                   <th
                     key={d.day}
                     className={cn(
-                      "border-b border-r last:border-r-0 border-border px-2 py-2 text-center transition-all",
+                      "w-[72vw] md:w-auto border-b border-r last:border-r-0 border-border px-2 py-2 text-center transition-all",
                       isDel ? "bg-warning/10" : isToday ? "bg-primary/10" : isPast ? "bg-muted/20" : "bg-muted/40",
                       isPast && "opacity-50"
                     )}
@@ -294,10 +294,13 @@ export function WeekTableView({
           <tbody>
             {ROWS.map((row) => (
               <tr key={row.slot}>
-                <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
-                  <div className="flex items-center gap-1">
-                    {row.isBaby && <Baby size={11} className="text-muted-foreground shrink-0" />}
-                    <span className={cn("text-xs font-semibold whitespace-nowrap", row.headerText)}>{row.label}</span>
+                <td className="sticky left-0 z-10 px-1 py-3 md:px-3 md:py-2 border-r border-b border-border bg-muted md:bg-muted/60">
+                  <div className="flex items-center justify-center md:justify-start gap-1">
+                    {row.isBaby && <Baby size={11} className="hidden md:block text-muted-foreground shrink-0" />}
+                    <span className={cn(
+                      "text-xs font-semibold whitespace-nowrap [writing-mode:vertical-rl] rotate-180 md:[writing-mode:horizontal-tb] md:rotate-0",
+                      row.headerText
+                    )}>{row.label}</span>
                   </div>
                 </td>
                 {plan.map((dayPlan, idx) => {

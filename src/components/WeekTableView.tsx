@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
-import { Baby, Plus, Trash2, Pencil, GripVertical } from "lucide-react";
+import { Baby, Plus, Trash2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { AddMealButton } from "./AddMealButton";
@@ -106,16 +106,17 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
   return (
     <div className="space-y-1 group relative">
       {/* Main item */}
-      <div className="flex items-start gap-1">
+      <div
+        onClick={onPickMain}
+        title="Tocar para cambiar"
+        className="flex items-start gap-1 rounded cursor-pointer hover:bg-muted/60 transition-colors"
+      >
         <span className="text-sm shrink-0">{meal.emoji}</span>
         <div className="flex-1 min-w-0">
           <p className={cn("text-xs leading-tight break-words", textColor)}>{meal.name}</p>
         </div>
         <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
-          <button onClick={onPickMain} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
-            <Pencil size={10} />
-          </button>
-          <button onClick={onRemove} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
             <Trash2 size={10} />
           </button>
         </div>
@@ -123,14 +124,15 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
 
       {/* Side — same visual level, shown only when set */}
       {hasSideSlot && side && (
-        <div className="flex items-start gap-1">
+        <div
+          onClick={onPickSide}
+          title="Tocar para cambiar"
+          className="flex items-start gap-1 rounded cursor-pointer hover:bg-muted/60 transition-colors"
+        >
           <span className="text-sm shrink-0">{side.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{side.name}</span>
           <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
-            <button onClick={onPickSide} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
-              <Pencil size={10} />
-            </button>
-            <button onClick={onRemoveSide} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); onRemoveSide(); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
               <Trash2 size={10} />
             </button>
           </div>
@@ -139,14 +141,16 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
 
       {/* Extras — same visual level */}
       {extras.map((ex, exIdx) => (
-        <div key={exIdx} className="flex items-start gap-1">
+        <div
+          key={exIdx}
+          onClick={() => onEditExtra(exIdx)}
+          title="Tocar para cambiar"
+          className="flex items-start gap-1 rounded cursor-pointer hover:bg-muted/60 transition-colors"
+        >
           <span className="text-sm shrink-0">{ex.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{ex.name}</span>
           <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
-            <button onClick={() => onEditExtra(exIdx)} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
-              <Pencil size={10} />
-            </button>
-            <button onClick={() => onRemoveExtra(exIdx)} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); onRemoveExtra(exIdx); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
               <Trash2 size={10} />
             </button>
           </div>

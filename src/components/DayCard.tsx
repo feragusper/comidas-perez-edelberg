@@ -136,13 +136,14 @@ function SimpleMealSlot({
       <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal} onClearGroup={onClearGroup}>
         {meal ? (
           <div className="space-y-1">
-            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+            <div
+              onClick={onPickMain}
+              title="Tocar para cambiar"
+              className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+            >
               <span className="text-base shrink-0">{meal.emoji}</span>
               <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
-              <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-                Cambiar
-              </button>
-              <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+              <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
                 <Trash2 size={11} />
               </button>
             </div>
@@ -181,13 +182,14 @@ function MealDisplay({
   return (
     <div className="space-y-1">
       {/* Main item — same visual level as the rest */}
-      <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+      <div
+        onClick={onChangeMeal}
+        title="Tocar para cambiar"
+        className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+      >
         <span className="text-base shrink-0">{meal.emoji}</span>
         <p className={cn("text-xs flex-1 break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
-        <button onClick={onChangeMeal} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-          Cambiar
-        </button>
-        <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+        <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
           <Trash2 size={11} />
         </button>
       </div>
@@ -205,13 +207,14 @@ function MealDisplay({
 
       {/* Side dish — same visual level, shown only when set */}
       {showSide && !isEatingOut && side && (
-        <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+        <div
+          onClick={onChangeSide}
+          title="Tocar para cambiar"
+          className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+        >
           <span className="text-base shrink-0">{side.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{side.name}</p>
-          <button onClick={onChangeSide} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-            Cambiar
-          </button>
-          <button onClick={onRemoveSide} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
+          <button onClick={(e) => { e.stopPropagation(); onRemoveSide?.(); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
         </div>
@@ -235,13 +238,15 @@ function ExtraItems({
   return (
     <div className="space-y-1">
       {extras.map((m, idx) => (
-        <div key={idx} className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+        <div
+          key={idx}
+          onClick={() => onEdit(idx)}
+          title="Tocar para cambiar"
+          className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+        >
           <span className="text-base shrink-0">{m.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
-          <button onClick={() => onEdit(idx)} className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-            Cambiar
-          </button>
-          <button onClick={() => onRemove(idx)} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); onRemove(idx); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
         </div>

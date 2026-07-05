@@ -48,6 +48,8 @@ interface DayCardProps {
   onAddExtra: (slot: MealSlot, meal: Meal) => void;
   onSetExtra: (slot: MealSlot, idx: number, meal: Meal) => void;
   onRemoveExtra: (slot: MealSlot, idx: number) => void;
+  onRemoveMain: (slot: MealSlot) => void;
+  onClearSlot: (slot: MealSlot) => void;
 }
 
 const safetyBg: Record<BabySafety, string> = {
@@ -64,7 +66,7 @@ const safetyIcon: Record<BabySafety, string> = {
 
 type PickerTarget = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack" | null;
 
-function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: string; hasMeal: boolean; children: React.ReactNode }) {
+function DraggableMealSlot({ droppableId, hasMeal, onClearGroup, children }: { droppableId: string; hasMeal: boolean; onClearGroup?: () => void; children: React.ReactNode }) {
   return (
     <Droppable droppableId={droppableId}>
       {(provided, snapshot) => (
@@ -79,11 +81,22 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
                 <div
                   ref={dragProvided.innerRef}
                   {...dragProvided.draggableProps}
-                  className={cn(dragSnapshot.isDragging && "shadow-lg rounded-xl bg-card p-2 border border-border")}
+                  className={cn("rounded-xl border border-border/60 bg-card/50 p-1.5", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
                 >
                   <div className="flex items-start gap-1">
-                    <div {...dragProvided.dragHandleProps} className="pt-1 cursor-grab active:cursor-grabbing text-muted-foreground/30 hover:text-muted-foreground shrink-0">
-                      <GripVertical size={14} />
+                    <div className="flex flex-col items-center gap-1 shrink-0 pt-1">
+                      <div {...dragProvided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground" title="Mover">
+                        <GripVertical size={14} />
+                      </div>
+                      {onClearGroup && (
+                        <button
+                          onClick={onClearGroup}
+                          className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors"
+                          title="Eliminar todo"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">{children}</div>
                   </div>
@@ -101,15 +114,16 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
 }
 
 function SimpleMealSlot({
-  icon, label, accent, bgClass, borderClass,
-  meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
+  label, accent, bgClass, borderClass,
+  meal, note, onPickMain, onChangeNote, onRemove, onClearGroup, droppableId, dayIndex,
   extras,
 }: {
-  icon: string; label: string; accent: string; bgClass: string; borderClass: string;
+  label: string; accent: string; bgClass: string; borderClass: string;
   meal: Meal | null; note: string;
   onPickMain: () => void;
   onChangeNote: (v: string) => void;
   onRemove: () => void;
+  onClearGroup: () => void;
   droppableId: string;
   dayIndex: number;
   extras?: React.ReactNode;
@@ -117,26 +131,27 @@ function SimpleMealSlot({
   return (
     <div className={cn("rounded-xl px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
       <div className="flex items-center gap-2">
-        <span className="text-base">{icon}</span>
         <span className={cn("text-xs font-semibold uppercase tracking-wider", accent)}>{label}</span>
       </div>
-      <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal}>
+      <DraggableMealSlot droppableId={droppableId} hasMeal={!!meal} onClearGroup={onClearGroup}>
         {meal ? (
-          <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
-            <span className="text-base shrink-0">{meal.emoji}</span>
-            <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
-            <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
-              Cambiar
-            </button>
-            <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
-              <Trash2 size={11} />
-            </button>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5">
+              <span className="text-base shrink-0">{meal.emoji}</span>
+              <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
+              <button onClick={onPickMain} className="shrink-0 text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors">
+                Cambiar
+              </button>
+              <button onClick={onRemove} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
+                <Trash2 size={11} />
+              </button>
+            </div>
+            {extras}
           </div>
         ) : (
           <AddMealButton onClick={onPickMain} />
         )}
       </DraggableMealSlot>
-      {meal && extras}
     </div>
   );
 }
@@ -250,6 +265,7 @@ export function DayCard({
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote, onHideBabyLunch, onResetBabyLunch,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
   onAddExtra, onSetExtra, onRemoveExtra,
+  onRemoveMain, onClearSlot,
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
@@ -360,7 +376,6 @@ export function DayCard({
           <div className="p-4 space-y-3">
             {/* ── BREAKFAST ── */}
             <SimpleMealSlot
-              icon="🥐"
               label="Desayuno · Nico"
               accent="text-foreground"
               bgClass="bg-muted/40"
@@ -369,7 +384,8 @@ export function DayCard({
               note={dayPlan.breakfastNote}
               onPickMain={() => openMainPicker("breakfast")}
               onChangeNote={onSetBreakfastNote}
-              onRemove={() => onSetBreakfast(null)}
+              onRemove={() => onRemoveMain("breakfast")}
+              onClearGroup={() => onClearSlot("breakfast")}
               droppableId={`${dayIndex}-breakfast`}
               dayIndex={dayIndex}
               extras={
@@ -386,20 +402,20 @@ export function DayCard({
             {/* ── LUNCH ── */}
             <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">☀ Almuerzo</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">Almuerzo</span>
                 {!dayPlan.lunchOverridden && dayPlan.lunch && (
                   <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                 )}
               </div>
 
               {/* Adults lunch */}
-              <DraggableMealSlot droppableId={`${dayIndex}-lunch`} hasMeal={!!dayPlan.lunch}>
+              <DraggableMealSlot droppableId={`${dayIndex}-lunch`} hasMeal={!!dayPlan.lunch} onClearGroup={() => onClearSlot("lunch")}>
                 {dayPlan.lunch ? (
                   <div className="space-y-1">
                     <MealDisplay
                       meal={dayPlan.lunch} side={dayPlan.lunchSide} note={dayPlan.lunchNote}
                       onChangeNote={onSetLunchNote}
-                      onRemove={() => dayPlan.lunchOverridden ? onResetLunch() : onHideLunch()}
+                      onRemove={() => onRemoveMain("lunch")}
                       onChangeMeal={() => openMainPicker("lunch")}
                       onChangeSide={() => openSidePicker("lunch")}
                       onRemoveSide={() => onSetLunchSide(null)}
@@ -434,13 +450,13 @@ export function DayCard({
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
-                <DraggableMealSlot droppableId={`${dayIndex}-babyLunch`} hasMeal={!!dayPlan.babyLunch}>
+                <DraggableMealSlot droppableId={`${dayIndex}-babyLunch`} hasMeal={!!dayPlan.babyLunch} onClearGroup={() => onClearSlot("babyLunch")}>
                   {dayPlan.babyLunch ? (
                     <div className="space-y-1">
                       <MealDisplay
                         meal={dayPlan.babyLunch} side={dayPlan.babyLunchSide} note={dayPlan.babyLunchNote}
                         onChangeNote={onSetBabyLunchNote}
-                        onRemove={() => dayPlan.babyLunchOverridden ? onResetBabyLunch() : onHideBabyLunch()}
+                        onRemove={() => onRemoveMain("babyLunch")}
                         onChangeMeal={() => openMainPicker("babyLunch")}
                         onChangeSide={() => openSidePicker("babyLunch")}
                         onRemoveSide={() => onSetBabyLunchSide(null)}
@@ -468,7 +484,6 @@ export function DayCard({
 
             {/* ── SNACK ── */}
             <SimpleMealSlot
-              icon="🫖"
               label="Merienda · Nico"
               accent="text-foreground"
               bgClass="bg-muted/40"
@@ -477,7 +492,8 @@ export function DayCard({
               note={dayPlan.snackNote}
               onPickMain={() => openMainPicker("snack")}
               onChangeNote={onSetSnackNote}
-              onRemove={() => onSetSnack(null)}
+              onRemove={() => onRemoveMain("snack")}
+              onClearGroup={() => onClearSlot("snack")}
               droppableId={`${dayIndex}-snack`}
               dayIndex={dayIndex}
               extras={
@@ -495,18 +511,18 @@ export function DayCard({
             <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                  {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "🌙 Cena"}
+                  {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "Cena"}
                 </span>
               </div>
 
               {/* Adults dinner */}
-              <DraggableMealSlot droppableId={`${dayIndex}-dinner`} hasMeal={!!dayPlan.dinner}>
+              <DraggableMealSlot droppableId={`${dayIndex}-dinner`} hasMeal={!!dayPlan.dinner} onClearGroup={() => onClearSlot("dinner")}>
                 {dayPlan.dinner ? (
                   <div className="space-y-1">
                     <MealDisplay
                       meal={dayPlan.dinner} side={dayPlan.dinnerSide} note={dayPlan.dinnerNote}
                       onChangeNote={onSetDinnerNote}
-                      onRemove={() => { onSetDinner(null); onSetDinnerSide(null); }}
+                      onRemove={() => onRemoveMain("dinner")}
                       onChangeMeal={() => openMainPicker("dinner")}
                       onChangeSide={() => openSidePicker("dinner")}
                       onRemoveSide={() => onSetDinnerSide(null)}
@@ -589,13 +605,13 @@ export function DayCard({
                     <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
                   )}
                 </div>
-                <DraggableMealSlot droppableId={`${dayIndex}-babyDinner`} hasMeal={!!dayPlan.babyDinner}>
+                <DraggableMealSlot droppableId={`${dayIndex}-babyDinner`} hasMeal={!!dayPlan.babyDinner} onClearGroup={() => onClearSlot("babyDinner")}>
                   {dayPlan.babyDinner ? (
                     <div className="space-y-1">
                       <MealDisplay
                         meal={dayPlan.babyDinner} side={dayPlan.babyDinnerSide} note={dayPlan.babyDinnerNote}
                         onChangeNote={onSetBabyDinnerNote}
-                        onRemove={() => dayPlan.babyDinnerOverridden ? onResetBabyDinner() : onHideBabyDinner()}
+                        onRemove={() => onRemoveMain("babyDinner")}
                         onChangeMeal={() => openMainPicker("babyDinner")}
                         onChangeSide={() => openSidePicker("babyDinner")}
                         onRemoveSide={() => onSetBabyDinnerSide(null)}

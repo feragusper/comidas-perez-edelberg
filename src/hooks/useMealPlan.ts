@@ -522,6 +522,38 @@ export function useMealPlan(weekKey: WeekKey) {
     updateExtras(i, slot, cur);
   };
 
+  /** Clears a whole slot (main + side + extras). Inherited lunch/baby slots keep their hide/reset semantics. */
+  const clearSlot = (i: number, slot: MealSlot) => {
+    if (slot === "lunch") { if (plan[i].lunchOverridden) resetLunch(i); else hideLunch(i); return; }
+    if (slot === "babyLunch") { if (plan[i].babyLunchOverridden) resetBabyLunch(i); else hideBabyLunch(i); return; }
+    if (slot === "babyDinner") { if (plan[i].babyDinnerOverridden) resetBabyDinner(i); else hideBabyDinner(i); return; }
+    if (slot === "dinner") { update(i, { dinner: null, dinnerSide: null, dinnerExtras: [], dinnerNote: "" }); return; }
+    if (slot === "breakfast") { update(i, { breakfast: null, breakfastExtras: [], breakfastNote: "" }); return; }
+    update(i, { snack: null, snackExtras: [], snackNote: "" });
+  };
+
+  /** Removes only the main food of a slot; the side (or first extra) becomes the new main. */
+  const removeMainOnly = (i: number, slot: MealSlot) => {
+    const f = slotFields(slot);
+    const d = planWithLunchRef.current[i];
+    const side = f.side ? (d[f.side] as Meal | null) : null;
+    const extras = currentExtras(i, slot);
+    let patch: Partial<DayPlan>;
+    if (side) {
+      patch = { [f.meal]: side, [f.side as string]: null } as Partial<DayPlan>;
+    } else if (extras.length > 0) {
+      patch = { [f.meal]: extras[0], [f.extras]: extras.slice(1) } as Partial<DayPlan>;
+    } else {
+      clearSlot(i, slot);
+      return;
+    }
+    if (f.overridden && f.side) {
+      update(i, materialize(i, f.overridden, f.meal, f.side, f.note, f.extras as keyof DayPlan, patch));
+    } else {
+      update(i, patch);
+    }
+  };
+
   const swapSlots = (srcDay: number, srcSlot: MealSlot, dstDay: number, dstSlot: MealSlot) => {
     setPlan((prev) => {
       const next = prev.map((d) => ({ ...d }));
@@ -603,6 +635,7 @@ export function useMealPlan(weekKey: WeekKey) {
     setBreakfast, setBreakfastNote, setSnack, setSnackNote,
     setNotes,
     addExtra, setExtraAt, removeExtraAt,
+    removeMainOnly, clearSlot,
     swapSlots,
     resetPlan,
     autocompleteWeek,

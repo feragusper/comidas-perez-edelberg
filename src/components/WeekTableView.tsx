@@ -33,6 +33,8 @@ interface WeekTableViewProps {
   onAddExtra: (i: number, slot: MealSlot, meal: Meal) => void;
   onSetExtra: (i: number, slot: MealSlot, idx: number, meal: Meal) => void;
   onRemoveExtra: (i: number, slot: MealSlot, idx: number) => void;
+  onRemoveMain: (i: number, slot: MealSlot) => void;
+  onClearSlot: (i: number, slot: MealSlot) => void;
 }
 
 const SHORT_DAYS: Record<string, string> = {
@@ -48,13 +50,12 @@ const ROWS: {
   headerText: string;
   cellBg: string;
   borderColor: string;
-  icon?: string;
 }[] = [
-  { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border",  icon: "🥐" },
-  { slot: "lunch",      label: "☀ Almuerzo",      isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
+  { slot: "breakfast",  label: "Desayuno · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
+  { slot: "lunch",      label: "Almuerzo",        isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
   { slot: "babyLunch",  label: "Nico · Almuerzo", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10",  borderColor: "border-border" },
-  { slot: "snack",      label: "Merienda · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border",  icon: "🫖" },
-  { slot: "dinner",     label: "🌙 Cena",         isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
+  { slot: "snack",      label: "Merienda · Nico", isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
+  { slot: "dinner",     label: "Cena",            isBaby: false, headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
   { slot: "babyDinner", label: "Nico · Cena",     isBaby: true,  headerBg: "bg-muted/60",  headerText: "text-foreground",  cellBg: "bg-muted/10", borderColor: "border-border" },
 ];
 
@@ -110,7 +111,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         <div className="flex-1 min-w-0">
           <p className={cn("text-xs leading-tight break-words", textColor)}>{meal.name}</p>
         </div>
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
           <button onClick={onPickMain} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
             <Pencil size={10} />
           </button>
@@ -125,7 +126,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         <div className="flex items-start gap-1">
           <span className="text-sm shrink-0">{side.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{side.name}</span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={onPickSide} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
               <Pencil size={10} />
             </button>
@@ -141,7 +142,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         <div key={exIdx} className="flex items-start gap-1">
           <span className="text-sm shrink-0">{ex.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{ex.name}</span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={() => onEditExtra(exIdx)} className="p-0.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors">
               <Pencil size={10} />
             </button>
@@ -171,6 +172,7 @@ export function WeekTableView({
   onSetBabyLunch, onSetBabyLunchSide, onSetBabyLunchNote,
   onSetBreakfast, onSetBreakfastNote, onSetSnack, onSetSnackNote,
   onAddExtra, onSetExtra, onRemoveExtra,
+  onRemoveMain, onClearSlot,
 }: WeekTableViewProps) {
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
@@ -293,7 +295,6 @@ export function WeekTableView({
                 <td className={cn("px-3 py-2 border-r border-b border-border", row.headerBg)}>
                   <div className="flex items-center gap-1">
                     {row.isBaby && <Baby size={11} className="text-muted-foreground shrink-0" />}
-                    {row.icon && <span className="text-sm">{row.icon}</span>}
                     <span className={cn("text-xs font-semibold whitespace-nowrap", row.headerText)}>{row.label}</span>
                   </div>
                 </td>
@@ -325,18 +326,27 @@ export function WeekTableView({
                                   <div
                                     ref={dragProvided.innerRef}
                                     {...dragProvided.draggableProps}
-                                    className={cn("transition-shadow", dragSnapshot.isDragging && "shadow-lg rounded-lg bg-card p-1")}
+                                    className={cn("rounded-lg border border-border/50 bg-card/40 p-1 transition-shadow", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
                                   >
                                     <div className="flex items-start gap-0.5">
-                                      <div {...dragProvided.dragHandleProps} className="pt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0">
-                                        <GripVertical size={10} />
+                                      <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                                        <div {...dragProvided.dragHandleProps} className="cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground" title="Mover">
+                                          <GripVertical size={10} />
+                                        </div>
+                                        <button
+                                          onClick={() => onClearSlot(idx, row.slot)}
+                                          className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors"
+                                          title="Eliminar todo"
+                                        >
+                                          <Trash2 size={10} />
+                                        </button>
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <EditableCell
                                           meal={meal} side={side} extras={extras} note={note} isBaby={row.isBaby} hasSideSlot={hasSideSlot}
                                           onPickMain={() => openMain(idx, row.slot)}
                                           onPickSide={() => openSide(idx, row.slot)}
-                                          onRemove={() => { getMainSetter(row.slot, idx)(null); getSideSetter(row.slot, idx)(null); }}
+                                          onRemove={() => onRemoveMain(idx, row.slot)}
                                           onRemoveSide={() => getSideSetter(row.slot, idx)(null)}
                                           onChangeNote={getNoteSetter(row.slot, idx)}
                                           onAddExtra={() => openExtra(idx, row.slot, null)}

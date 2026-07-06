@@ -62,7 +62,7 @@ export default function Index() {
   const { ingredients, addIngredient } = useIngredients();
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
-    useDinnerSuggestions(plan);
+    useDinnerSuggestions(plan, mealsCatalog);
 
   const { run: runAutocomplete, loading: loadingAutocomplete } =
     useWeekAutocomplete(plan, activeWeek, autocompleteWeek, mealsCatalog);

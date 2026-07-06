@@ -5,14 +5,12 @@ import { MealPicker } from "@/components/MealPicker";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { Meal } from "@/data/meals";
+import { SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
 import { supabase } from "@/integrations/supabase/client";
-import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
-import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-/** Sentinels: no tiene sentido componentizarlas. */
-const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
 
 /**
  * Sección temporal para asignar ingredientes a las comidas que quedaron
@@ -20,7 +18,7 @@ const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-s
  * Cuando todo esté normalizado, esta página se elimina.
  */
 export default function Normalize() {
-  const { meals, restoreMeal, updateMeal } = useMeals();
+  const { meals, restoreMeal, updateMeal, deleteMeals } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
 
   const [search, setSearch] = useState("");
@@ -29,6 +27,9 @@ export default function Normalize() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState<string | null>(null);
   const [orphans, setOrphans] = useState<Meal[]>([]);
+  const [usedIds, setUsedIds] = useState<Set<string> | null>(null);
+  const [confirmPurge, setConfirmPurge] = useState(false);
+  const [purging, setPurging] = useState(false);
 
   const normalizable = useMemo(
     () => meals.filter((m) => !SENTINEL_IDS.has(m.id)),
@@ -49,19 +50,20 @@ export default function Normalize() {
 
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
 
-  // Huérfanas: ids que aparecen en el historial pero no existen en el catálogo
+  // Recorre TODO el historial (stage + prod comparten DB):
+  // - huérfanas: ids usados que ya no existen en el catálogo
+  // - usedIds: todos los ids de comidas usados alguna vez (para la purga)
   useEffect(() => {
-    const prefix = isStageEnv() ? "stage_" : "prod_";
     const catalogIds = new Set(meals.map((m) => m.id));
     if (catalogIds.size === 0) return;
 
     supabase
       .from("meal_plan")
       .select("plan")
-      .like("week_key", `${prefix}%`)
       .then(({ data, error }) => {
         if (error) { console.error("Error loading history:", error); return; }
         const found = new Map<string, Meal>();
+        const used = new Set<string>();
         for (const row of data ?? []) {
           const week = row.plan as unknown as DayPlan[];
           if (!Array.isArray(week)) continue;
@@ -77,14 +79,35 @@ export default function Normalize() {
             for (const f of foods) {
               if (!f || typeof f !== "object" || !f.id) continue;
               if (f.kind === "ingredient") continue;
+              used.add(f.id);
               if (SENTINEL_IDS.has(f.id) || catalogIds.has(f.id) || found.has(f.id)) continue;
               found.set(f.id, f);
             }
           }
         }
         setOrphans(Array.from(found.values()));
+        setUsedIds(used);
       });
   }, [meals]);
+
+  /** Predefinidas del catálogo original que nunca aparecieron en ningún menú. */
+  const unusedSeeds = useMemo(() => {
+    if (!usedIds) return [];
+    return meals.filter(
+      (m) => !m.id.startsWith("custom-") && !SENTINEL_IDS.has(m.id) && !usedIds.has(m.id)
+    );
+  }, [meals, usedIds]);
+
+  const purgeSeeds = async () => {
+    setPurging(true);
+    try {
+      await deleteMeals(unusedSeeds.map((m) => m.id));
+      toast({ title: "Catálogo depurado", description: `${unusedSeeds.length} comidas predefinidas eliminadas.` });
+      setConfirmPurge(false);
+    } finally {
+      setPurging(false);
+    }
+  };
 
   const startEditing = (meal: Meal) => {
     setEditingId(meal.id);
@@ -175,6 +198,28 @@ export default function Normalize() {
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
+
+        {/* Purga de predefinidas sin uso */}
+        {unusedSeeds.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-4 mb-5 flex items-center gap-3 flex-wrap">
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-sm font-medium text-foreground">
+                {unusedSeeds.length} comidas predefinidas sin uso
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Vinieron con la app y nunca aparecieron en ningún menú. Borrarlas limpia el picker y el catálogo; las que sí usaste se conservan.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmPurge(true)}
+              className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 size={14} className="mr-1.5" /> Eliminar todas
+            </Button>
+          </div>
+        )}
 
         {/* Huérfanas del historial */}
         {orphans.length > 0 && (
@@ -317,6 +362,25 @@ export default function Normalize() {
           </div>
         )}
       </div>
+
+      <Dialog open={confirmPurge} onOpenChange={setConfirmPurge}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Eliminar {unusedSeeds.length} comidas predefinidas?</DialogTitle>
+            <DialogDescription>
+              Se borran del catálogo las comidas que vinieron con la app y nunca usaste en ningún menú
+              (ni en stage ni en prod). Los ingredientes no se tocan. Esta acción no afecta tu historial.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmPurge(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={purgeSeeds} disabled={purging}>
+              {purging ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Trash2 size={14} className="mr-1.5" />}
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {pickerOpen && editingId && (
         <MealPicker

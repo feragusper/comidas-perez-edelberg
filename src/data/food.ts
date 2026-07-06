@@ -4,6 +4,20 @@ import { Meal } from "./meals";
 export const INGREDIENT_CATEGORY = "Ingredientes";
 
 /**
+ * Comidas de sistema (delivery, sobras, etc.): no se componentizan,
+ * no se compran, no se listan en el catálogo editable ni se sugieren.
+ */
+export const SENTINEL_MEAL_IDS = new Set([
+  "delivery",
+  "takeaway",
+  "restaurante",
+  "delivery-sobras",
+  "takeaway-sobras",
+  "delivery-leftovers",
+  "takeaway-leftovers",
+]);
+
+/**
  * Ingrediente reutilizable del catálogo (tabla `ingredients`).
  * Estructuralmente es un Meal con kind "ingredient" para poder ocupar
  * cualquier slot del menú (una fruta como merienda, etc.) sin tocar

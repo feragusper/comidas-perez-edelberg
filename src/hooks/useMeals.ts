@@ -147,5 +147,14 @@ export function useMeals() {
     setMeals((prev) => prev.filter((m) => m.id !== mealId));
   }, []);
 
-  return { meals, fromDb, loading, saveMeal, restoreMeal, updateMeal, deleteMeal };
+  /** Borrado masivo (purga de predefinidas sin uso). */
+  const deleteMeals = useCallback(async (mealIds: string[]) => {
+    if (mealIds.length === 0) return;
+    const { error } = await supabase.from("meals").delete().in("meal_id", mealIds);
+    if (error) { console.error("Error deleting meals:", error); return; }
+    const gone = new Set(mealIds);
+    setMeals((prev) => prev.filter((m) => !gone.has(m.id)));
+  }, []);
+
+  return { meals, fromDb, loading, saveMeal, restoreMeal, updateMeal, deleteMeal, deleteMeals };
 }

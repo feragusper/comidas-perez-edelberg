@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
+import { Meal, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { FoodWizard } from "@/components/FoodWizard";
 import { cn } from "@/lib/utils";
@@ -57,11 +57,8 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const isBaby = mode === "baby";
   const isSide = step === "side";
 
-  // Merge static + custom meals, deduplicating by id
-  const allMeals = [
-    ...MEALS,
-    ...extraMeals.filter((e) => !MEALS.some((m) => m.id === e.id)),
-  ];
+  // Catálogo completo (viene de useMeals: DB con fallback estático)
+  const allMeals = extraMeals;
 
   // Custom meals (saved by the user) always appear in both steps,
   // regardless of whether they were saved as main or side.

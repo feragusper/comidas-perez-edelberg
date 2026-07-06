@@ -4,7 +4,7 @@ import { useIngredients } from "@/hooks/useIngredients";
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { currentWeekKey } from "@/lib/env";
 import { Meal } from "@/data/meals";
-import { Ingredient } from "@/data/food";
+import { Ingredient, SENTINEL_MEAL_IDS } from "@/data/food";
 import { FoodWizard, WizardKind } from "@/components/FoodWizard";
 import { Pencil, Trash2, X, Check, Tag, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,8 +23,7 @@ interface WizardState {
   initial?: Partial<Meal>;
 }
 
-/** Comidas de sistema (delivery, etc.): no se listan ni se borran. */
-const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
+const SENTINEL_IDS = SENTINEL_MEAL_IDS;
 
 export default function CustomMeals() {
   const { meals, saveMeal, updateMeal, deleteMeal } = useMeals();

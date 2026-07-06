@@ -8,15 +8,12 @@ import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { usePantry, pantryHasName } from "@/hooks/usePantry";
 import { Meal } from "@/data/meals";
-import { isIngredient } from "@/data/food";
+import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 import { ShoppingCart, ClipboardCopy, RotateCcw, CheckCheck, Warehouse, TriangleAlert } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
-/** Ids que nunca generan compras. */
-const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
 
 interface ShoppingIngredient {
   id: string;

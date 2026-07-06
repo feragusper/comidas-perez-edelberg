@@ -1,12 +1,10 @@
-import { useState, useCallback } from "react";
-import { MEALS, MEAL_CATEGORIES, BREAKFASTS, SNACKS, Meal } from "@/data/meals";
+import { useState, useCallback, useMemo } from "react";
+import { Meal } from "@/data/meals";
+import { SENTINEL_MEAL_IDS } from "@/data/food";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv, envWeekKey } from "@/lib/env";
 import { toast } from "@/hooks/use-toast";
-
-const MAIN_MEALS = MEALS.filter((m) => !m.isSide && MEAL_CATEGORIES.includes(m.category));
-const SIDE_MEALS = MEALS.filter((m) => m.isSide === true);
 
 export interface AutocompleteEntry {
   dinner: Meal | null;
@@ -19,26 +17,36 @@ export function useWeekAutocomplete(
   plan: DayPlan[],
   weekKey: string,
   apply: (entries: (AutocompleteEntry | null)[]) => void,
-  customMeals: Meal[] = [],
+  catalog: Meal[] = [],
 ) {
   const [loading, setLoading] = useState(false);
+
+  const pools = useMemo(() => {
+    const usable = catalog.filter((m) => !SENTINEL_MEAL_IDS.has(m.id));
+    return {
+      mains: usable.filter((m) => !m.isSide && m.category !== "Desayunos" && m.category !== "Meriendas"),
+      sides: usable.filter((m) => m.isSide === true),
+      breakfasts: usable.filter((m) => m.category === "Desayunos"),
+      snacks: usable.filter((m) => m.category === "Meriendas"),
+    };
+  }, [catalog]);
 
   const lookup = useCallback(
     (id: string | undefined | null): Meal | null => {
       if (!id) return null;
-      return MEALS.find((m) => m.id === id) ?? customMeals.find((m) => m.id === id) ?? null;
+      return catalog.find((m) => m.id === id) ?? null;
     },
-    [customMeals],
+    [catalog],
   );
 
   const run = useCallback(async () => {
     setLoading(true);
     try {
       const currentDinners = plan.filter((d) => d.dinner !== null).map((d) => d.dinner!.name);
-      const mealCatalog = MAIN_MEALS.map((m) => ({ id: m.id, name: m.name, category: m.category }));
-      const sideCatalog = SIDE_MEALS.map((m) => ({ id: m.id, name: m.name }));
-      const breakfastCatalog = BREAKFASTS.map((m) => ({ id: m.id, name: m.name }));
-      const snackCatalog = SNACKS.map((m) => ({ id: m.id, name: m.name }));
+      const mealCatalog = pools.mains.map((m) => ({ id: m.id, name: m.name, category: m.category }));
+      const sideCatalog = pools.sides.map((m) => ({ id: m.id, name: m.name }));
+      const breakfastCatalog = pools.breakfasts.map((m) => ({ id: m.id, name: m.name }));
+      const snackCatalog = pools.snacks.map((m) => ({ id: m.id, name: m.name }));
 
       const { data, error } = await supabase.functions.invoke("autocomplete-week", {
         body: {
@@ -81,7 +89,7 @@ export function useWeekAutocomplete(
     } finally {
       setLoading(false);
     }
-  }, [plan, weekKey, apply, lookup]);
+  }, [plan, weekKey, apply, lookup, pools]);
 
   return { run, loading };
 }

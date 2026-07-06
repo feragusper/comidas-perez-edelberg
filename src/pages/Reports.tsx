@@ -12,10 +12,7 @@ import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { MEALS } from "@/data/meals";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
-import { Ingredient } from "@/data/food";
-
-/** Ids que no aportan a los reportes de ingredientes. */
-const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
+import { Ingredient, SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
 
 interface IngredientCount {
   id: string;

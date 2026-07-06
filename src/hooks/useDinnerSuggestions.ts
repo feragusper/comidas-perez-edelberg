@@ -1,12 +1,26 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { Meal, MEALS, SUNDAY_DINNER } from "@/data/meals";
+import { Meal, SUNDAY_DINNER } from "@/data/meals";
+import { SENTINEL_MEAL_IDS } from "@/data/food";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "dinnerSuggestionsEnabled";
 
-const MAIN_MEALS = MEALS.filter((m) => !m.isSide && m.id !== SUNDAY_DINNER.id);
-const SIDE_MEALS = MEALS.filter((m) => m.isSide === true);
+/** Comidas sugeribles como cena: ni guarniciones, ni desayunos/meriendas, ni sentinels. */
+function mainPoolOf(catalog: Meal[]): Meal[] {
+  return catalog.filter(
+    (m) =>
+      !m.isSide &&
+      m.id !== SUNDAY_DINNER.id &&
+      !SENTINEL_MEAL_IDS.has(m.id) &&
+      m.category !== "Desayunos" &&
+      m.category !== "Meriendas"
+  );
+}
+
+function sidePoolOf(catalog: Meal[]): Meal[] {
+  return catalog.filter((m) => m.isSide === true);
+}
 
 function seededShuffle<T>(arr: T[], seed: string): T[] {
   const copy = [...arr];
@@ -28,7 +42,7 @@ export interface DinnerSuggestion {
   isAI?: boolean;
 }
 
-function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
+function buildLocalSuggestions(plan: DayPlan[], mainMeals: Meal[], sideMeals: Meal[]): (DinnerSuggestion | null)[] {
   const usedDinnerIds = new Set(
     plan.filter((d) => d.dinner !== null && d.day !== "Domingo").map((d) => d.dinner!.id)
   );
@@ -39,8 +53,8 @@ function buildLocalSuggestions(plan: DayPlan[]): (DinnerSuggestion | null)[] {
   // que cambia en cada render para no sugerir siempre lo mismo.
   const seed =
     ([...usedDinnerIds].sort().join(",") || "empty") + "_" + Math.floor(Math.random() * 1_000_000);
-  const mealPool = seededShuffle(MAIN_MEALS.filter((m) => !usedDinnerIds.has(m.id)), seed);
-  const sidePool = seededShuffle(SIDE_MEALS.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
+  const mealPool = seededShuffle(mainMeals.filter((m) => !usedDinnerIds.has(m.id)), seed);
+  const sidePool = seededShuffle(sideMeals.filter((s) => !usedSideIds.has(s.id)), seed + "_side");
   let mealIdx = 0;
   let sideIdx = 0;
   return plan.map((dayPlan) => {
@@ -64,7 +78,10 @@ export interface UseDinnerSuggestionsResult {
   loadingDayIndex: number | null;
 }
 
-export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResult {
+export function useDinnerSuggestions(plan: DayPlan[], catalog: Meal[]): UseDinnerSuggestionsResult {
+  const mainMeals = useMemo(() => mainPoolOf(catalog), [catalog]);
+  const sideMeals = useMemo(() => sidePoolOf(catalog), [catalog]);
+
   const [enabled, setEnabled] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -95,8 +112,8 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
     setLoadingAI(true);
     try {
       const currentMeals = plan.filter((d) => d.dinner !== null).map((d) => d.dinner!.name);
-      const mealCatalog = MAIN_MEALS.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
-      const sideCatalog = SIDE_MEALS.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
+      const mealCatalog = mainMeals.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
+      const sideCatalog = sideMeals.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
 
       const { data, error } = await supabase.functions.invoke("suggest-meals", {
         body: { currentMeals, mealCatalog, sideCatalog },
@@ -115,8 +132,8 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
         if (dayPlan.day === "Domingo") return null;
         const raw = data.suggestions[idx];
         if (!raw) return null;
-        const meal = MEALS.find((m) => m.id === raw.mealId) ?? null;
-        const side = MEALS.find((m) => m.id === raw.sideId) ?? null;
+        const meal = catalog.find((m) => m.id === raw.mealId) ?? null;
+        const side = catalog.find((m) => m.id === raw.sideId) ?? null;
         if (!meal) return null;
         return { meal, side, isAI: true };
       });
@@ -128,7 +145,7 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
     } finally {
       setLoadingAI(false);
     }
-  }, [enabled, plan, dinnerSignature, aiSuggestions]);
+  }, [enabled, plan, dinnerSignature, aiSuggestions, catalog, mainMeals, sideMeals]);
 
   // Fetch AI suggestions when enabled and plan changes
   useEffect(() => {
@@ -143,8 +160,8 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
     setLoadingDayIndex(dayIndex);
     try {
       const currentMeals = plan.filter((d) => d.dinner !== null).map((d) => d.dinner!.name);
-      const mealCatalog = MAIN_MEALS.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
-      const sideCatalog = SIDE_MEALS.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
+      const mealCatalog = mainMeals.map((m) => ({ id: m.id, name: m.name, category: m.category, isKeto: m.isKeto ?? false }));
+      const sideCatalog = sideMeals.map((m) => ({ id: m.id, name: m.name, isKeto: m.isKeto ?? false }));
 
       // Build existing suggestions to avoid duplicates
       const existingSuggestions = (aiSuggestions ?? [])
@@ -158,8 +175,8 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
       if (error || !data?.suggestion) throw new Error(error?.message ?? "No suggestion");
 
       const raw = data.suggestion;
-      const meal = MEALS.find((m) => m.id === raw.mealId) ?? null;
-      const side = MEALS.find((m) => m.id === raw.sideId) ?? null;
+      const meal = catalog.find((m) => m.id === raw.mealId) ?? null;
+      const side = catalog.find((m) => m.id === raw.sideId) ?? null;
       if (!meal) return;
 
       setAiSuggestions((prev) => {
@@ -178,9 +195,9 @@ export function useDinnerSuggestions(plan: DayPlan[]): UseDinnerSuggestionsResul
     } finally {
       setLoadingDayIndex(null);
     }
-  }, [enabled, plan, aiSuggestions]);
+  }, [enabled, plan, aiSuggestions, catalog, mainMeals, sideMeals]);
 
-  const localSuggestions = useMemo(() => buildLocalSuggestions(plan), [plan]);
+  const localSuggestions = useMemo(() => buildLocalSuggestions(plan, mainMeals, sideMeals), [plan, mainMeals, sideMeals]);
   const baseSuggestions = aiSuggestions ?? localSuggestions;
 
   const suggestions = useMemo(

@@ -96,6 +96,34 @@ export function useMeals() {
     }
   }, [meals]);
 
+  /**
+   * Re-materializa en el catálogo una comida huérfana encontrada solo en el
+   * historial de meal_plan (conserva su id original para que los reportes
+   * la sigan resolviendo).
+   */
+  const restoreMeal = useCallback(async (meal: Meal) => {
+    const row = {
+      meal_id: meal.id,
+      name: meal.name,
+      emoji: meal.emoji,
+      category: meal.category || "Otro",
+      baby_safety: meal.babySafety ?? "caution",
+      baby_note: meal.babyNote ?? null,
+      is_keto: meal.isKeto ?? false,
+      is_side: meal.isSide ?? false,
+      tags: meal.tags ?? [],
+      ingredient_ids: meal.ingredientIds ?? [],
+    };
+    const { data, error } = await supabase
+      .from("meals")
+      .upsert(row, { onConflict: "meal_id", ignoreDuplicates: true })
+      .select()
+      .maybeSingle();
+    if (error) { console.error("Error restoring meal:", error); return; }
+    const restored = data ? rowToMeal(data as MealRow) : rowToMeal(row as MealRow);
+    setMeals((prev) => prev.some((m) => m.id === restored.id) ? prev : [...prev, restored]);
+  }, []);
+
   const updateMeal = useCallback(async (mealId: string, patch: Partial<Pick<Meal, "name" | "emoji" | "tags" | "ingredientIds" | "category" | "babySafety" | "babyNote" | "isKeto" | "isSide">>) => {
     const row: TablesUpdate<"meals"> = {};
     if (patch.name !== undefined) row.name = patch.name;
@@ -119,5 +147,5 @@ export function useMeals() {
     setMeals((prev) => prev.filter((m) => m.id !== mealId));
   }, []);
 
-  return { meals, fromDb, loading, saveMeal, updateMeal, deleteMeal };
+  return { meals, fromDb, loading, saveMeal, restoreMeal, updateMeal, deleteMeal };
 }

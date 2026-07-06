@@ -25,6 +25,8 @@ interface MealPickerProps {
   onSkipSide?: () => void;
   /** Override which categories are shown/grouped (e.g. ["Desayunos"] for breakfast). */
   categories?: string[];
+  /** Solo ingredientes: oculta comidas y fuerza creación como ingrediente. */
+  ingredientsOnly?: boolean;
 }
 
 const safetyColors: Record<BabySafety, string> = {
@@ -40,7 +42,7 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
@@ -65,7 +67,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
 
   // Custom meals (saved by the user) always appear in both steps,
   // regardless of whether they were saved as main or side.
-  const pool = allMeals.filter((m) => {
+  const pool = (ingredientsOnly ? [] : allMeals).filter((m) => {
     const stepOk = m.id.startsWith("custom-") ? true : (isSide ? m.isSide === true : m.isSide !== true);
     const catOk = categories ? (m.id.startsWith("custom-") || categories.includes(m.category)) : true;
     return stepOk && catOk;
@@ -108,15 +110,17 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
 
   const title = customEmojiPicker
     ? "Elegir ícono"
+    : ingredientsOnly
+    ? "Elegir ingrediente"
     : isSide
     ? "Elegir guarnición"
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
 
   const openEmojiPicker = () => {
     setCustomEmojiPicker(search.trim());
-    setSelectedEmoji("🍽️");
+    setSelectedEmoji(ingredientsOnly ? "🥕" : "🍽️");
     setCustomTags([]);
-    setCustomKind("meal");
+    setCustomKind(ingredientsOnly ? "ingredient" : "meal");
   };
 
   const confirmCustom = () => {
@@ -180,7 +184,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           </div>
 
           {/* Comida vs ingrediente */}
-          {onCustomIngredient && (
+          {onCustomIngredient && !ingredientsOnly && (
             <div className="px-5 pb-3">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Guardar como</p>
               <div className="flex gap-2">
@@ -294,7 +298,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
-              placeholder={isSide ? "Buscar guarnición..." : "Buscar comida o ingrediente..."}
+              placeholder={ingredientsOnly ? "Buscar ingrediente..." : isSide ? "Buscar guarnición..." : "Buscar comida o ingrediente..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoFocus

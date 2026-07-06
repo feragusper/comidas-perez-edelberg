@@ -3,13 +3,68 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag } from "lucide-react";
+import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag, Carrot, TriangleAlert } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { TopNav } from "@/components/TopNav";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { MEALS } from "@/data/meals";
 import { useMeals } from "@/hooks/useMeals";
+import { useIngredients } from "@/hooks/useIngredients";
+import { Ingredient } from "@/data/food";
+
+/** Ids que no aportan a los reportes de ingredientes. */
+const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
+
+interface IngredientCount {
+  id: string;
+  name: string;
+  emoji: string;
+  count: number;
+  tags: string[];
+}
+
+/**
+ * Expande las comidas contadas a sus ingredientes componentes.
+ * Snapshots con kind "ingredient" cuentan directo; comidas se resuelven
+ * contra el catálogo vivo. Devuelve también cuántas ocurrencias quedaron
+ * sin expandir (comidas sin normalizar).
+ */
+function buildIngredientBreakdown(
+  meals: MealCount[],
+  catalogById: Map<string, Meal>,
+  ingredientById: Map<string, Ingredient>,
+): { ranking: IngredientCount[]; unnormalizedCount: number } {
+  const counts = new Map<string, IngredientCount>();
+  let unnormalized = 0;
+
+  const add = (id: string, count: number) => {
+    const existing = counts.get(id);
+    if (existing) { existing.count += count; return; }
+    const ing = ingredientById.get(id);
+    counts.set(id, {
+      id,
+      name: ing?.name ?? id,
+      emoji: ing?.emoji ?? "🛒",
+      count,
+      tags: ing?.tags ?? [],
+    });
+  };
+
+  for (const m of meals) {
+    if (SENTINEL_IDS.has(m.id)) continue;
+    if (m.kind === "ingredient") { add(m.id, m.count); continue; }
+    const ids = catalogById.get(m.id)?.ingredientIds ?? [];
+    if (ids.length === 0) { unnormalized += m.count; continue; }
+    for (const iid of ids) add(iid, m.count);
+  }
+
+  return {
+    ranking: Array.from(counts.values()).sort((a, b) => b.count - a.count),
+    unnormalizedCount: unnormalized,
+  };
+}
 
 interface MealCount {
   id: string;
@@ -19,6 +74,7 @@ interface MealCount {
   category: string;
   isKeto: boolean;
   tags: string[];
+  kind?: "meal" | "ingredient";
 }
 
 type Persona = "all" | "us" | "nico";
@@ -53,6 +109,7 @@ function extractMeals(
             category: meal.category,
             isKeto: !!meal.isKeto,
             tags: resolvedTags.length > 0 ? resolvedTags : (meal.tags ?? []),
+            kind: meal.kind,
           });
         }
       }
@@ -206,6 +263,18 @@ export default function Reports() {
     () => extractMeals(allPlans, getterFor(persona, activeSection), tagResolver),
     [allPlans, persona, activeSection, tagResolver]
   );
+
+  const { ingredients } = useIngredients();
+  const catalogById = useMemo(() => new Map(catalog.map((m) => [m.id, m])), [catalog]);
+  const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
+  const { ranking: ingredientRanking, unnormalizedCount } = useMemo(
+    () => buildIngredientBreakdown(meals, catalogById, ingredientById),
+    [meals, catalogById, ingredientById]
+  );
+  const ingredientTotal = ingredientRanking.reduce((s, i) => s + i.count, 0);
+  const maxIngredientCount = ingredientRanking.length > 0 ? ingredientRanking[0].count : 1;
+  const isUnnormalizedMeal = (m: MealCount) =>
+    m.kind !== "ingredient" && !SENTINEL_IDS.has(m.id) && (catalogById.get(m.id)?.ingredientIds ?? []).length === 0;
   const total = meals.reduce((s, m) => s + m.count, 0);
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);
   const ketoPct = total ? Math.round((ketoCount / total) * 100) : 0;
@@ -364,6 +433,49 @@ export default function Reports() {
               ))}
             </div>
 
+            {/* Ingredient ranking */}
+            <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Carrot size={14} className="text-primary" /> Ranking de ingredientes
+              </h2>
+              {unnormalizedCount > 0 && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <TriangleAlert size={11} className="text-warning" />
+                  {unnormalizedCount} comida{unnormalizedCount === 1 ? "" : "s"} sin ingredientes cargados no se cuentan acá.{" "}
+                  <Link to="/normalizar" className="text-primary underline underline-offset-2">Normalizar →</Link>
+                </p>
+              )}
+              {ingredientRanking.length === 0 && (
+                <p className="text-xs text-muted-foreground py-4 text-center">
+                  Todavía no hay comidas con ingredientes cargados.
+                </p>
+              )}
+              {ingredientRanking.map((ing, idx) => (
+                <div key={ing.id} className="flex items-center gap-3 py-1.5">
+                  <span className="text-xs text-muted-foreground w-5 text-right font-mono">{idx + 1}</span>
+                  <span className="text-lg">{ing.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-foreground truncate">{ing.name}</span>
+                      {ing.tags[0] && (
+                        <span className="text-[10px] text-muted-foreground">{parseTag(ing.tags[0])?.sub}</span>
+                      )}
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-1">
+                      <div
+                        className={cn("h-full rounded-full transition-all", barColor)}
+                        style={{ width: `${(ing.count / maxIngredientCount) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-foreground">{ing.count}</span>
+                  <span className="text-[10px] text-muted-foreground w-10 text-right">
+                    {ingredientTotal ? Math.round((ing.count / ingredientTotal) * 100) : 0}%
+                  </span>
+                </div>
+              ))}
+            </div>
+
             {/* Meal ranking */}
             <div className="bg-card rounded-xl border border-border p-4 space-y-2">
               <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -383,6 +495,11 @@ export default function Reports() {
                       {meal.isKeto && (
                         <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-medium">
                           <Leaf size={9} /> keto
+                        </span>
+                      )}
+                      {isUnnormalizedMeal(meal) && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium" title="Sin ingredientes cargados">
+                          <TriangleAlert size={9} /> sin normalizar
                         </span>
                       )}
                     </div>

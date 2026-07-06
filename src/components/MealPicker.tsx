@@ -25,6 +25,8 @@ interface MealPickerProps {
   categories?: string[];
   /** Solo ingredientes: oculta comidas y fuerza creación como ingrediente. */
   ingredientsOnly?: boolean;
+  /** Título del modal (p.ej. "Elegir desayuno" para el slot de desayuno). */
+  title?: string;
 }
 
 const safetyColors: Record<BabySafety, string> = {
@@ -40,7 +42,7 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false, title: titleOverride }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
@@ -104,11 +106,12 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
     return acc;
   }, {});
 
-  const title = ingredientsOnly
+  const title = titleOverride
+    ?? (ingredientsOnly
     ? "Elegir ingrediente"
     : isSide
     ? "Elegir guarnición"
-    : isBaby ? "Comida de Nico" : "Elegir comida principal";
+    : isBaby ? "Comida de Nico" : "Elegir comida principal");
 
   const openWizard = () => setWizardName(search.trim());
 

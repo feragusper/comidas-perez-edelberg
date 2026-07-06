@@ -649,6 +649,12 @@ export function DayCard({
             : pickerTarget === "snack" ? ["Meriendas"]
             : undefined
           }
+          title={
+            extraEdit ? "Agregar algo más"
+            : pickerTarget === "breakfast" ? "Elegir desayuno"
+            : pickerTarget === "snack" ? "Elegir merienda"
+            : undefined
+          }
         />
       )}
     </>

@@ -397,6 +397,17 @@ export function WeekTableView({
           onSelect={handlePickerSelect}
           onClose={closePicker}
           onSkipSide={closePicker}
+          categories={
+            pickerSlot === "breakfast" ? ["Desayunos"]
+            : pickerSlot === "snack" ? ["Meriendas"]
+            : undefined
+          }
+          title={
+            extraEdit !== undefined ? "Agregar algo más"
+            : pickerSlot === "breakfast" ? "Elegir desayuno"
+            : pickerSlot === "snack" ? "Elegir merienda"
+            : undefined
+          }
         />
       )}
     </>

@@ -23,10 +23,12 @@ interface WizardState {
   initial?: Partial<Meal>;
 }
 
+/** Comidas de sistema (delivery, etc.): no se listan ni se borran. */
+const SENTINEL_IDS = new Set(["delivery", "takeaway", "restaurante", "delivery-sobras", "takeaway-sobras", "delivery-leftovers", "takeaway-leftovers"]);
+
 export default function CustomMeals() {
   const { meals, saveMeal, updateMeal, deleteMeal } = useMeals();
   const { ingredients, addIngredient, updateIngredient, deleteIngredient } = useIngredients();
-  const customMeals = meals.filter((m) => m.id.startsWith("custom-"));
   const { resetPlan } = useMealPlan(currentWeekKey());
 
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
@@ -35,7 +37,20 @@ export default function CustomMeals() {
   const [confirmDeleteIngredientId, setConfirmDeleteIngredientId] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
   const [wizard, setWizard] = useState<WizardState | null>(null);
+  const [mealSearch, setMealSearch] = useState("");
   const [ingredientSearch, setIngredientSearch] = useState("");
+
+  const allMeals = useMemo(
+    () => meals
+      .filter((m) => !SENTINEL_IDS.has(m.id))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    [meals]
+  );
+  const filteredMeals = useMemo(() => {
+    const q = mealSearch.trim().toLowerCase();
+    if (!q) return allMeals;
+    return allMeals.filter((m) => m.name.toLowerCase().includes(q));
+  }, [allMeals, mealSearch]);
 
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
 
@@ -109,17 +124,32 @@ export default function CustomMeals() {
           </Button>
         </div>
 
-        {customMeals.length === 0 ? (
+        <div className="flex items-center gap-2 mb-3">
+          <ChefHat size={18} className="text-primary" />
+          <h2 className="text-lg font-bold text-foreground">Comidas</h2>
+          <span className="text-xs text-muted-foreground">({allMeals.length})</span>
+        </div>
+
+        <div className="relative mb-3">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+            placeholder="Buscar comida..."
+            value={mealSearch}
+            onChange={(e) => setMealSearch(e.target.value)}
+          />
+        </div>
+
+        {filteredMeals.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-4xl mb-3">🍽️</p>
-            <p className="text-muted-foreground">No tenés comidas personalizadas todavía.</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Crealas con el botón de arriba o desde el buscador de comidas.
+            <p className="text-muted-foreground">
+              {allMeals.length === 0 ? "No hay comidas en el catálogo todavía." : "Nada que coincida con la búsqueda."}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {customMeals.map((meal) => {
+            {filteredMeals.map((meal) => {
               const tags = meal.tags ?? [];
               const mealIngredients = (meal.ingredientIds ?? []).map((id) => ingredientById.get(id)).filter((i): i is Ingredient => i != null);
               const emojiOpen = editingEmojiId === meal.id;

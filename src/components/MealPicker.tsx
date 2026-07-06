@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { Meal, MEALS, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
-import { Ingredient, INGREDIENT_CATEGORY, ingredientSlug } from "@/data/food";
+import { Ingredient } from "@/data/food";
+import { FoodWizard } from "@/components/FoodWizard";
 import { cn } from "@/lib/utils";
-import { X, Search, Baby, ChefHat, Leaf, Carrot } from "lucide-react";
-import { TagPicker } from "@/components/TagPicker";
-import { EmojiPicker } from "@/components/EmojiPicker";
+import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
 export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";
 export type DietFilter = "all" | "keto";
-export type CustomKind = "meal" | "ingredient";
 
 interface MealPickerProps {
   mode: PickerMode;
@@ -45,16 +43,14 @@ const safetyLabel: Record<BabySafety, string> = {
 export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
-  const [customEmojiPicker, setCustomEmojiPicker] = useState<string | null>(null); // holds the meal name
-  const [selectedEmoji, setSelectedEmoji] = useState("🍽️");
-  const [customTags, setCustomTags] = useState<string[]>([]);
-  const [customKind, setCustomKind] = useState<CustomKind>("meal");
+  // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
+  const [wizardName, setWizardName] = useState<string | null>(null);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && wizardName === null) onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [onClose, wizardName]);
 
   const isBaby = mode === "baby";
   const isSide = step === "side";
@@ -108,135 +104,30 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
     return acc;
   }, {});
 
-  const title = customEmojiPicker
-    ? "Elegir ícono"
-    : ingredientsOnly
+  const title = ingredientsOnly
     ? "Elegir ingrediente"
     : isSide
     ? "Elegir guarnición"
     : isBaby ? "Comida de Nico" : "Elegir comida principal";
 
-  const openEmojiPicker = () => {
-    setCustomEmojiPicker(search.trim());
-    setSelectedEmoji(ingredientsOnly ? "🥕" : "🍽️");
-    setCustomTags([]);
-    setCustomKind(ingredientsOnly ? "ingredient" : "meal");
-  };
+  const openWizard = () => setWizardName(search.trim());
 
-  const confirmCustom = () => {
-    if (!customEmojiPicker) return;
-    if (customKind === "ingredient") {
-      const newIngredient: Ingredient = {
-        id: ingredientSlug(customEmojiPicker),
-        name: customEmojiPicker,
-        emoji: selectedEmoji,
-        babySafety: "caution",
-        category: INGREDIENT_CATEGORY,
-        tags: customTags,
-        kind: "ingredient",
-      };
-      onSelect(newIngredient);
-      onCustomIngredient?.(newIngredient);
-    } else {
-      const newMeal: Meal = {
-        id: `custom-${Date.now()}`,
-        name: customEmojiPicker,
-        emoji: selectedEmoji,
-        babySafety: "caution",
-        category: "Otro",
-        isSide: isSide,
-        tags: customTags,
-        kind: "meal",
-      };
-      onSelect(newMeal);
-      onCustomMeal?.(newMeal);
-    }
-    onClose();
-  };
-
-  if (customEmojiPicker) {
+  if (wizardName !== null) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-        <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
-          <div className="flex items-center justify-between p-5 pb-3">
-            <div className="flex items-center gap-2">
-              <ChefHat size={18} className="text-primary" />
-              <h3 className="text-xl font-semibold text-foreground">
-                {title}
-              </h3>
-            </div>
-            <button onClick={() => setCustomEmojiPicker(null)} className="p-2 rounded-full hover:bg-muted transition-colors">
-              <X size={18} className="text-muted-foreground" />
-            </button>
-          </div>
-
-          <div className="px-5 pb-3">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/60 border border-border">
-              <span className="text-3xl">{selectedEmoji}</span>
-              <div>
-                <p className="text-sm font-medium text-foreground">{customEmojiPicker}</p>
-                <p className="text-xs text-muted-foreground">
-                  {customKind === "ingredient" ? "Elegí un ícono para este ingrediente" : "Elegí un ícono para esta comida"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Comida vs ingrediente */}
-          {onCustomIngredient && !ingredientsOnly && (
-            <div className="px-5 pb-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Guardar como</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCustomKind("meal")}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                    customKind === "meal"
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted text-muted-foreground border-transparent hover:bg-muted/70"
-                  )}
-                >
-                  <ChefHat size={12} /> Comida
-                </button>
-                <button
-                  onClick={() => setCustomKind("ingredient")}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
-                    customKind === "ingredient"
-                      ? "bg-secondary text-secondary-foreground border-secondary"
-                      : "bg-muted text-muted-foreground border-transparent hover:bg-muted/70"
-                  )}
-                >
-                  <Carrot size={12} /> Ingrediente
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Ícono</p>
-              <EmojiPicker value={selectedEmoji} onSelect={setSelectedEmoji} />
-            </div>
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Categorías <span className="font-normal normal-case text-muted-foreground/70">(opcional, para reportes)</span>
-              </p>
-              <TagPicker value={customTags} onChange={setCustomTags} compact />
-            </div>
-          </div>
-
-          <div className="p-5 pt-2 border-t border-border">
-            <button
-              onClick={confirmCustom}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
-            >
-              Confirmar {selectedEmoji} {customEmojiPicker}
-            </button>
-          </div>
-        </div>
-      </div>
+      <FoodWizard
+        kind={ingredientsOnly ? "ingredient" : "meal"}
+        allowKindSwitch={!ingredientsOnly && !!onCustomIngredient}
+        initial={{ name: wizardName, isSide: ingredientsOnly ? false : isSide }}
+        ingredients={ingredients}
+        onCustomIngredient={onCustomIngredient}
+        onSave={(food, kind) => {
+          onSelect(food);
+          if (kind === "ingredient") onCustomIngredient?.(food as Ingredient);
+          else onCustomMeal?.(food);
+          onClose();
+        }}
+        onClose={() => setWizardName(null)}
+      />
     );
   }
 
@@ -327,7 +218,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
                 No encontramos esa comida
               </p>
               <button
-                onClick={openEmojiPicker}
+                onClick={openWizard}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
               >
                 Usar &ldquo;{search.trim()}&rdquo;
@@ -338,7 +229,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           {/* Also show free-text option when there are partial results */}
           {hasSearch && !noResults && (
             <button
-              onClick={openEmojiPicker}
+              onClick={openWizard}
               className="w-full text-left px-3 py-2.5 rounded-xl border border-dashed border-border hover:bg-muted transition-all flex items-center gap-3"
             >
               <span className="text-2xl">🍽️</span>

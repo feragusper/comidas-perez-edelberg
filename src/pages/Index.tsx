@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
-import { useCustomMeals } from "@/hooks/useCustomMeals";
+import { useMeals } from "@/hooks/useMeals";
+import { useIngredients } from "@/hooks/useIngredients";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
@@ -57,13 +58,14 @@ export default function Index() {
   };
   
 
-  const { customMeals, saveCustomMeal } = useCustomMeals();
+  const { meals: mealsCatalog, saveMeal } = useMeals();
+  const { ingredients, addIngredient } = useIngredients();
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan);
 
   const { run: runAutocomplete, loading: loadingAutocomplete } =
-    useWeekAutocomplete(plan, activeWeek, autocompleteWeek, customMeals);
+    useWeekAutocomplete(plan, activeWeek, autocompleteWeek, mealsCatalog);
 
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
@@ -236,8 +238,10 @@ export default function Index() {
                   onSetExtra={(slot, exIdx, meal) => setExtraAt(idx, slot, exIdx, meal)}
                   onRemoveExtra={(slot, exIdx) => removeExtraAt(idx, slot, exIdx)}
                   onRemoveMain={(slot) => removeMainOnly(idx, slot)}
-                  extraMeals={customMeals}
-                  onCustomMeal={saveCustomMeal}
+                  extraMeals={mealsCatalog}
+                  ingredients={ingredients}
+                  onCustomMeal={saveMeal}
+                  onCustomIngredient={(ing) => void addIngredient(ing)}
                 />
               ))}
             </div>
@@ -266,8 +270,10 @@ export default function Index() {
                 onSetExtra={setExtraAt}
                 onRemoveExtra={removeExtraAt}
                 onRemoveMain={removeMainOnly}
-                extraMeals={customMeals}
-                onCustomMeal={saveCustomMeal}
+                extraMeals={mealsCatalog}
+                ingredients={ingredients}
+                onCustomMeal={saveMeal}
+                onCustomIngredient={(ing) => void addIngredient(ing)}
               />
             </div>
           )}

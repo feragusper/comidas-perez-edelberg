@@ -2,7 +2,9 @@ import { useState } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { usePantry } from "@/hooks/usePantry";
-import { useCustomMeals } from "@/hooks/useCustomMeals";
+import { useMeals } from "@/hooks/useMeals";
+import { useIngredients } from "@/hooks/useIngredients";
+import { isIngredient } from "@/data/food";
 import { supabase } from "@/integrations/supabase/client";
 import { MealPicker } from "@/components/MealPicker";
 import { Plus, X, Sparkles, Loader2, Warehouse } from "lucide-react";
@@ -17,7 +19,8 @@ interface Suggestion {
 
 export default function DonBacilio() {
   const { items, addItem, removeItem } = usePantry();
-  const { customMeals } = useCustomMeals();
+  const { meals } = useMeals();
+  const { ingredients, addIngredient } = useIngredients();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -73,8 +76,26 @@ export default function DonBacilio() {
           <MealPicker
             mode="adult"
             step="main"
-            extraMeals={customMeals}
-            onSelect={(meal) => addItem({ name: meal.name, emoji: meal.emoji })}
+            extraMeals={meals}
+            ingredients={ingredients}
+            onCustomIngredient={(ing) => void addIngredient(ing)}
+            onSelect={(food) => {
+              // Ingrediente suelto: directo a la despensa.
+              if (isIngredient(food)) {
+                addItem({ name: food.name, emoji: food.emoji });
+                return;
+              }
+              // Comida: se despliega en sus ingredientes componentes.
+              const components = (food.ingredientIds ?? [])
+                .map((id) => ingredients.find((i) => i.id === id))
+                .filter((i): i is NonNullable<typeof i> => i != null);
+              if (components.length === 0) {
+                addItem({ name: food.name, emoji: food.emoji });
+                return;
+              }
+              components.forEach((ing) => addItem({ name: ing.name, emoji: ing.emoji }));
+              toast({ title: `${food.emoji} ${food.name}`, description: `Agregué sus ${components.length} ingredientes a la despensa.` });
+            }}
             onClose={() => setPickerOpen(false)}
           />
         )}

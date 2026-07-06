@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Textarea } from "@/components/ui/textarea";
 import { useMealPlan } from "@/hooks/useMealPlan";
-import { useCustomMeals } from "@/hooks/useCustomMeals";
+import { useMeals } from "@/hooks/useMeals";
 import { currentWeekKey } from "@/lib/env";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Loader2, Plus, Carrot } from "lucide-react";
@@ -41,7 +41,7 @@ export default function Ingredients() {
 
   const weekKey = currentWeekKey();
   const { plan, setDinner, setLunch, setBabyDinner, setBabyLunch, setBreakfast, setSnack } = useMealPlan(weekKey);
-  const { saveCustomMeal } = useCustomMeals();
+  const { saveMeal } = useMeals();
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, text);
@@ -104,7 +104,7 @@ export default function Ingredients() {
       snack: setSnack,
     };
     setters[slot](dayIndex, meal);
-    void saveCustomMeal(meal);
+    void saveMeal(meal);
     toast({ title: `Agregado a ${SLOT_LABEL[slot]} - ${plan[dayIndex].day}` });
   };
 

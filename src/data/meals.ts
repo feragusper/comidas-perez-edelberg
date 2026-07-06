@@ -11,6 +11,13 @@ export interface Meal {
   isSide?: boolean;
   /** Tags formato "Categoría/Subcategoría" — ver foodTaxonomy.ts */
   tags?: string[];
+  /**
+   * Comida o ingrediente suelto (una fruta como merienda, etc.).
+   * Los snapshots históricos de meal_plan no traen kind: ausente = comida.
+   */
+  kind?: "meal" | "ingredient";
+  /** Ingredientes que componen la comida (ingredients.ingredient_id). Vacío = sin normalizar. */
+  ingredientIds?: string[];
 }
 
 // Helper para mantener tags concisas

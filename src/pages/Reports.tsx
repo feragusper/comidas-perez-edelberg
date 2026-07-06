@@ -9,7 +9,7 @@ import { TopNav } from "@/components/TopNav";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { MEALS } from "@/data/meals";
-import { useCustomMeals } from "@/hooks/useCustomMeals";
+import { useMeals } from "@/hooks/useMeals";
 
 interface MealCount {
   id: string;
@@ -194,13 +194,13 @@ export default function Reports() {
   const availableSections = PERSONA_SECTIONS[persona];
   const activeSection: Section = availableSections.includes(section) ? section : "all";
 
-  const { customMeals } = useCustomMeals();
+  const { meals: catalog } = useMeals();
   const tagResolver = useMemo(() => {
     const map = new Map<string, string[]>();
     for (const m of MEALS) map.set(m.id, m.tags ?? []);
-    for (const m of customMeals) map.set(m.id, m.tags ?? []);
+    for (const m of catalog) map.set(m.id, m.tags ?? []);
     return (id: string) => map.get(id) ?? [];
-  }, [customMeals]);
+  }, [catalog]);
 
   const meals = useMemo(
     () => extractMeals(allPlans, getterFor(persona, activeSection), tagResolver),

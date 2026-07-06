@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCustomMeals } from "@/hooks/useCustomMeals";
+import { useMeals } from "@/hooks/useMeals";
 import { useMealPlan } from "@/hooks/useMealPlan";
 import { currentWeekKey } from "@/lib/env";
 import { Pencil, Trash2, X, Check, Tag, RotateCcw } from "lucide-react";
@@ -13,7 +13,8 @@ import { TagPicker } from "@/components/TagPicker";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 export default function CustomMeals() {
-  const { customMeals, updateCustomMealEmoji, updateCustomMealTags, deleteCustomMeal } = useCustomMeals();
+  const { meals, updateMeal, deleteMeal } = useMeals();
+  const customMeals = meals.filter((m) => m.id.startsWith("custom-"));
   const { resetPlan } = useMealPlan(currentWeekKey());
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
   const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
@@ -21,12 +22,12 @@ export default function CustomMeals() {
   const [showReset, setShowReset] = useState(false);
 
   const handleEmojiSelect = async (mealId: string, emoji: string) => {
-    await updateCustomMealEmoji(mealId, emoji);
+    await updateMeal(mealId, { emoji });
     setEditingEmojiId(null);
   };
 
   const handleDelete = async (mealId: string) => {
-    await deleteCustomMeal(mealId);
+    await deleteMeal(mealId);
     setConfirmDeleteId(null);
   };
 
@@ -173,7 +174,7 @@ export default function CustomMeals() {
                       </p>
                       <TagPicker
                         value={tags}
-                        onChange={(newTags) => updateCustomMealTags(meal.id, newTags)}
+                        onChange={(newTags) => updateMeal(meal.id, { tags: newTags })}
                       />
                     </div>
                   )}

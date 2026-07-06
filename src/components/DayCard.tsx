@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
+import { Ingredient } from "@/data/food";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
@@ -22,7 +23,9 @@ interface DayCardProps {
   onRegenerateSuggestion?: () => void;
   loadingSuggestion?: boolean;
   extraMeals?: Meal[];
+  ingredients?: Ingredient[];
   onCustomMeal?: (meal: Meal) => void;
+  onCustomIngredient?: (ing: Ingredient) => void;
   onSetDinner: (meal: Meal | null) => void;
   onSetDinnerSide: (meal: Meal | null) => void;
   onSetDinnerNote: (note: string) => void;
@@ -250,7 +253,7 @@ export function DayCard({
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
-  extraMeals = [], onCustomMeal,
+  extraMeals = [], ingredients = [], onCustomMeal, onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
@@ -635,7 +638,9 @@ export function DayCard({
           step={pickerStep}
           prevDinner={pickerPrevDinner}
           extraMeals={extraMeals}
+          ingredients={ingredients}
           onCustomMeal={onCustomMeal}
+          onCustomIngredient={onCustomIngredient}
           onSelect={handlePickerSelect}
           onClose={closePicker}
           onSkipSide={closePicker}

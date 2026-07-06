@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
+import { Ingredient } from "@/data/food";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { Baby, Plus, Trash2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,9 @@ interface WeekTableViewProps {
   plan: DayPlan[];
   todayIdx?: number;
   extraMeals?: Meal[];
+  ingredients?: Ingredient[];
   onCustomMeal?: (meal: Meal) => void;
+  onCustomIngredient?: (ing: Ingredient) => void;
   onSetDinner: (i: number, meal: Meal | null) => void;
   onSetDinnerSide: (i: number, meal: Meal | null) => void;
   onSetDinnerNote: (i: number, note: string) => void;
@@ -168,7 +171,9 @@ export function WeekTableView({
   plan,
   todayIdx = -1,
   extraMeals = [],
+  ingredients = [],
   onCustomMeal,
+  onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote,
@@ -386,7 +391,9 @@ export function WeekTableView({
           step={pickerStep}
           prevDinner={pickerPrevDinner}
           extraMeals={extraMeals}
+          ingredients={ingredients}
           onCustomMeal={onCustomMeal}
+          onCustomIngredient={onCustomIngredient}
           onSelect={handlePickerSelect}
           onClose={closePicker}
           onSkipSide={closePicker}

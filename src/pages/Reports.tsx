@@ -12,7 +12,7 @@ import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { MEALS } from "@/data/meals";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
-import { Ingredient, SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
+import { Ingredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 
 interface IngredientCount {
   id: string;
@@ -52,9 +52,17 @@ function buildIngredientBreakdown(
   for (const m of meals) {
     if (SENTINEL_IDS.has(m.id)) continue;
     if (m.kind === "ingredient") { add(m.id, m.count); continue; }
-    const ids = catalogById.get(m.id)?.ingredientIds ?? [];
-    if (ids.length === 0) { unnormalized += m.count; continue; }
-    for (const iid of ids) add(iid, m.count);
+    const catalogMeal = catalogById.get(m.id);
+    if (catalogMeal) {
+      const ids = catalogMeal.ingredientIds ?? [];
+      if (ids.length === 0) { unnormalized += m.count; continue; }
+      for (const iid of ids) add(iid, m.count);
+      continue;
+    }
+    // Comida borrada del catálogo: si fue convertida a ingrediente, se resuelve por nombre
+    const bySlug = ingredientById.get(ingredientSlug(m.name));
+    if (bySlug) { add(bySlug.id, m.count); continue; }
+    unnormalized += m.count;
   }
 
   return {
@@ -270,8 +278,12 @@ export default function Reports() {
   );
   const ingredientTotal = ingredientRanking.reduce((s, i) => s + i.count, 0);
   const maxIngredientCount = ingredientRanking.length > 0 ? ingredientRanking[0].count : 1;
-  const isUnnormalizedMeal = (m: MealCount) =>
-    m.kind !== "ingredient" && !SENTINEL_IDS.has(m.id) && (catalogById.get(m.id)?.ingredientIds ?? []).length === 0;
+  const isUnnormalizedMeal = (m: MealCount) => {
+    if (m.kind === "ingredient" || SENTINEL_IDS.has(m.id)) return false;
+    const catalogMeal = catalogById.get(m.id);
+    if (catalogMeal) return (catalogMeal.ingredientIds ?? []).length === 0;
+    return !ingredientById.has(ingredientSlug(m.name));
+  };
   const total = meals.reduce((s, m) => s + m.count, 0);
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);
   const ketoPct = total ? Math.round((ketoCount / total) * 100) : 0;

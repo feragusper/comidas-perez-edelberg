@@ -8,7 +8,7 @@ import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { usePantry, pantryHasName } from "@/hooks/usePantry";
 import { Meal } from "@/data/meals";
-import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
+import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 import { ShoppingCart, ClipboardCopy, RotateCcw, CheckCheck, Warehouse, TriangleAlert } from "lucide-react";
@@ -127,8 +127,12 @@ export default function Shopping() {
         // Comida: expandir por catálogo (el snapshot puede ser viejo)
         const catalogMeal = catalogById.get(food.id);
         const ids = catalogMeal?.ingredientIds ?? [];
+        // Comida borrada que fue convertida a ingrediente: resolver por nombre
+        const convertedIngredient = !catalogMeal ? ingredientById.get(ingredientSlug(food.name)) : undefined;
         if (ids.length > 0) {
           for (const iid of ids) addIngredientEntry(iid, iid, "🛒", `${d.day} · ${food.name}`);
+        } else if (convertedIngredient) {
+          addIngredientEntry(convertedIngredient.id, food.name, food.emoji, source);
         } else {
           const existing = pending.get(food.id);
           if (existing) {

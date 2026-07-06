@@ -5,11 +5,11 @@ import { MealPicker } from "@/components/MealPicker";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { Meal } from "@/data/meals";
-import { SENTINEL_MEAL_IDS as SENTINEL_IDS } from "@/data/food";
+import { SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { supabase } from "@/integrations/supabase/client";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History, Trash2 } from "lucide-react";
+import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History, Trash2, Carrot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
  * Cuando todo esté normalizado, esta página se elimina.
  */
 export default function Normalize() {
-  const { meals, restoreMeal, updateMeal, deleteMeals } = useMeals();
+  const { meals, restoreMeal, updateMeal, deleteMeal, deleteMeals } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
 
   const [search, setSearch] = useState("");
@@ -56,6 +56,7 @@ export default function Normalize() {
   useEffect(() => {
     const catalogIds = new Set(meals.map((m) => m.id));
     if (catalogIds.size === 0) return;
+    const ingredientIds = new Set(ingredients.map((i) => i.id));
 
     supabase
       .from("meal_plan")
@@ -81,6 +82,8 @@ export default function Normalize() {
               if (f.kind === "ingredient") continue;
               used.add(f.id);
               if (SENTINEL_IDS.has(f.id) || catalogIds.has(f.id) || found.has(f.id)) continue;
+              // Comida convertida a ingrediente: se resuelve por nombre, no es huérfana
+              if (ingredientIds.has(ingredientSlug(f.name))) continue;
               found.set(f.id, f);
             }
           }
@@ -88,7 +91,29 @@ export default function Normalize() {
         setOrphans(Array.from(found.values()));
         setUsedIds(used);
       });
-  }, [meals]);
+  }, [meals, ingredients]);
+
+  /** "Esta comida es en realidad un ingrediente": lo crea y borra la comida. */
+  const convertToIngredient = async (meal: Meal, isOrphan = false) => {
+    const created = await addIngredient({
+      name: meal.name,
+      emoji: meal.emoji,
+      tags: meal.tags ?? [],
+      babySafety: meal.babySafety,
+      babyNote: meal.babyNote,
+      isKeto: meal.isKeto,
+    });
+    if (!created) {
+      toast({ title: "No se pudo crear el ingrediente", variant: "destructive" });
+      return;
+    }
+    if (isOrphan) {
+      setOrphans((prev) => prev.filter((o) => o.id !== meal.id));
+    } else {
+      await deleteMeal(meal.id);
+    }
+    toast({ title: `${created.emoji} ${created.name}`, description: "Ahora es un ingrediente." });
+  };
 
   /** Predefinidas del catálogo original que nunca aparecieron en ningún menú. */
   const unusedSeeds = useMemo(() => {
@@ -238,6 +263,14 @@ export default function Normalize() {
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => convertToIngredient(m, true)}
+                    title="No es una comida: convertir en ingrediente"
+                  >
+                    <Carrot size={14} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={async () => {
                       await restoreMeal(m);
                       setOrphans((prev) => prev.filter((o) => o.id !== m.id));
@@ -288,6 +321,14 @@ export default function Normalize() {
                     </div>
                     {!isEditing && (
                       <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => convertToIngredient(meal)}
+                          title="No es una comida: convertir en ingrediente"
+                        >
+                          <Carrot size={14} />
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"

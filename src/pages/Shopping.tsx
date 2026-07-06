@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { useMealPlan, DayPlan } from "@/hooks/useMealPlan";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
@@ -241,17 +242,21 @@ export default function Shopping() {
                 const catAllHave = items.every(isHave);
                 return (
                   <div key={cat} className="rounded-xl border border-border bg-card overflow-hidden">
-                    <div className="px-3 py-2 bg-muted/40 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">
-                        {meta?.emoji ?? "🛒"} {meta?.label ?? cat}
-                      </span>
-                      <button
-                        onClick={() => markAllHave(items, !catAllHave)}
-                        className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
-                      >
-                        {catAllHave ? "Desmarcar todo" : "Ya tengo todo"}
-                      </button>
-                    </div>
+                    <CollapsibleGroup
+                      id={`shopping:${cat}`}
+                      count={items.length}
+                      rowClassName="px-3 py-2 bg-muted/40"
+                      headerClassName="text-xs font-semibold text-foreground"
+                      title={`${meta?.emoji ?? "🛒"} ${meta?.label ?? cat}`}
+                      headerRight={
+                        <button
+                          onClick={() => markAllHave(items, !catAllHave)}
+                          className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium shrink-0"
+                        >
+                          {catAllHave ? "Desmarcar todo" : "Ya tengo todo"}
+                        </button>
+                      }
+                    >
                     <ul className="divide-y divide-border">
                       {items.map((it) => {
                         const got = isHave(it);
@@ -290,6 +295,7 @@ export default function Shopping() {
                         );
                       })}
                     </ul>
+                    </CollapsibleGroup>
                   </div>
                 );
               })}

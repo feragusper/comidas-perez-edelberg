@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Meal, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { FoodWizard } from "@/components/FoodWizard";
+import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
@@ -242,69 +243,95 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
 
           {/* Prev dinner related group (main only) */}
           {!noResults && prevRelated.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wider text-secondary">
+            <CollapsibleGroup
+              id="picker:anoche"
+              forceOpen={hasSearch}
+              count={prevRelated.length}
+              headerClassName="text-xs font-semibold uppercase tracking-wider text-secondary mb-2"
+              title={
+                <>
                   {isBaby ? "🍼 Adaptado de lo de anoche" : "♻️ Con lo de anoche"}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  (basado en: {prevDinner?.name})
-                </span>
-              </div>
+                  <span className="ml-1.5 font-normal normal-case tracking-normal text-muted-foreground">
+                    (basado en: {prevDinner?.name})
+                  </span>
+                </>
+              }
+            >
               <div className="space-y-2">
                 {prevRelated.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
-            </div>
+            </CollapsibleGroup>
           )}
 
           {/* Custom meals group */}
           {!isSide && !noResults && customPool.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">⭐ Mis comidas</p>
+            <CollapsibleGroup
+              id="picker:mis-comidas"
+              forceOpen={hasSearch}
+              count={customPool.length}
+              title="⭐ Mis comidas"
+              headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+            >
               <div className="space-y-2">
                 {customPool.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
-            </div>
+            </CollapsibleGroup>
           )}
 
           {/* Main meals by category */}
           {!isSide && !noResults && Object.entries(grouped).map(([cat, meals]) => (
-            <div key={cat}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">{cat}</p>
+            <CollapsibleGroup
+              key={cat}
+              id={`picker:cat-${cat}`}
+              forceOpen={hasSearch}
+              count={meals.length}
+              title={cat}
+              headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+            >
               <div className="space-y-2">
                 {meals.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
-            </div>
+            </CollapsibleGroup>
           ))}
 
           {/* Sides list */}
           {isSide && !noResults && filtered.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Guarniciones</p>
+            <CollapsibleGroup
+              id="picker:guarniciones"
+              forceOpen={hasSearch}
+              count={filtered.length}
+              title="Guarniciones"
+              headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+            >
               <div className="space-y-2">
                 {filtered.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
-            </div>
+            </CollapsibleGroup>
           )}
 
           {/* Ingredients group (both steps) */}
           {!noResults && filteredIngredients.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">🥕 Ingredientes</p>
+            <CollapsibleGroup
+              id="picker:ingredientes"
+              forceOpen={hasSearch}
+              count={filteredIngredients.length}
+              title="🥕 Ingredientes"
+              headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+            >
               <div className="space-y-2">
                 {filteredIngredients.map((ing) => (
                   <MealRow key={ing.id} meal={ing} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
-            </div>
+            </CollapsibleGroup>
           )}
 
         </div>

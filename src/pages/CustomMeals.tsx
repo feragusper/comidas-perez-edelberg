@@ -6,6 +6,7 @@ import { currentWeekKey } from "@/lib/env";
 import { Meal } from "@/data/meals";
 import { Ingredient, SENTINEL_MEAL_IDS } from "@/data/food";
 import { FoodWizard, WizardKind } from "@/components/FoodWizard";
+import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { Pencil, Trash2, X, Check, Tag, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TopNav } from "@/components/TopNav";
@@ -123,12 +124,17 @@ export default function CustomMeals() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 mb-3">
-          <ChefHat size={18} className="text-primary" />
-          <h2 className="text-lg font-bold text-foreground">Comidas</h2>
-          <span className="text-xs text-muted-foreground">({allMeals.length})</span>
-        </div>
-
+        <CollapsibleGroup
+          id="catalog:comidas"
+          chevronSize={16}
+          count={allMeals.length}
+          headerClassName="text-lg font-bold text-foreground mb-3"
+          title={
+            <span className="inline-flex items-center gap-2">
+              <ChefHat size={18} className="text-primary" /> Comidas
+            </span>
+          }
+        >
         <div className="relative mb-3">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -288,14 +294,21 @@ export default function CustomMeals() {
           </div>
         )}
 
+        </CollapsibleGroup>
+
         {/* ── Ingredientes ── */}
         <div className="mt-10">
-          <div className="flex items-center gap-2 mb-3">
-            <Carrot size={18} className="text-secondary" />
-            <h2 className="text-lg font-bold text-foreground">Ingredientes</h2>
-            <span className="text-xs text-muted-foreground">({ingredients.length})</span>
-          </div>
-
+          <CollapsibleGroup
+            id="catalog:ingredientes"
+            chevronSize={16}
+            count={ingredients.length}
+            headerClassName="text-lg font-bold text-foreground mb-3"
+            title={
+              <span className="inline-flex items-center gap-2">
+                <Carrot size={18} className="text-secondary" /> Ingredientes
+              </span>
+            }
+          >
           <div className="relative mb-3">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -382,6 +395,7 @@ export default function CustomMeals() {
           <p className="text-[11px] text-muted-foreground mt-2">
             Ojo: borrar un ingrediente no lo quita de las comidas que lo usan.
           </p>
+          </CollapsibleGroup>
         </div>
       </div>
 

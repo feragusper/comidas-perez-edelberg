@@ -7,6 +7,7 @@ import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers
 import { Link } from "react-router-dom";
 
 import { TopNav } from "@/components/TopNav";
+import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { cn } from "@/lib/utils";
 import { TAXONOMY, parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { MEALS } from "@/data/meals";
@@ -444,9 +445,16 @@ export default function Reports() {
 
             {/* Ingredient ranking */}
             <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Carrot size={14} className="text-primary" /> Ranking de ingredientes
-              </h2>
+              <CollapsibleGroup
+                id="reports:ingredientes"
+                count={ingredientRanking.length}
+                headerClassName="text-sm font-semibold text-foreground"
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <Carrot size={14} className="text-primary" /> Ranking de ingredientes
+                  </span>
+                }
+              >
               {unnormalizedCount > 0 && (
                 <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                   <TriangleAlert size={11} className="text-warning" />
@@ -483,13 +491,21 @@ export default function Reports() {
                   </span>
                 </div>
               ))}
+              </CollapsibleGroup>
             </div>
 
             {/* Meal ranking */}
             <div className="bg-card rounded-xl border border-border p-4 space-y-2">
-              <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp size={14} className="text-primary" /> Ranking de platos
-              </h2>
+              <CollapsibleGroup
+                id="reports:platos"
+                count={meals.length}
+                headerClassName="text-sm font-semibold text-foreground"
+                title={
+                  <span className="inline-flex items-center gap-2">
+                    <TrendingUp size={14} className="text-primary" /> Ranking de platos
+                  </span>
+                }
+              >
               {meals.length === 0 && (
                 <p className="text-xs text-muted-foreground py-4 text-center">Sin datos para esta sección.</p>
               )}
@@ -525,6 +541,7 @@ export default function Reports() {
                   </span>
                 </div>
               ))}
+              </CollapsibleGroup>
             </div>
           </>
         )}

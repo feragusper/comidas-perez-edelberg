@@ -522,11 +522,15 @@ export function useMealPlan(weekKey: WeekKey) {
     updateExtras(i, slot, cur);
   };
 
-  /** Clears a whole slot (main + side + extras). Inherited lunch/baby slots keep their hide/reset semantics. */
+  /**
+   * Clears a whole slot (main + side + extras). Inherited lunch/baby slots quedan
+   * vacíos y ocultos (no vuelven a heredar: si volvieran, reaparecerían los
+   * alimentos de la cena anterior al borrar el último).
+   */
   const clearSlot = (i: number, slot: MealSlot) => {
-    if (slot === "lunch") { if (plan[i].lunchOverridden) resetLunch(i); else hideLunch(i); return; }
-    if (slot === "babyLunch") { if (plan[i].babyLunchOverridden) resetBabyLunch(i); else hideBabyLunch(i); return; }
-    if (slot === "babyDinner") { if (plan[i].babyDinnerOverridden) resetBabyDinner(i); else hideBabyDinner(i); return; }
+    if (slot === "lunch") { update(i, { lunch: null, lunchSide: null, lunchExtras: [], lunchNote: "", lunchOverridden: false, lunchHidden: true }); return; }
+    if (slot === "babyLunch") { update(i, { babyLunch: null, babyLunchSide: null, babyLunchExtras: [], babyLunchNote: "", babyLunchOverridden: false, babyLunchHidden: true }); return; }
+    if (slot === "babyDinner") { update(i, { babyDinner: null, babyDinnerSide: null, babyDinnerExtras: [], babyDinnerNote: "", babyDinnerOverridden: false, babyDinnerHidden: true }); return; }
     if (slot === "dinner") { update(i, { dinner: null, dinnerSide: null, dinnerExtras: [], dinnerNote: "" }); return; }
     if (slot === "breakfast") { update(i, { breakfast: null, breakfastExtras: [], breakfastNote: "" }); return; }
     update(i, { snack: null, snackExtras: [], snackNote: "" });

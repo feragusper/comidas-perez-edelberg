@@ -14,7 +14,7 @@ interface EmojiPickerProps {
 export function EmojiPicker({
   value,
   onSelect,
-  gridClassName = "grid grid-cols-8 gap-1.5",
+  gridClassName = "grid grid-cols-6 sm:grid-cols-8 gap-1.5",
   buttonClassName = "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
   placeholder = "Buscar (ej: pollo, queso)...",
 }: EmojiPickerProps) {

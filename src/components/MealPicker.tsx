@@ -3,6 +3,7 @@ import { Meal, MEAL_CATEGORIES, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { FoodWizard } from "@/components/FoodWizard";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
+import { useKeyboardInset, useBodyScrollLock } from "@/hooks/useKeyboardInset";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
@@ -48,6 +49,8 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
   const [wizardName, setWizardName] = useState<string | null>(null);
+  const kbInset = useKeyboardInset();
+  useBodyScrollLock();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && wizardName === null) onClose(); };
@@ -133,9 +136,12 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={kbInset > 0 ? { paddingBottom: kbInset } : undefined}
+    >
       <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
+      <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
 
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-3">

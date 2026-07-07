@@ -4,6 +4,7 @@ import { Ingredient, INGREDIENT_CATEGORY, ingredientSlug } from "@/data/food";
 import { MealPicker } from "@/components/MealPicker";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { TagPicker } from "@/components/TagPicker";
+import { useKeyboardInset, useBodyScrollLock } from "@/hooks/useKeyboardInset";
 import { cn } from "@/lib/utils";
 import { X, ChefHat, Carrot, Plus, Leaf } from "lucide-react";
 
@@ -47,6 +48,8 @@ export function FoodWizard({
   const [isSide, setIsSide] = useState(initial?.isSide ?? false);
   const [isKeto, setIsKeto] = useState(initial?.isKeto ?? false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const kbInset = useKeyboardInset();
+  useBodyScrollLock();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && !pickerOpen) onClose(); };
@@ -100,9 +103,12 @@ export function FoodWizard({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        style={kbInset > 0 ? { paddingBottom: kbInset } : undefined}
+      >
         <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-border">
+        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
 
           {/* Header */}
           <div className="flex items-center justify-between p-5 pb-3">

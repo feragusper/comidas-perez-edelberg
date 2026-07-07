@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
-import { usePantry } from "@/hooks/usePantry";
+import { usePantry, normalizePantryName, type PantryItem } from "@/hooks/usePantry";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { isIngredient } from "@/data/food";
+import { parseTag } from "@/data/foodTaxonomy";
 import { supabase } from "@/integrations/supabase/client";
 import { MealPicker } from "@/components/MealPicker";
 import { Plus, X, Sparkles, Loader2, Warehouse } from "lucide-react";
@@ -17,6 +18,10 @@ interface Suggestion {
   isKeto?: boolean;
 }
 
+/** Subtítulos dentro de "Ingredientes", en el orden en que se muestran. */
+const INGREDIENT_SUBGROUPS = ["Carnes", "Verdura", "Fruta", "Otros"] as const;
+type PantryGroup = (typeof INGREDIENT_SUBGROUPS)[number] | "Comidas";
+
 export default function DonBacilio() {
   const { items, addItem, removeItem } = usePantry();
   const { meals } = useMeals();
@@ -24,6 +29,47 @@ export default function DonBacilio() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  /**
+   * Clasifica un ítem de la despensa matcheando su nombre contra los catálogos:
+   * ingrediente → subtítulo según sus tags; comida del catálogo → "Comidas".
+   */
+  const groupOf = (item: PantryItem): PantryGroup => {
+    const n = normalizePantryName(item.name);
+    const ing = ingredients.find((i) => normalizePantryName(i.name) === n);
+    if (!ing) {
+      return meals.some((m) => normalizePantryName(m.name) === n) ? "Comidas" : "Otros";
+    }
+    const cats = new Set((ing.tags ?? []).map((t) => parseTag(t)?.category));
+    if (cats.has("Proteína")) return "Carnes";
+    if (cats.has("Verdura")) return "Verdura";
+    if (cats.has("Fruta")) return "Fruta";
+    return "Otros";
+  };
+
+  const grouped = new Map<PantryGroup, PantryItem[]>();
+  for (const it of items) {
+    const g = groupOf(it);
+    grouped.set(g, [...(grouped.get(g) ?? []), it]);
+  }
+  for (const list of grouped.values()) {
+    list.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  }
+  const hasIngredients = INGREDIENT_SUBGROUPS.some((g) => (grouped.get(g)?.length ?? 0) > 0);
+
+  const renderRow = (it: PantryItem) => (
+    <div key={it.name} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-muted/50">
+      <span className="shrink-0">{it.emoji}</span>
+      <span className="text-sm text-foreground min-w-0 truncate">{it.name}</span>
+      <button
+        onClick={() => removeItem(it.name)}
+        className="ml-auto shrink-0 p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+        aria-label={`Quitar ${it.name}`}
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
 
   const handleGenerate = async () => {
     if (items.length === 0) {
@@ -106,23 +152,30 @@ export default function DonBacilio() {
               Todavía no cargaste nada. Agregá lo que tenés en la despensa o el freezer.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-2">
-              {items.map((it) => (
-                <span
-                  key={it.name}
-                  className="inline-flex items-center gap-1.5 bg-muted/60 rounded-full pl-3 pr-1.5 py-1.5 text-sm text-foreground"
-                >
-                  <span>{it.emoji}</span>
-                  <span>{it.name}</span>
-                  <button
-                    onClick={() => removeItem(it.name)}
-                    className="ml-0.5 p-0.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    aria-label={`Quitar ${it.name}`}
-                  >
-                    <X size={13} />
-                  </button>
-                </span>
-              ))}
+            <div className="space-y-6">
+              {hasIngredients && (
+                <section>
+                  <h2 className="text-base font-semibold text-foreground mb-2">Ingredientes</h2>
+                  <div className="space-y-4">
+                    {INGREDIENT_SUBGROUPS.map((sub) => {
+                      const list = grouped.get(sub);
+                      if (!list || list.length === 0) return null;
+                      return (
+                        <div key={sub}>
+                          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">{sub}</h3>
+                          <div className="space-y-1">{list.map(renderRow)}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+              {(grouped.get("Comidas")?.length ?? 0) > 0 && (
+                <section>
+                  <h2 className="text-base font-semibold text-foreground mb-2">Comidas</h2>
+                  <div className="space-y-1">{grouped.get("Comidas")!.map(renderRow)}</div>
+                </section>
+              )}
             </div>
           )}
         </div>

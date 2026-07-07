@@ -142,7 +142,7 @@ export function FoodWizard({
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
                   isIngredientKind
-                    ? "bg-secondary text-secondary-foreground border-secondary"
+                    ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted text-muted-foreground border-transparent hover:bg-muted/70"
                 )}
               >

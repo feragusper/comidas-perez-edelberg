@@ -241,19 +241,6 @@ export default function CustomMeals() {
                       />
                     </div>
                   )}
-
-                  {/* Inline tags picker */}
-                  {tagsOpen && (
-                    <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30 space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">
-                        Asigná categorías y subcategorías (podés elegir varias):
-                      </p>
-                      <TagPicker
-                        value={tags}
-                        onChange={(newTags) => updateMeal(meal.id, { tags: newTags })}
-                      />
-                    </div>
-                  )}
                 </div>
               );
             })}

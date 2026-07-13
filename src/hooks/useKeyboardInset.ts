@@ -27,13 +27,25 @@ export function useKeyboardInset(): number {
   return inset;
 }
 
+// Contador global de bloqueos activos. Con varios modales encimados,
+// el scroll sólo se libera cuando se cierra el último; así evitamos que
+// quede `overflow: hidden` pegado y haya que refrescar.
+let scrollLockCount = 0;
+let scrollLockPrevOverflow = "";
+
 /** Bloquea el scroll del body mientras el modal está montado. */
 export function useBodyScrollLock() {
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (scrollLockCount === 0) {
+      scrollLockPrevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
+    scrollLockCount++;
     return () => {
-      document.body.style.overflow = prev;
+      scrollLockCount = Math.max(0, scrollLockCount - 1);
+      if (scrollLockCount === 0) {
+        document.body.style.overflow = scrollLockPrevOverflow;
+      }
     };
   }, []);
 }

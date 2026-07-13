@@ -7,7 +7,7 @@ import { Meal } from "@/data/meals";
 import { Ingredient, SENTINEL_MEAL_IDS } from "@/data/food";
 import { FoodWizard, WizardKind } from "@/components/FoodWizard";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
-import { Pencil, Trash2, X, Check, Tag, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
+import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";

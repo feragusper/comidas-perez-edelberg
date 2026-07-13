@@ -7,7 +7,7 @@ import { Meal } from "@/data/meals";
 import { Ingredient, SENTINEL_MEAL_IDS } from "@/data/food";
 import { FoodWizard, WizardKind } from "@/components/FoodWizard";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
-import { Pencil, Trash2, X, Check, Tag, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
+import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "@/hooks/use-toast";
 
 import { EmojiPicker } from "@/components/EmojiPicker";
-import { TagPicker } from "@/components/TagPicker";
+
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 interface WizardState {
@@ -32,7 +32,7 @@ export default function CustomMeals() {
   const { resetPlan } = useMealPlan(currentWeekKey());
 
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
-  const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
+  
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmDeleteIngredientId, setConfirmDeleteIngredientId] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
@@ -155,20 +155,18 @@ export default function CustomMeals() {
         ) : (
           <div className="space-y-3">
             {filteredMeals.map((meal) => {
-              const tags = meal.tags ?? [];
               const mealIngredients = (meal.ingredientIds ?? []).map((id) => ingredientById.get(id)).filter((i): i is Ingredient => i != null);
               const emojiOpen = editingEmojiId === meal.id;
-              const tagsOpen = editingTagsId === meal.id;
               return (
                 <div key={meal.id}>
                   <div
                     className={cn(
                       "flex items-start gap-3 p-4 rounded-xl border border-border bg-card transition-all",
-                      (emojiOpen || tagsOpen) && "rounded-b-none border-b-0"
+                      emojiOpen && "rounded-b-none border-b-0"
                     )}
                   >
                     <button
-                      onClick={() => { setEditingEmojiId(emojiOpen ? null : meal.id); setEditingTagsId(null); }}
+                      onClick={() => setEditingEmojiId(emojiOpen ? null : meal.id)}
                       className="text-2xl hover:scale-110 transition-transform cursor-pointer mt-0.5"
                       title="Cambiar ícono"
                     >
@@ -194,40 +192,8 @@ export default function CustomMeals() {
                       ) : (
                         <p className="text-[11px] italic text-warning mb-1">Sin ingredientes (sin normalizar)</p>
                       )}
-                      {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {tags.map((tag) => {
-                            const parsed = parseTag(tag);
-                            if (!parsed) return null;
-                            const cat = categoryOf(parsed.category);
-                            return (
-                              <span
-                                key={tag}
-                                className={cn(
-                                  "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
-                                  cat?.bg ?? "bg-muted",
-                                  cat?.color ?? "text-foreground"
-                                )}
-                              >
-                                <span>{cat?.emoji}</span>
-                                <span>{parsed.sub}</span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => { setEditingTagsId(tagsOpen ? null : meal.id); setEditingEmojiId(null); }}
-                        className={cn(
-                          "p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors",
-                          tagsOpen && "bg-primary/10 text-primary"
-                        )}
-                        title="Editar categorías"
-                      >
-                        <Tag size={14} />
-                      </button>
                       <button
                         onClick={() => setWizard({ kind: "meal", isEdit: true, initial: meal })}
                         className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
@@ -272,19 +238,6 @@ export default function CustomMeals() {
                         onSelect={(emoji) => handleEmojiSelect(meal.id, emoji)}
                         gridClassName="grid grid-cols-10 sm:grid-cols-12 gap-1"
                         buttonClassName="text-xl p-1.5 rounded-lg transition-all hover:bg-card"
-                      />
-                    </div>
-                  )}
-
-                  {/* Inline tags picker */}
-                  {tagsOpen && (
-                    <div className="p-4 border border-border border-t-0 rounded-b-xl bg-muted/30 space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">
-                        Asigná categorías y subcategorías (podés elegir varias):
-                      </p>
-                      <TagPicker
-                        value={tags}
-                        onChange={(newTags) => updateMeal(meal.id, { tags: newTags })}
                       />
                     </div>
                   )}

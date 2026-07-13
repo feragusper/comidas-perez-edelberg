@@ -192,40 +192,8 @@ export default function CustomMeals() {
                       ) : (
                         <p className="text-[11px] italic text-warning mb-1">Sin ingredientes (sin normalizar)</p>
                       )}
-                      {tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {tags.map((tag) => {
-                            const parsed = parseTag(tag);
-                            if (!parsed) return null;
-                            const cat = categoryOf(parsed.category);
-                            return (
-                              <span
-                                key={tag}
-                                className={cn(
-                                  "inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full",
-                                  cat?.bg ?? "bg-muted",
-                                  cat?.color ?? "text-foreground"
-                                )}
-                              >
-                                <span>{cat?.emoji}</span>
-                                <span>{parsed.sub}</span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
                     </div>
                     <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => { setEditingTagsId(tagsOpen ? null : meal.id); setEditingEmojiId(null); }}
-                        className={cn(
-                          "p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors",
-                          tagsOpen && "bg-primary/10 text-primary"
-                        )}
-                        title="Editar categorías"
-                      >
-                        <Tag size={14} />
-                      </button>
                       <button
                         onClick={() => setWizard({ kind: "meal", isEdit: true, initial: meal })}
                         className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"

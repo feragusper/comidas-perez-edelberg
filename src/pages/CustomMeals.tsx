@@ -155,20 +155,18 @@ export default function CustomMeals() {
         ) : (
           <div className="space-y-3">
             {filteredMeals.map((meal) => {
-              const tags = meal.tags ?? [];
               const mealIngredients = (meal.ingredientIds ?? []).map((id) => ingredientById.get(id)).filter((i): i is Ingredient => i != null);
               const emojiOpen = editingEmojiId === meal.id;
-              const tagsOpen = editingTagsId === meal.id;
               return (
                 <div key={meal.id}>
                   <div
                     className={cn(
                       "flex items-start gap-3 p-4 rounded-xl border border-border bg-card transition-all",
-                      (emojiOpen || tagsOpen) && "rounded-b-none border-b-0"
+                      emojiOpen && "rounded-b-none border-b-0"
                     )}
                   >
                     <button
-                      onClick={() => { setEditingEmojiId(emojiOpen ? null : meal.id); setEditingTagsId(null); }}
+                      onClick={() => setEditingEmojiId(emojiOpen ? null : meal.id)}
                       className="text-2xl hover:scale-110 transition-transform cursor-pointer mt-0.5"
                       title="Cambiar ícono"
                     >

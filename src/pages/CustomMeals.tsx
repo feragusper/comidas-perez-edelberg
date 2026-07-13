@@ -32,7 +32,7 @@ export default function CustomMeals() {
   const { resetPlan } = useMealPlan(currentWeekKey());
 
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
-  const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
+  
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [confirmDeleteIngredientId, setConfirmDeleteIngredientId] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);

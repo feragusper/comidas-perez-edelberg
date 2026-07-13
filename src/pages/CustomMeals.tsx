@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from "@/hooks/use-toast";
 
 import { EmojiPicker } from "@/components/EmojiPicker";
-import { TagPicker } from "@/components/TagPicker";
+
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 
 interface WizardState {

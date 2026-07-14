@@ -36,9 +36,6 @@ export interface DayPlan {
   notes: string;
 }
 
-/** Max total foods per meal slot (main + side + extras counted together). */
-export const MAX_MEAL_ITEMS = 5;
-
 export type WeekKey = string;
 
 export type MealSlot = "dinner" | "lunch" | "babyDinner" | "babyLunch" | "breakfast" | "snack";
@@ -504,9 +501,6 @@ export function useMealPlan(weekKey: WeekKey) {
 
   const addExtra = (i: number, slot: MealSlot, meal: Meal) => {
     const cur = currentExtras(i, slot);
-    const f = slotFields(slot);
-    const base = 1 + (f.side ? 1 : 0); // main (+ side slot)
-    if (base + cur.length >= MAX_MEAL_ITEMS) return;
     updateExtras(i, slot, [...cur, meal]);
   };
   const setExtraAt = (i: number, slot: MealSlot, idx: number, meal: Meal) => {

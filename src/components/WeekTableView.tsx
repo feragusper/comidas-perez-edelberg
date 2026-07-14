@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
+import { DayPlan, MealSlot, isDeliveryMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
@@ -102,8 +102,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
     );
   }
 
-  const usedSlots = 1 + (side ? 1 : 0) + extras.length;
-  const canAddMore = usedSlots < MAX_MEAL_ITEMS && !isEatingOutMeal(meal);
+  const canAddMore = !isEatingOutMeal(meal);
 
   return (
     <div className="space-y-1 group relative">

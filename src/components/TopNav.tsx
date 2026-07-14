@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   UtensilsCrossed,
   BarChart3,
-  Carrot,
+  CalendarDays,
   ShoppingCart,
   LogOut,
   Warehouse,
@@ -15,9 +15,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
 const items = [
-  { to: "/", label: "Menú", icon: UtensilsCrossed },
+  { to: "/", label: "Menú", icon: CalendarDays },
   { to: "/mis-comidas", label: "Mis comidas", icon: UtensilsCrossed },
-  { to: "/ingredientes", label: "Ingredientes", icon: Carrot },
   { to: "/don-bacilio", label: "Don Bacilio", icon: Warehouse },
   { to: "/super", label: "Súper", icon: ShoppingCart },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },

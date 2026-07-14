@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Reports from "./pages/Reports";
 import CustomMeals from "./pages/CustomMeals";
-import Ingredients from "./pages/Ingredients";
 import DonBacilio from "./pages/DonBacilio";
 import Shopping from "./pages/Shopping";
 import Normalize from "./pages/Normalize";
@@ -29,7 +28,6 @@ const App = () => (
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/reportes" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
             <Route path="/mis-comidas" element={<ProtectedRoute><CustomMeals /></ProtectedRoute>} />
-            <Route path="/ingredientes" element={<ProtectedRoute><Ingredients /></ProtectedRoute>} />
             <Route path="/don-bacilio" element={<ProtectedRoute><DonBacilio /></ProtectedRoute>} />
             <Route path="/super" element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
             <Route path="/normalizar" element={<ProtectedRoute><Normalize /></ProtectedRoute>} />

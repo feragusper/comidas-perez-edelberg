@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DayPlan, MealSlot, MAX_MEAL_ITEMS, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
+import { DayPlan, MealSlot, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
@@ -213,18 +213,15 @@ function MealDisplay({
   );
 }
 
-/** Renders extra food items for a meal slot + an "add" button (up to the max). */
+/** Renders extra food items for a meal slot + an "add" button. */
 function ExtraItems({
-  extras, hasSideSlot, onEdit, onRemove, onAdd,
+  extras, onEdit, onRemove, onAdd,
 }: {
   extras: Meal[];
-  hasSideSlot: boolean;
   onEdit: (idx: number) => void;
   onRemove: (idx: number) => void;
   onAdd: () => void;
 }) {
-  const base = 1 + (hasSideSlot ? 1 : 0);
-  const canAdd = base + extras.length < MAX_MEAL_ITEMS;
   return (
     <div className="space-y-1">
       {extras.map((m, idx) => (
@@ -241,9 +238,7 @@ function ExtraItems({
           </button>
         </div>
       ))}
-      {canAdd && (
-        <AddMealButton onClick={onAdd} />
-      )}
+      <AddMealButton onClick={onAdd} />
     </div>
   );
 }
@@ -384,7 +379,6 @@ export function DayCard({
               extras={
                 <ExtraItems
                   extras={dayPlan.breakfastExtras ?? []}
-                  hasSideSlot={false}
                   onEdit={(idx) => openExtraPicker("breakfast", idx)}
                   onRemove={(idx) => onRemoveExtra("breakfast", idx)}
                   onAdd={() => openExtraPicker("breakfast", null)}
@@ -417,7 +411,6 @@ export function DayCard({
                     {!isEatingOutMeal(dayPlan.lunch) && (
                       <ExtraItems
                         extras={dayPlan.lunchExtras ?? []}
-                        hasSideSlot
                         onEdit={(idx) => openExtraPicker("lunch", idx)}
                         onRemove={(idx) => onRemoveExtra("lunch", idx)}
                         onAdd={() => openExtraPicker("lunch", null)}
@@ -457,7 +450,6 @@ export function DayCard({
                       />
                       <ExtraItems
                         extras={dayPlan.babyLunchExtras ?? []}
-                        hasSideSlot
                         onEdit={(idx) => openExtraPicker("babyLunch", idx)}
                         onRemove={(idx) => onRemoveExtra("babyLunch", idx)}
                         onAdd={() => openExtraPicker("babyLunch", null)}
@@ -491,7 +483,6 @@ export function DayCard({
               extras={
                 <ExtraItems
                   extras={dayPlan.snackExtras ?? []}
-                  hasSideSlot={false}
                   onEdit={(idx) => openExtraPicker("snack", idx)}
                   onRemove={(idx) => onRemoveExtra("snack", idx)}
                   onAdd={() => openExtraPicker("snack", null)}
@@ -523,7 +514,6 @@ export function DayCard({
                     {!isEatingOutMeal(dayPlan.dinner) && (
                       <ExtraItems
                         extras={dayPlan.dinnerExtras ?? []}
-                        hasSideSlot
                         onEdit={(idx) => openExtraPicker("dinner", idx)}
                         onRemove={(idx) => onRemoveExtra("dinner", idx)}
                         onAdd={() => openExtraPicker("dinner", null)}
@@ -611,7 +601,6 @@ export function DayCard({
                       />
                       <ExtraItems
                         extras={dayPlan.babyDinnerExtras ?? []}
-                        hasSideSlot
                         onEdit={(idx) => openExtraPicker("babyDinner", idx)}
                         onRemove={(idx) => onRemoveExtra("babyDinner", idx)}
                         onAdd={() => openExtraPicker("babyDinner", null)}

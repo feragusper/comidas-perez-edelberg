@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { isStageEnv } from "@/lib/env";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { MealPicker } from "@/components/MealPicker";
+import { UsageChips } from "@/components/UsageChips";
+import { Usage, flattenDayFoods, pushUsage, splitWeekKey } from "@/lib/mealPlanUsage";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { Meal } from "@/data/meals";
@@ -13,51 +14,6 @@ import { DayPlan } from "@/hooks/useMealPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History, Trash2, Carrot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-/** Dónde apareció una comida en el historial de menús. */
-interface Usage {
-  env: "stage" | "prod";
-  weekKey: string; // sin prefijo, p.ej. "2026-W23"
-  day: string;
-  slot: string;
-}
-
-/**
- * Chips con los usos históricos de una comida. Los del entorno actual
- * linkean al menú de esa semana para corregir/reemplazar/borrar ahí.
- */
-function UsageChips({ usages, currentEnv }: { usages: Usage[]; currentEnv: Usage["env"] }) {
-  const MAX = 5;
-  if (usages.length === 0) return null;
-  const shown = usages.slice(0, MAX);
-  const rest = usages.length - shown.length;
-  return (
-    <div className="flex flex-wrap items-center gap-1 mt-1.5">
-      {shown.map((u, i) => {
-        const label = `${u.weekKey} · ${u.day} · ${u.slot}`;
-        return u.env === currentEnv ? (
-          <Link
-            key={i}
-            to={`/?week=${u.weekKey}`}
-            className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
-            title="Ver en el menú de esa semana"
-          >
-            {label}
-          </Link>
-        ) : (
-          <span
-            key={i}
-            className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground"
-            title={`Usada en ${u.env} — cambiá de entorno para editarla`}
-          >
-            {label} ({u.env})
-          </span>
-        );
-      })}
-      {rest > 0 && <span className="text-[10px] text-muted-foreground">+{rest} más</span>}
-    </div>
-  );
-}
 
 /**
  * Sección temporal para asignar ingredientes a las comidas que quedaron
@@ -115,26 +71,11 @@ export default function Normalize() {
         for (const row of data ?? []) {
           const week = row.plan as unknown as DayPlan[];
           if (!Array.isArray(week)) continue;
-          const rawKey = (row as { week_key: string }).week_key ?? "";
-          const env: Usage["env"] = rawKey.startsWith("stage_") ? "stage" : "prod";
-          const weekKey = rawKey.replace(/^(stage|prod)_/, "");
+          const { env, weekKey } = splitWeekKey((row as { week_key: string }).week_key ?? "");
           for (const day of week) {
-            const foods: [string, Meal | null][] = [
-              ["Cena", day.dinner], ["Cena", day.dinnerSide], ...(day.dinnerExtras ?? []).map((m) => ["Cena", m] as [string, Meal]),
-              ["Almuerzo", day.lunch], ["Almuerzo", day.lunchSide], ...(day.lunchExtras ?? []).map((m) => ["Almuerzo", m] as [string, Meal]),
-              ["Cena Nico", day.babyDinner], ["Cena Nico", day.babyDinnerSide], ...(day.babyDinnerExtras ?? []).map((m) => ["Cena Nico", m] as [string, Meal]),
-              ["Almuerzo Nico", day.babyLunch], ["Almuerzo Nico", day.babyLunchSide], ...(day.babyLunchExtras ?? []).map((m) => ["Almuerzo Nico", m] as [string, Meal]),
-              ["Desayuno", day.breakfast], ...(day.breakfastExtras ?? []).map((m) => ["Desayuno", m] as [string, Meal]),
-              ["Merienda", day.snack], ...(day.snackExtras ?? []).map((m) => ["Merienda", m] as [string, Meal]),
-            ];
-            for (const [slot, f] of foods) {
-              if (!f || typeof f !== "object" || !f.id) continue;
+            for (const [slot, f] of flattenDayFoods(day)) {
               if (f.kind === "ingredient") continue;
-              const arr = used.get(f.id) ?? [];
-              if (!arr.some((u) => u.env === env && u.weekKey === weekKey && u.day === day.day && u.slot === slot)) {
-                arr.push({ env, weekKey, day: day.day, slot });
-              }
-              used.set(f.id, arr);
+              pushUsage(used, f.id, { env, weekKey, day: day.day, slot });
               if (SENTINEL_IDS.has(f.id) || catalogIds.has(f.id) || found.has(f.id)) continue;
               // Comida convertida a ingrediente: se resuelve por nombre, no es huérfana
               if (ingredientIds.has(ingredientSlug(f.name))) continue;

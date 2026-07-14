@@ -2,10 +2,13 @@ import { useMemo, useState } from "react";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useMealPlan } from "@/hooks/useMealPlan";
-import { currentWeekKey } from "@/lib/env";
+import { useMealPlanUsage } from "@/hooks/useMealPlanUsage";
+import { currentWeekKey, isStageEnv } from "@/lib/env";
 import { Meal } from "@/data/meals";
 import { Ingredient, SENTINEL_MEAL_IDS } from "@/data/food";
 import { FoodWizard, WizardKind } from "@/components/FoodWizard";
+import { UsageChips } from "@/components/UsageChips";
+import { Usage } from "@/lib/mealPlanUsage";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,6 +33,8 @@ export default function CustomMeals() {
   const { meals, saveMeal, updateMeal, deleteMeal } = useMeals();
   const { ingredients, addIngredient, updateIngredient, deleteIngredient } = useIngredients();
   const { resetPlan } = useMealPlan(currentWeekKey());
+  const { mealUsages, ingredientUsages } = useMealPlanUsage();
+  const currentEnv: Usage["env"] = isStageEnv() ? "stage" : "prod";
 
   const [editingEmojiId, setEditingEmojiId] = useState<string | null>(null);
   
@@ -53,6 +58,19 @@ export default function CustomMeals() {
   }, [allMeals, mealSearch]);
 
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
+
+  // id de ingrediente → comidas del catálogo que lo usan como componente.
+  const mealsByIngredient = useMemo(() => {
+    const map = new Map<string, Meal[]>();
+    for (const meal of allMeals) {
+      for (const id of meal.ingredientIds ?? []) {
+        const arr = map.get(id) ?? [];
+        arr.push(meal);
+        map.set(id, arr);
+      }
+    }
+    return map;
+  }, [allMeals]);
 
   const filteredIngredients = useMemo(() => {
     const q = ingredientSearch.trim().toLowerCase();
@@ -192,6 +210,7 @@ export default function CustomMeals() {
                       ) : (
                         <p className="text-[11px] italic text-warning mb-1">Sin ingredientes (sin normalizar)</p>
                       )}
+                      <UsageChips usages={mealUsages.get(meal.id) ?? []} currentEnv={currentEnv} />
                     </div>
                     <div className="flex items-center gap-1">
                       <button
@@ -279,7 +298,9 @@ export default function CustomMeals() {
           ) : (
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <ul className="divide-y divide-border">
-                {filteredIngredients.map((ing) => (
+                {filteredIngredients.map((ing) => {
+                  const usedInMeals = mealsByIngredient.get(ing.id) ?? [];
+                  return (
                   <li key={ing.id} className="flex items-center gap-3 px-3 py-2">
                     <span className="text-lg shrink-0">{ing.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -306,6 +327,24 @@ export default function CustomMeals() {
                           })}
                         </div>
                       )}
+                      {usedInMeals.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          {usedInMeals.slice(0, 5).map((m) => (
+                            <span
+                              key={m.id}
+                              className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary-foreground"
+                              title="Comida que usa este ingrediente"
+                            >
+                              <span>{m.emoji}</span>
+                              <span>{m.name}</span>
+                            </span>
+                          ))}
+                          {usedInMeals.length > 5 && (
+                            <span className="text-[10px] text-muted-foreground">+{usedInMeals.length - 5} más</span>
+                          )}
+                        </div>
+                      )}
+                      <UsageChips usages={ingredientUsages.get(ing.id) ?? []} currentEnv={currentEnv} />
                     </div>
                     <button
                       onClick={() => setWizard({ kind: "ingredient", isEdit: true, initial: ing })}
@@ -341,7 +380,8 @@ export default function CustomMeals() {
                       </button>
                     )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </div>
           )}

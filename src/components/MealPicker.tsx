@@ -4,6 +4,8 @@ import { Ingredient } from "@/data/food";
 import { FoodWizard } from "@/components/FoodWizard";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { useKeyboardInset, useBodyScrollLock } from "@/hooks/useKeyboardInset";
+import { useMealPlanUsage } from "@/hooks/useMealPlanUsage";
+import { usageCount } from "@/lib/mealPlanUsage";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
 
@@ -51,6 +53,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const [wizardName, setWizardName] = useState<string | null>(null);
   const kbInset = useKeyboardInset();
   useBodyScrollLock();
+  const { mealUsages } = useMealPlanUsage();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && wizardName === null) onClose(); };
@@ -73,9 +76,13 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   });
   const baseMeals = isBaby ? pool.filter((m) => m.babySafety !== "unsafe") : pool;
   const dietFiltered = dietFilter === "keto" ? baseMeals.filter((m) => m.isKeto) : baseMeals;
-  const filtered = dietFiltered.filter((m) =>
-    m.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = dietFiltered
+    .filter((m) => m.name.toLowerCase().includes(search.toLowerCase()))
+    // Más usadas arriba; a igualdad de uso, alfabético.
+    .sort((a, b) => {
+      const diff = usageCount(mealUsages.get(b.id)) - usageCount(mealUsages.get(a.id));
+      return diff !== 0 ? diff : a.name.localeCompare(b.name);
+    });
 
   // Ingredients group: available in both steps (una fruta puede ser comida o guarnición)
   const filteredIngredients = ingredients.filter((i) => {

@@ -28,6 +28,12 @@ export function flattenDayFoods(day: DayPlan): [string, Meal][] {
   });
 }
 
+/** Cantidad de usos históricos de un id (opcionalmente acotado a un entorno). */
+export function usageCount(usages: Usage[] | undefined, env?: Usage["env"]): number {
+  if (!usages) return 0;
+  return env ? usages.filter((u) => u.env === env).length : usages.length;
+}
+
 /** Agrega un uso a un mapa id → Usage[], sin duplicar la misma celda. */
 export function pushUsage(map: Map<string, Usage[]>, id: string, u: Usage): void {
   const arr = map.get(id) ?? [];

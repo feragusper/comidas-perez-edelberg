@@ -248,7 +248,7 @@ export default function CustomMeals() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
+      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
           <h1 className="text-2xl font-bold text-foreground">
             Mis comidas

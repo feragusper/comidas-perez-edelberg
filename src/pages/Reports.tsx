@@ -299,8 +299,8 @@ export default function Reports() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-4 border-b border-border bg-card/80">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
+      <div className="py-4 border-b border-border bg-card/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3">
           <BarChart3 size={22} className="text-primary" />
           <h1 className="text-xl font-bold text-foreground">Reportes</h1>
           <span className="text-xs text-muted-foreground ml-auto">

@@ -101,8 +101,8 @@ export default function Index() {
 
 
       {/* Week navigator + controls */}
-      <div className="px-4 sm:px-8 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="mx-auto flex gap-1 pt-3 pb-2 flex-wrap items-center max-w-5xl">
+      <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-12 z-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex gap-1 pt-3 pb-2 flex-wrap items-center">
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
@@ -158,7 +158,7 @@ export default function Index() {
         </div>
 
         {/* Stats bar */}
-        <div className="mx-auto flex items-center gap-3 text-xs pb-2.5 flex-wrap max-w-5xl">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3 text-xs pb-2.5 flex-wrap">
           {/* Nosotros */}
           <span className="text-muted-foreground font-medium">Nosotros:</span>
           <span className="text-muted-foreground">
@@ -252,7 +252,7 @@ export default function Index() {
               ))}
             </div>
           ) : (
-            <div className="px-4 sm:px-8 py-4 max-w-7xl mx-auto pb-20">
+            <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto pb-20">
               <WeekTableView
                 plan={plan}
                 todayIdx={todayIdx}

@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Users, Leaf, ChevronDown, ChevronRight, Tag, Carrot, TriangleAlert } from "lucide-react";
+import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Leaf, ChevronDown, ChevronRight, Tag, Carrot, TriangleAlert } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { TopNav } from "@/components/TopNav";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
@@ -83,12 +84,7 @@ interface MealCount {
   kind?: "meal" | "ingredient";
 }
 
-type Persona = "all" | "us" | "nico";
-type Section =
-  | "all"
-  | "dinners" | "lunches"
-  | "breakfasts" | "snacks"
-  | "babyDinners" | "babyLunches";
+type Section = "all" | "breakfasts" | "lunches" | "snacks" | "dinners";
 
 type MealGetter = (d: DayPlan) => (Meal | null)[];
 
@@ -170,68 +166,42 @@ function buildTaxonomyBreakdown(meals: MealCount[]): CatCount[] {
   return result.sort((a, b) => b.count - a.count);
 }
 
-const US_GETTERS = {
-  all: (d: DayPlan) => [d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? []), d.lunch, d.lunchSide, ...(d.lunchExtras ?? [])],
-  dinners: (d: DayPlan) => [d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? [])],
-  lunches: (d: DayPlan) => [d.lunch, d.lunchSide, ...(d.lunchExtras ?? [])],
-} as const;
-
-const NICO_GETTERS = {
-  all: (d: DayPlan) => [
-    d.breakfast, ...(d.breakfastExtras ?? []),
-    d.snack, ...(d.snackExtras ?? []),
-    d.babyDinner, d.babyDinnerSide, ...(d.babyDinnerExtras ?? []),
-    d.babyLunch, d.babyLunchSide, ...(d.babyLunchExtras ?? []),
-  ],
-  breakfasts: (d: DayPlan) => [d.breakfast, ...(d.breakfastExtras ?? [])],
-  snacks: (d: DayPlan) => [d.snack, ...(d.snackExtras ?? [])],
-  babyDinners: (d: DayPlan) => [d.babyDinner, d.babyDinnerSide, ...(d.babyDinnerExtras ?? [])],
-  babyLunches: (d: DayPlan) => [d.babyLunch, d.babyLunchSide, ...(d.babyLunchExtras ?? [])],
-} as const;
-
-
-const ALL_GETTERS = {
-  all: (d: DayPlan) => [...US_GETTERS.all(d), ...NICO_GETTERS.all(d)],
-  dinners: US_GETTERS.dinners,
-  lunches: US_GETTERS.lunches,
-  breakfasts: NICO_GETTERS.breakfasts,
-  snacks: NICO_GETTERS.snacks,
-  babyDinners: NICO_GETTERS.babyDinners,
-  babyLunches: NICO_GETTERS.babyLunches,
-} as const;
-
 const SECTION_LABELS: Record<Section, { label: string; icon: typeof Utensils }> = {
   all: { label: "Todas", icon: Layers },
-  dinners: { label: "Cenas", icon: Utensils },
-  lunches: { label: "Almuerzos", icon: Utensils },
   breakfasts: { label: "Desayunos", icon: Coffee },
+  lunches: { label: "Almuerzos", icon: Utensils },
   snacks: { label: "Meriendas", icon: Cookie },
-  babyDinners: { label: "Cenas", icon: Baby },
-  babyLunches: { label: "Almuerzos", icon: Baby },
+  dinners: { label: "Cenas", icon: Utensils },
 };
 
-const PERSONA_SECTIONS: Record<Persona, Section[]> = {
-  all: ["all", "dinners", "lunches", "breakfasts", "snacks", "babyDinners", "babyLunches"],
-  us: ["all", "dinners", "lunches"],
-  nico: ["all", "breakfasts", "snacks", "babyDinners", "babyLunches"],
-};
+const SECTION_ORDER: Section[] = ["all", "breakfasts", "lunches", "snacks", "dinners"];
 
-const PERSONA_CONFIG: Record<Persona, { label: string; icon: typeof Utensils; bar: string }> = {
-  all: { label: "Todos", icon: Users, bar: "bg-primary" },
-  us: { label: "Nosotros", icon: Utensils, bar: "bg-primary" },
-  nico: { label: "Nico", icon: Baby, bar: "bg-baby-safe" },
-};
+// Desayuno y merienda solo existen para Nico
+const NICO_ONLY_SECTIONS: Section[] = ["breakfasts", "snacks"];
 
-function getterFor(persona: Persona, section: Section): MealGetter {
-  const map = persona === "us" ? US_GETTERS : persona === "nico" ? NICO_GETTERS : ALL_GETTERS;
-  // Section may not exist for persona; fallback to "all"
-  return (map as Record<string, MealGetter>)[section] ?? map.all;
+function buildGetter(adultos: boolean, nico: boolean, section: Section): MealGetter {
+  return (d: DayPlan) => {
+    const out: (Meal | null)[] = [];
+    const wants = (s: Section) => section === "all" || section === s;
+    if (adultos) {
+      if (wants("lunches")) out.push(d.lunch, d.lunchSide, ...(d.lunchExtras ?? []));
+      if (wants("dinners")) out.push(d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? []));
+    }
+    if (nico) {
+      if (wants("breakfasts")) out.push(d.breakfast, ...(d.breakfastExtras ?? []));
+      if (wants("lunches")) out.push(d.babyLunch, d.babyLunchSide, ...(d.babyLunchExtras ?? []));
+      if (wants("snacks")) out.push(d.snack, ...(d.snackExtras ?? []));
+      if (wants("dinners")) out.push(d.babyDinner, d.babyDinnerSide, ...(d.babyDinnerExtras ?? []));
+    }
+    return out;
+  };
 }
 
 export default function Reports() {
   const [allPlans, setAllPlans] = useState<DayPlan[][]>([]);
   const [loading, setLoading] = useState(true);
-  const [persona, setPersona] = useState<Persona>("all");
+  const [adultos, setAdultos] = useState(true);
+  const [nico, setNico] = useState(true);
   const [section, setSection] = useState<Section>("all");
 
   useEffect(() => {
@@ -253,9 +223,10 @@ export default function Reports() {
       });
   }, []);
 
-  // If active section isn't valid for persona, reset to "all"
-  const availableSections = PERSONA_SECTIONS[persona];
-  const activeSection: Section = availableSections.includes(section) ? section : "all";
+  // Si la sección activa quedó deshabilitada por los checkboxes, vuelve a "Todas"
+  const sectionDisabled = (s: Section) =>
+    NICO_ONLY_SECTIONS.includes(s) ? !nico : s !== "all" && !nico && !adultos;
+  const activeSection: Section = sectionDisabled(section) ? "all" : section;
 
   const { meals: catalog } = useMeals();
   const tagResolver = useMemo(() => {
@@ -266,8 +237,8 @@ export default function Reports() {
   }, [catalog]);
 
   const meals = useMemo(
-    () => extractMeals(allPlans, getterFor(persona, activeSection), tagResolver),
-    [allPlans, persona, activeSection, tagResolver]
+    () => extractMeals(allPlans, buildGetter(adultos, nico, activeSection), tagResolver),
+    [allPlans, adultos, nico, activeSection, tagResolver]
   );
 
   const { ingredients } = useIngredients();
@@ -293,8 +264,8 @@ export default function Reports() {
   const taxonomyTotal = taxonomyBreakdown.reduce((s, c) => s + c.count, 0);
   const maxCount = meals.length > 0 ? meals[0].count : 1;
   const weeksCount = allPlans.length;
-  const barColor = PERSONA_CONFIG[persona].bar;
-  const showKeto = persona === "us";
+  const barColor = nico && !adultos ? "bg-baby-safe" : "bg-primary";
+  const showKeto = adultos && !nico;
 
   return (
     <div className="min-h-screen bg-background">
@@ -315,39 +286,36 @@ export default function Reports() {
           </div>
         ) : (
           <>
-            {/* Persona toggle */}
-            <div className="flex gap-1 bg-muted/60 rounded-xl p-1 w-fit">
-              {(Object.keys(PERSONA_CONFIG) as Persona[]).map((key) => {
-                const cfg = PERSONA_CONFIG[key];
-                const Icon = cfg.icon;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setPersona(key)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                      persona === key ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <Icon size={14} />
-                    {cfg.label}
-                  </button>
-                );
-              })}
+            {/* Filtro por comensal */}
+            <div className="flex items-center gap-5">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer select-none">
+                <Checkbox checked={nico} onCheckedChange={(v) => setNico(v === true)} />
+                <Baby size={14} className="text-baby-safe" /> Nico
+              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer select-none">
+                <Checkbox checked={adultos} onCheckedChange={(v) => setAdultos(v === true)} />
+                <Utensils size={14} className="text-primary" /> Adultos
+              </label>
             </div>
 
-            {/* Section tabs (scoped to persona) */}
+            {/* Section tabs */}
             <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
-              {availableSections.map((key) => {
+              {SECTION_ORDER.map((key) => {
                 const cfg = SECTION_LABELS[key];
                 const Icon = cfg.icon;
+                const disabled = sectionDisabled(key);
                 return (
                   <button
                     key={key}
                     onClick={() => setSection(key)}
+                    disabled={disabled}
                     className={cn(
                       "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      activeSection === key ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                      disabled
+                        ? "text-muted-foreground/50 cursor-not-allowed"
+                        : activeSection === key
+                          ? "bg-card shadow-sm text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Icon size={13} />

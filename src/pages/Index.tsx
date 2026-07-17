@@ -82,20 +82,12 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      {/* Editorial header */}
-      <header className="border-b border-border bg-background">
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-10 pb-8 sm:pt-14 sm:pb-10 text-center sm:text-left">
-          <div className="inline-block border-l-2 border-primary pl-3 mb-4">
-            <p className="text-[0.65rem] font-bold uppercase tracking-[0.25em] text-muted-foreground">
-              Pérez · Edelberg
-            </p>
-          </div>
-          <h1 className="font-display text-4xl sm:text-6xl font-bold text-foreground tracking-tight">
+      {/* Compact header: se funde con la barra de acciones de abajo */}
+      <header className="bg-card/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-5 pb-1 text-center sm:text-left">
+          <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
             Menú de la <span className="italic font-normal">semana</span>
           </h1>
-          <p className="mt-3 text-base sm:text-lg font-light text-muted-foreground max-w-md mx-auto sm:mx-0">
-            Planificá las comidas de la familia con calma y estilo.
-          </p>
         </div>
       </header>
 

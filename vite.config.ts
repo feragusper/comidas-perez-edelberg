@@ -11,6 +11,15 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      // El login con Google arranca en /~oauth/initiate, un endpoint que solo existe
+      // en el hosting de Lovable; en localhost se proxea al dominio del proyecto,
+      // que responde el 302 hacia oauth.lovable.app con redirect_uri de vuelta acá.
+      "/~oauth": {
+        target: "https://9661951d-8a06-4b89-bf07-311b97cc0e4b.lovableproject.com",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

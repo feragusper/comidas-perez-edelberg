@@ -150,26 +150,26 @@ export default function Index() {
         </div>
 
         {/* Stats bar */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3 text-xs pb-2.5 flex-wrap">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3 text-xs pt-4 pb-2.5 flex-wrap">
           {/* Adultos */}
           <span className="text-muted-foreground font-medium">Adultos:</span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-foreground">{adultDinners}</span>/7 cenas
+            <span className="font-semibold text-foreground">{adultLunches}</span>/7 almuerzos
           </span>
           <span className="text-muted-foreground">·</span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-foreground">{adultLunches}</span>/7 almuerzos
+            <span className="font-semibold text-foreground">{adultDinners}</span>/7 cenas
           </span>
           <span className="text-muted-foreground mx-1">|</span>
           {/* Nico */}
           <Baby size={13} className="text-baby-safe" />
           <span className="text-muted-foreground font-medium">Nico:</span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-baby-safe">{babyDinners}</span>/7 cenas
+            <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
           </span>
           <span className="text-muted-foreground">·</span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-baby-safe">{babyLunches}</span>/7 almuerzos
+            <span className="font-semibold text-baby-safe">{babyDinners}</span>/7 cenas
           </span>
         </div>
       </div>

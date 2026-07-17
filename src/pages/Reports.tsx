@@ -286,8 +286,8 @@ export default function Reports() {
           </div>
         ) : (
           <>
-            {/* Filtro por comensal */}
-            <div className="flex items-center gap-5">
+            {/* Filtros: comensales a la izquierda, tipo de comida a la derecha */}
+            <div className="flex items-center gap-x-5 gap-y-3 flex-wrap">
               <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer select-none">
                 <Checkbox checked={nico} onCheckedChange={(v) => setNico(v === true)} />
                 <Baby size={14} className="text-baby-safe" /> Nico
@@ -296,10 +296,8 @@ export default function Reports() {
                 <Checkbox checked={adultos} onCheckedChange={(v) => setAdultos(v === true)} />
                 <Utensils size={14} className="text-primary" /> Adultos
               </label>
-            </div>
 
-            {/* Section tabs */}
-            <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
+              <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
               {SECTION_ORDER.map((key) => {
                 const cfg = SECTION_LABELS[key];
                 const Icon = cfg.icon;
@@ -323,6 +321,7 @@ export default function Reports() {
                   </button>
                 );
               })}
+              </div>
             </div>
 
             {/* Summary cards */}

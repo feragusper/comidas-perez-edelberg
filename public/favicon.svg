@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#121B31"/>
+      <stop offset="1" stop-color="#364363"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5048E5"/>
+      <stop offset="1" stop-color="#8C86F4"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Tenedor -->
+  <g stroke="#FBFAF8" stroke-width="2.7" stroke-linecap="round" fill="none">
+    <path d="M7.5 17v5.5a4 4 0 0 0 8 0V17"/>
+    <path d="M11.5 17v9"/>
+  </g>
+  <path d="M11.5 26V47" stroke="#FBFAF8" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+  <!-- Plato -->
+  <circle cx="32" cy="32" r="11.5" fill="none" stroke="#FBFAF8" stroke-width="3.2"/>
+  <circle cx="32" cy="32" r="5.2" fill="url(#accent)"/>
+  <!-- Cuchillo -->
+  <path d="M55.5 33V17a8 8 0 0 0-8 8v5a3 3 0 0 0 3 3h5z" fill="#FBFAF8"/>
+  <path d="M55.5 33v14" stroke="#FBFAF8" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+</svg>

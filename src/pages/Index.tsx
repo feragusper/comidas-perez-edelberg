@@ -85,8 +85,8 @@ export default function Index() {
       {/* Compact header: se funde con la barra de acciones de abajo */}
       <header className="bg-card/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-5 pb-1 text-center sm:text-left">
-          <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
-            Menú de la <span className="italic font-normal">semana</span>
+          <h1 className="text-2xl font-bold text-foreground">
+            Menú de la semana
           </h1>
         </div>
       </header>

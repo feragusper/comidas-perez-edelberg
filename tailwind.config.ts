@@ -97,7 +97,6 @@ export default {
         },
       },
       fontFamily: {
-        display: ["Playfair Display", "serif"],
         sans: ["Inter", "sans-serif"],
       },
       animation: {

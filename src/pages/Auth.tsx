@@ -42,7 +42,7 @@ export default function Auth() {
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-gold mb-2">
             Acceso privado
           </p>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-1">
+          <h1 className="text-3xl font-bold text-foreground mb-1">
             Menú de la semana
           </h1>
 

@@ -5,7 +5,6 @@ import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { toWeekKey, weekKeyToDate, currentWeekKey } from "@/lib/env";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface WeekNavigatorProps {
@@ -42,7 +41,7 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
       {/* Prev week */}
       <button
         onClick={goBack}
-        className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+        className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
         aria-label="Semana anterior"
       >
         <ChevronLeft size={16} />
@@ -52,12 +51,7 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className={cn(
-              "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all w-44",
-              isCurrentWeek
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-foreground hover:bg-muted"
-            )}
+            className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all w-44 bg-muted/60 text-foreground hover:bg-muted"
           >
             <CalendarDays size={14} className="shrink-0" />
             <span className="truncate">{label}</span>
@@ -94,7 +88,7 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
       {/* Next week */}
       <button
         onClick={goForward}
-        className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+        className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
         aria-label="Semana siguiente"
       >
         <ChevronRight size={16} />

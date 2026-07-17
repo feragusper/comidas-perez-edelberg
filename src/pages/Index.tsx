@@ -151,8 +151,8 @@ export default function Index() {
 
         {/* Stats bar */}
         <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3 text-xs pb-2.5 flex-wrap">
-          {/* Nosotros */}
-          <span className="text-muted-foreground font-medium">Nosotros:</span>
+          {/* Adultos */}
+          <span className="text-muted-foreground font-medium">Adultos:</span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{adultDinners}</span>/7 cenas
           </span>

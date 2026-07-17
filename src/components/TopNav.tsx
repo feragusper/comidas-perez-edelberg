@@ -29,28 +29,29 @@ export function TopNav() {
   const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
 
+  // Sin fondo: el activo se marca con texto casi negro (foreground) y borde grueso inferior
   const itemClass = (active: boolean) =>
     cn(
-      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0",
+      "flex items-center gap-1.5 px-3 h-full pt-[3px] border-b-[3px] text-xs font-medium transition-colors shrink-0",
       active
-        ? "bg-primary/10 text-primary"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        ? "border-foreground text-foreground"
+        : "border-transparent text-muted-foreground hover:text-foreground"
     );
 
-  // Mobile: touch target of at least 44px per item
+  // Mobile: mismo criterio pero con el borde a la izquierda; touch target de al menos 44px
   const mobileItemClass = (active: boolean) =>
     cn(
-      "flex items-center gap-2.5 px-3 min-h-[44px] rounded-lg text-sm font-medium transition-colors",
+      "flex items-center gap-2.5 px-3 min-h-[44px] border-l-[3px] text-sm font-medium transition-colors",
       active
-        ? "bg-primary/10 text-primary"
-        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        ? "border-foreground text-foreground"
+        : "border-transparent text-muted-foreground hover:text-foreground"
     );
 
   return (
     <nav className="w-full bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-30">
       <div className="max-w-5xl mx-auto px-4 sm:px-8 h-12 flex items-center">
         {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-1 w-full">
+        <div className="hidden md:flex items-center gap-1 w-full h-full">
           {items.map((it) => {
             const Icon = it.icon;
             const active = pathname === it.to;
@@ -62,7 +63,7 @@ export function TopNav() {
           })}
           <button
             onClick={signOut}
-            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+            className="ml-auto flex items-center gap-1.5 px-3 h-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
             <LogOut size={13} /> Salir
           </button>
@@ -106,7 +107,7 @@ export function TopNav() {
                 setOpen(false);
                 signOut();
               }}
-              className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="flex items-center gap-2.5 px-3 min-h-[44px] border-l-[3px] border-transparent text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               <LogOut size={16} /> Salir
             </button>

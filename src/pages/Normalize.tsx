@@ -12,7 +12,7 @@ import { SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { supabase } from "@/integrations/supabase/client";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { ListChecks, Sparkles, Loader2, Plus, X, Check, Search, History, Trash2, Carrot } from "lucide-react";
+import { Sparkles, Loader2, Plus, X, Check, Search, History, Trash2, Carrot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -201,10 +201,7 @@ export default function Normalize() {
     <div className="min-h-screen bg-background">
       <TopNav />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
-          <ListChecks className="text-primary" size={22} />
-          <h1 className="text-2xl font-bold text-foreground">Normalizar comidas</h1>
-        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-1">Normalizar comidas</h1>
         <p className="text-sm text-muted-foreground mb-5">
           Asigná ingredientes a las comidas que todavía no los tienen. Sección temporal: cuando llegues al 100% desaparece.
         </p>

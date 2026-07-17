@@ -8,7 +8,7 @@ import { isIngredient } from "@/data/food";
 import { parseTag } from "@/data/foodTaxonomy";
 import { supabase } from "@/integrations/supabase/client";
 import { MealPicker } from "@/components/MealPicker";
-import { Plus, X, Sparkles, Loader2, Warehouse } from "lucide-react";
+import { Plus, X, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Suggestion {
@@ -104,12 +104,9 @@ export default function DonBacilio() {
     <div className="min-h-screen bg-background">
       <TopNav />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
-          <Warehouse className="text-primary" size={22} />
-          <h1 className="text-2xl font-bold text-foreground">
-            Don Bacilio
-          </h1>
-        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-1">
+          Don Bacilio
+        </h1>
         <p className="text-sm text-muted-foreground mb-5">
           Lo que ya tenemos en casa. Se usa para las sugerencias y para marcar lo que ya tenés en la lista del súper.
         </p>

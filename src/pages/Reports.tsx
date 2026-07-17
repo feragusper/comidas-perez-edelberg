@@ -299,17 +299,13 @@ export default function Reports() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="py-4 border-b border-border bg-card/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center gap-3">
-          <BarChart3 size={22} className="text-primary" />
-          <h1 className="text-xl font-bold text-foreground">Reportes</h1>
+      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto space-y-6 pb-20">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground">Reportes</h1>
           <span className="text-xs text-muted-foreground ml-auto">
             {weeksCount} semana{weeksCount !== 1 ? "s" : ""} de datos
           </span>
         </div>
-      </div>
-
-      <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-6 pb-20">
         {loading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">Cargando datos…</div>
         ) : weeksCount === 0 ? (

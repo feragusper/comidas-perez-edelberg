@@ -12,7 +12,7 @@ import { Meal } from "@/data/meals";
 import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
-import { ShoppingCart, ClipboardCopy, RotateCcw, CheckCheck, Warehouse, TriangleAlert } from "lucide-react";
+import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, TriangleAlert } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -198,12 +198,9 @@ export default function Shopping() {
     <div className="min-h-screen bg-background">
       <TopNav />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <div className="flex items-center gap-2 mb-1">
-          <ShoppingCart className="text-primary" size={22} />
-          <h1 className="text-2xl font-bold text-foreground">
-            Lista de supermercado
-          </h1>
-        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-1">
+          Lista de supermercado
+        </h1>
         <p className="text-sm text-muted-foreground mb-5">
           Ingredientes de las comidas planificadas desde hoy hasta el domingo. Tachá lo que ya tenés.
         </p>

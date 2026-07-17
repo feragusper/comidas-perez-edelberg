@@ -14,6 +14,16 @@ export function isStageEnv(): boolean {
 }
 
 /**
+ * Solo desarrollo local (no incluye los previews de Lovable, donde el login sí funciona).
+ * El broker de OAuth de Lovable no permite redirect_uri hacia localhost, así que
+ * acá se saltea el login; la base igual no devuelve datos sin sesión (RLS).
+ */
+export function isLocalhost(): boolean {
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
+  return host === "localhost" || host === "127.0.0.1";
+}
+
+/**
  * Returns the ISO week key for a given date, e.g. "2025-W12"
  */
 export function toWeekKey(date: Date): string {

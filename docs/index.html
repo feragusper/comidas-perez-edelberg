@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comidas Perez-Edelberg · Planificador de comidas con IA</title>
-  <meta name="description" content="Planificador de comidas semanal para casa: arma el menú según tu historial e IA, gestiona despensa, genera la lista del súper y mira reportes." />
+  <title>Comidas Perez-Edelberg · A private family meal planner</title>
+  <meta name="description" content="A private meal planner for a family of three: turn the household rules into a weekly plan, keep a backlog from the pantry, and build the shopping list from what's missing." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%BD%EF%B8%8F%3C/text%3E%3C/svg%3E" />
   <style>
     :root {
@@ -44,15 +44,24 @@
       background: rgba(13,15,20,.8); backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
     }
-    nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; }
-    nav .brand { font-weight: 700; font-size: 1rem; }
+    nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 58px; gap: 16px; }
+    nav .brand { font-weight: 700; font-size: 1rem; white-space: nowrap; }
+    nav .right { display: flex; align-items: center; gap: 20px; }
     nav .links { display: flex; gap: 20px; font-size: .9rem; }
     nav .links a { color: var(--muted); }
     nav .links a:hover { color: var(--text); text-decoration: none; }
-    @media (max-width: 720px) { nav .links { display: none; } }
+    @media (max-width: 760px) { nav .links { display: none; } }
+
+    /* LANG SWITCH */
+    .lang { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .lang-btn {
+      background: transparent; border: none; cursor: pointer; color: var(--muted);
+      font: inherit; font-size: .82rem; padding: 5px 12px; transition: color .15s, background .15s;
+    }
+    .lang-btn.active { color: #1a1204; background: linear-gradient(90deg, var(--gold-1), var(--gold-2)); font-weight: 700; }
 
     /* HERO */
-    header.hero { padding: 90px 0 70px; text-align: center; position: relative; overflow: hidden; }
+    header.hero { padding: 80px 0 70px; text-align: center; position: relative; overflow: hidden; }
     header.hero::before {
       content: ""; position: absolute; inset: 0;
       background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(246,211,101,.10), transparent 70%);
@@ -60,7 +69,7 @@
     }
     .hero .emoji { font-size: 3.4rem; }
     .hero h1 { font-size: clamp(2.1rem, 6vw, 3.6rem); line-height: 1.1; letter-spacing: -.02em; margin: 14px 0 18px; font-weight: 800; }
-    .hero p.sub { font-size: clamp(1.05rem, 2.5vw, 1.3rem); color: var(--muted); max-width: 620px; margin: 0 auto 32px; }
+    .hero p.sub { font-size: clamp(1.05rem, 2.5vw, 1.3rem); color: var(--muted); max-width: 640px; margin: 0 auto 32px; }
     .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
     .btn {
       display: inline-block; padding: 12px 26px; border-radius: 999px; font-weight: 600; font-size: .98rem;
@@ -74,11 +83,12 @@
       font-size: .78rem; letter-spacing: .04em; text-transform: uppercase;
       color: var(--gold-1); border: 1px solid rgba(246,211,101,.3); background: rgba(246,211,101,.06);
     }
+    .hero .badge { margin-bottom: 18px; }
 
     /* SECTIONS */
     section { padding: 64px 0; border-top: 1px solid var(--border); }
     section h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 800; letter-spacing: -.01em; margin-bottom: 10px; }
-    section .lead { color: var(--muted); max-width: 640px; margin-bottom: 34px; font-size: 1.05rem; }
+    section .lead { color: var(--muted); max-width: 660px; margin-bottom: 34px; font-size: 1.05rem; }
 
     .grid { display: grid; gap: 18px; }
     .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
@@ -98,6 +108,16 @@
     ul.clean li { padding-left: 30px; position: relative; color: var(--muted); }
     ul.clean li::before { content: "✓"; position: absolute; left: 0; color: var(--gold-1); font-weight: 700; }
     ul.clean li b { color: var(--text); font-weight: 600; }
+
+    /* CLOSED PRODUCT CALLOUT */
+    .closed {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: linear-gradient(135deg, rgba(246,211,101,.08), rgba(212,160,42,.03));
+      border: 1px solid rgba(246,211,101,.28); border-radius: var(--radius); padding: 24px 26px;
+    }
+    .closed .lock { font-size: 1.8rem; line-height: 1; }
+    .closed h3 { font-size: 1.15rem; margin-bottom: 6px; }
+    .closed p { color: var(--muted); font-size: .97rem; }
 
     /* STACK chips */
     .chips { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -151,12 +171,18 @@
   <nav>
     <div class="wrap">
       <span class="brand">🍽️ <span class="gold">Comidas</span> Perez-Edelberg</span>
-      <div class="links">
-        <a href="#producto">Producto</a>
-        <a href="#funciones">Funciones</a>
-        <a href="#tecnica">Técnica</a>
-        <a href="#estado">Estado</a>
-        <a href="#autores">Autores</a>
+      <div class="right">
+        <div class="links">
+          <a href="#product" data-i18n="nav.product">Product</a>
+          <a href="#features" data-i18n="nav.features">Features</a>
+          <a href="#tech" data-i18n="nav.tech">Tech</a>
+          <a href="#status" data-i18n="nav.status">Status</a>
+          <a href="#authors" data-i18n="nav.authors">Authors</a>
+        </div>
+        <div class="lang" role="group" aria-label="Language">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="es">ES</button>
+        </div>
       </div>
     </div>
   </nav>
@@ -164,124 +190,120 @@
   <header class="hero">
     <div class="wrap">
       <div class="emoji">🍽️</div>
-      <h1>El menú de la semana,<br /><span class="gold">resuelto</span>.</h1>
-      <p class="sub">Planificador de comidas para casa: arma cena, desayuno y merienda de toda la semana según tu historial y sugerencias de IA. Después te da la lista del súper lista para copiar.</p>
+      <span class="badge" data-i18n="hero.badge">Private · Perez-Edelberg family</span>
+      <h1 data-i18n="hero.h1">The week's menu, <span class="gold">sorted</span>.</h1>
+      <p class="sub" data-i18n="hero.sub">A private meal planner for a family of three. It turns our household rules — dinner leftovers become tomorrow's lunch, some meals are keto, and there's what the little one can and can't eat — into a weekly plan that just works.</p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="https://9661951d-8a06-4b89-bf07-311b97cc0e4b.lovableproject.com" target="_blank" rel="noopener">Abrir la app</a>
-        <a class="btn btn-ghost" href="https://github.com/feragusper/comidas-perez-edelberg" target="_blank" rel="noopener">Ver en GitHub</a>
+        <a class="btn btn-primary" href="https://9661951d-8a06-4b89-bf07-311b97cc0e4b.lovableproject.com" target="_blank" rel="noopener" data-i18n="hero.ctaApp">Open the app</a>
+        <a class="btn btn-ghost" href="https://github.com/feragusper/comidas-perez-edelberg" target="_blank" rel="noopener" data-i18n="hero.ctaGithub">View on GitHub</a>
       </div>
     </div>
   </header>
 
-  <!-- POR QUÉ -->
-  <section id="producto">
+  <!-- WHY -->
+  <section id="product">
     <div class="wrap">
-      <span class="badge">La motivación</span>
-      <h2>¿Por qué existe?</h2>
-      <p class="lead">"¿Qué comemos esta semana?" es una pregunta que se repite infinito en toda casa. Decidir, no repetir siempre lo mismo, acordarse de lo que hay en la despensa y armar la lista del súper es un trabajo silencioso que cae siempre sobre las mismas personas.</p>
+      <span class="badge" data-i18n="why.badge">The motivation</span>
+      <h2 data-i18n="why.title">Why it exists</h2>
+      <p class="lead" data-i18n="why.lead">We're a family of three, with a small child. Deciding what to eat every day is a puzzle with rules: dinner leftovers get eaten for lunch the next day, some meals are keto, and there are things the little one can and can't eat yet. Planning the week around those rules solves the daily grind — and lets us keep a backlog of ideas based on what's already in the pantry, so we shop only for what's missing.</p>
       <div class="grid cols-3">
         <div class="card">
-          <div class="ico">🔁</div>
-          <h3>Menos fricción semanal</h3>
-          <p>Planificar la semana entera en minutos en vez de improvisar cada día a la tarde.</p>
+          <div class="ico">📏</div>
+          <h3 data-i18n="why.c1t">Rules built in</h3>
+          <p data-i18n="why.c1p">Leftovers, keto, kid-friendly — the plan respects the house rules instead of fighting them.</p>
         </div>
         <div class="card">
-          <div class="ico">🧠</div>
-          <h3>Ideas, no repetición</h3>
-          <p>La IA mira tu historial y propone combinaciones nuevas para salir del "otra vez fideos".</p>
+          <div class="ico">🧺</div>
+          <h3 data-i18n="why.c2t">Plan from the pantry</h3>
+          <p data-i18n="why.c2p">Keep a backlog of meal ideas based on what's already at home, and plan the week better around it.</p>
         </div>
         <div class="card">
           <div class="ico">🛒</div>
-          <h3>Del plan al carrito</h3>
-          <p>El menú se convierte solo en lista de compras agrupada por categoría.</p>
+          <h3 data-i18n="why.c3t">Only what's missing</h3>
+          <p data-i18n="why.c3p">The weekly plan turns into a shopping list of just what you're short on.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FUNCIONES -->
-  <section id="funciones">
+  <!-- FEATURES -->
+  <section id="features">
     <div class="wrap">
-      <span class="badge">Requisitos funcionales</span>
-      <h2>Qué hace</h2>
-      <p class="lead">Seis secciones, cada una resuelve un pedazo del ciclo de comer en casa.</p>
+      <span class="badge" data-i18n="feat.badge">Functional requirements</span>
+      <h2 data-i18n="feat.title">What it does</h2>
+      <p class="lead" data-i18n="feat.lead">Five sections, each solving a piece of the eat-at-home cycle.</p>
       <div class="grid cols-2">
         <div class="card">
           <div class="ico">📅</div>
-          <h3>Menú semanal</h3>
-          <p>Completa cena, desayuno y merienda de toda la semana. Combina tu historial con ideas nuevas generadas por IA. Reordená con drag &amp; drop y navegá entre semanas.</p>
+          <h3 data-i18n="feat.f1t">Weekly menu</h3>
+          <p data-i18n="feat.f1p">Fill in dinner, breakfast and snack for the whole week, honoring the family rules (leftovers as next-day lunch, keto, kid-friendly). Mixes your history with fresh AI ideas. Reorder with drag &amp; drop and move between weeks.</p>
         </div>
         <div class="card">
           <div class="ico">🍲</div>
-          <h3>Mis comidas</h3>
-          <p>Catálogo propio de comidas: nombre, ícono y los ingredientes que la componen. Etiquetas (keto, etc.) y orden por uso.</p>
+          <h3 data-i18n="feat.f2t">My meals</h3>
+          <p data-i18n="feat.f2p">Your own meal catalog: name, icon and the ingredients that make it up. Tags (keto, etc.) and sorting by usage.</p>
         </div>
         <div class="card">
           <div class="ico">🏠</div>
-          <h3>Don Bacilio (despensa)</h3>
-          <p>Registrá lo que tenés en casa y pedile a la IA sugerencias de qué cocinar con eso, sin salir a comprar.</p>
+          <h3 data-i18n="feat.f3t">Don Bacilio (pantry)</h3>
+          <p data-i18n="feat.f3p">Track what you have at home and ask the AI what to cook with it — without a shopping trip.</p>
         </div>
         <div class="card">
           <div class="ico">🛒</div>
-          <h3>Súper</h3>
-          <p>Lista de compras generada desde el menú, agrupada por categoría, con check de comprados y copia al portapapeles.</p>
+          <h3 data-i18n="feat.f4t">Shopping</h3>
+          <p data-i18n="feat.f4p">A shopping list built from the menu, grouped by category, with checkoff and copy to clipboard.</p>
         </div>
         <div class="card">
           <div class="ico">📊</div>
-          <h3>Reportes</h3>
-          <p>Analítica de tus hábitos: comidas más usadas, proporción keto, tendencias por semana con gráficos.</p>
-        </div>
-        <div class="card">
-          <div class="ico">🧹</div>
-          <h3>Normalizar</h3>
-          <p>Herramienta interna y temporal para normalizar comidas viejas al nuevo modelo de comidas + ingredientes.</p>
+          <h3 data-i18n="feat.f5t">Reports</h3>
+          <p data-i18n="feat.f5p">Analytics on your habits: most-used meals, keto ratio, weekly trends with charts.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- NO FUNCIONALES -->
+  <!-- NON-FUNCTIONAL -->
   <section>
     <div class="wrap">
-      <span class="badge">Requisitos no funcionales</span>
-      <h2>Cómo se comporta</h2>
+      <span class="badge" data-i18n="nf.badge">Non-functional requirements</span>
+      <h2 data-i18n="nf.title">How it behaves</h2>
       <div class="grid cols-2" style="align-items:start">
         <ul class="clean">
-          <li><b>Mobile-first.</b> Pensada para el celular, con navegación adaptada y manejo del teclado en móvil.</li>
-          <li><b>Autenticación.</b> Acceso protegido por login (Supabase Auth + Google vía Lovable).</li>
-          <li><b>Multi-entorno.</b> Stage y prod comparten base de datos, separados por prefijo de clave.</li>
+          <li data-i18n="nf.i1"><b>Mobile-first.</b> Built for the phone, with adapted navigation and on-screen keyboard handling.</li>
+          <li data-i18n="nf.i2"><b>Authentication.</b> Access protected by login (Supabase Auth + Google via Lovable).</li>
+          <li data-i18n="nf.i3"><b>Multi-environment.</b> Stage and prod share one database, split by key prefix.</li>
         </ul>
         <ul class="clean">
-          <li><b>IA con límites.</b> Sugerencias con control de rate-limit y créditos, con mensajes claros al usuario.</li>
-          <li><b>Datos históricos inmutables.</b> Cada semana guarda un snapshot que nunca se reescribe.</li>
-          <li><b>Deploy continuo.</b> Cambios integrados y publicados automáticamente vía Lovable.</li>
+          <li data-i18n="nf.i4"><b>AI with limits.</b> Suggestions with rate-limit and credit handling, with clear messages.</li>
+          <li data-i18n="nf.i5"><b>Immutable history.</b> Each week stores a snapshot that is never rewritten.</li>
+          <li data-i18n="nf.i6"><b>Continuous deploy.</b> Changes integrated and published automatically via Lovable.</li>
         </ul>
       </div>
     </div>
   </section>
 
-  <!-- TÉCNICA -->
-  <section id="tecnica">
+  <!-- TECH -->
+  <section id="tech">
     <div class="wrap">
-      <span class="badge">Bajo el capó</span>
-      <h2>Arquitectura</h2>
-      <p class="lead">SPA en el cliente contra un backend gestionado (Supabase). La IA vive en edge functions.</p>
+      <span class="badge" data-i18n="arch.badge">Under the hood</span>
+      <h2 data-i18n="arch.title">Architecture</h2>
+      <p class="lead" data-i18n="arch.lead">A client-side SPA against a managed backend (Supabase). The AI lives in edge functions.</p>
       <div class="arch">
         <div class="arch-row">
-          <div class="arch-box"><div class="t">🖥️ Cliente (SPA)</div><div class="d">React + TypeScript + Vite. Estado de servidor con TanStack Query, ruteo con React Router.</div></div>
+          <div class="arch-box"><div class="t" data-i18n="arch.b1t">🖥️ Client (SPA)</div><div class="d" data-i18n="arch.b1d">React + TypeScript + Vite. Server state with TanStack Query, routing with React Router.</div></div>
         </div>
         <div class="arch-arrow">↕</div>
         <div class="arch-row">
-          <div class="arch-box"><div class="t">🔐 Supabase Auth</div><div class="d">Login y sesión. Rutas protegidas en el cliente.</div></div>
-          <div class="arch-box"><div class="t">🗄️ Postgres</div><div class="d">Comidas, ingredientes, despensa y snapshots de menú por semana.</div></div>
-          <div class="arch-box"><div class="t">⚡ Edge Functions</div><div class="d">Sugerencias de IA con rate-limit y créditos.</div></div>
+          <div class="arch-box"><div class="t" data-i18n="arch.b2t">🔐 Supabase Auth</div><div class="d" data-i18n="arch.b2d">Login and session. Protected routes on the client.</div></div>
+          <div class="arch-box"><div class="t" data-i18n="arch.b3t">🗄️ Postgres</div><div class="d" data-i18n="arch.b3d">Meals, ingredients, pantry and weekly menu snapshots.</div></div>
+          <div class="arch-box"><div class="t" data-i18n="arch.b4t">⚡ Edge Functions</div><div class="d" data-i18n="arch.b4d">AI suggestions with rate-limit and credits.</div></div>
         </div>
       </div>
-      <div class="note">📌 <b>Modelo de datos:</b> las comidas son combinaciones de ingredientes. El plan semanal guarda un snapshot que se resuelve por id contra el catálogo vivo al leer, así el historial nunca se corrompe cuando editás una comida.</div>
+      <div class="note" data-i18n="arch.note">📌 <b>Data model:</b> meals are combinations of ingredients. The weekly plan stores a snapshot resolved by id against the live catalog at read time, so history never breaks when you edit a meal.</div>
 
-      <h2 style="margin-top:52px">Stack &amp; tooling</h2>
+      <h2 style="margin-top:52px" data-i18n="stack.title">Stack &amp; tooling</h2>
       <div class="stack-group">
-        <div class="label">Lenguaje &amp; framework</div>
+        <div class="label" data-i18n="stack.g1">Language &amp; framework</div>
         <div class="chips">
           <span class="chip">TypeScript</span><span class="chip">React 18</span><span class="chip">Vite</span>
         </div>
@@ -293,13 +315,13 @@
         </div>
       </div>
       <div class="stack-group">
-        <div class="label">Datos &amp; formularios</div>
+        <div class="label" data-i18n="stack.g3">Data &amp; forms</div>
         <div class="chips">
           <span class="chip">TanStack Query</span><span class="chip">React Router</span><span class="chip">React Hook Form</span><span class="chip">Zod</span>
         </div>
       </div>
       <div class="stack-group">
-        <div class="label">Backend &amp; plataforma</div>
+        <div class="label" data-i18n="stack.g4">Backend &amp; platform</div>
         <div class="chips">
           <span class="chip">Supabase</span><span class="chip">Postgres</span><span class="chip">Edge Functions</span><span class="chip">Lovable</span>
         </div>
@@ -310,45 +332,51 @@
   <!-- UX -->
   <section>
     <div class="wrap">
-      <span class="badge">Experiencia</span>
-      <h2>UX &amp; diseño</h2>
+      <span class="badge" data-i18n="ux.badge">Experience</span>
+      <h2 data-i18n="ux.title">UX &amp; design</h2>
       <div class="grid cols-3">
-        <div class="card"><div class="ico">📱</div><h3>Primero el celular</h3><p>Se usa parado en la cocina o haciendo el súper. Todo pensado para el pulgar.</p></div>
-        <div class="card"><div class="ico">✨</div><h3>Detalle cálido</h3><p>Íconos y emojis por comida, acento dorado, animaciones sutiles. Práctico sin ser frío.</p></div>
-        <div class="card"><div class="ico">🤏</div><h3>Pocos toques</h3><p>Drag &amp; drop para reordenar, copiar la lista de un botón, autocompletado por semana.</p></div>
+        <div class="card"><div class="ico">📱</div><h3 data-i18n="ux.c1t">Phone first</h3><p data-i18n="ux.c1p">Used standing in the kitchen or doing the groceries. Everything built for the thumb.</p></div>
+        <div class="card"><div class="ico">✨</div><h3 data-i18n="ux.c2t">Warm details</h3><p data-i18n="ux.c2p">Icons and emojis per meal, gold accent, subtle animations. Practical without feeling cold.</p></div>
+        <div class="card"><div class="ico">🤏</div><h3 data-i18n="ux.c3t">Few taps</h3><p data-i18n="ux.c3p">Drag &amp; drop to reorder, copy the list in one button, week-based autocomplete.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- ESTADO -->
-  <section id="estado">
+  <!-- STATUS -->
+  <section id="status">
     <div class="wrap">
-      <span class="badge">Dónde está hoy</span>
-      <h2>Estado actual</h2>
-      <p class="lead">En uso real en casa. Iterando sobre features y limpiando deuda del modelo de datos.</p>
-      <div class="card" style="padding:8px 24px">
-        <div class="status-item"><div class="dot on"></div><div class="txt"><b>Menú, Mis comidas, Despensa, Súper, Reportes</b><span>Funcionando y en uso semanal.</span></div></div>
-        <div class="status-item"><div class="dot on"></div><div class="txt"><b>Sugerencias de IA</b><span>Activas, con manejo de créditos y rate-limit.</span></div></div>
-        <div class="status-item"><div class="dot wip"></div><div class="txt"><b>Normalización comidas + ingredientes</b><span>En progreso: migrando comidas viejas al modelo nuevo vía la página /normalizar.</span></div></div>
-        <div class="status-item"><div class="dot wip"></div><div class="txt"><b>Esta landing en GitHub Pages</b><span>Home del producto. La app real vive en Lovable.</span></div></div>
+      <span class="badge" data-i18n="status.badge">Where it is today</span>
+      <h2 data-i18n="status.title">Current status</h2>
+      <p class="lead" data-i18n="status.lead">In real use at home. Iterating on features and refining the experience.</p>
+      <div class="card" style="padding:8px 24px; margin-bottom: 24px">
+        <div class="status-item"><div class="dot on"></div><div class="txt"><b data-i18n="status.i1t">Menu, My meals, Pantry, Shopping, Reports</b><span data-i18n="status.i1s">Working and in weekly use.</span></div></div>
+        <div class="status-item"><div class="dot on"></div><div class="txt"><b data-i18n="status.i2t">AI suggestions</b><span data-i18n="status.i2s">Active, with credit and rate-limit handling.</span></div></div>
+        <div class="status-item"><div class="dot wip"></div><div class="txt"><b data-i18n="status.i3t">This landing on GitHub Pages</b><span data-i18n="status.i3s">The product home. The real app lives on Lovable.</span></div></div>
+      </div>
+      <div class="closed">
+        <div class="lock">🔒</div>
+        <div>
+          <h3 data-i18n="closed.t">A closed product — for now</h3>
+          <p data-i18n="closed.p">This is a private product built for the Perez-Edelberg family. Opening it up for public use may be considered in the future.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- AUTORES -->
-  <section id="autores">
+  <!-- AUTHORS -->
+  <section id="authors">
     <div class="wrap">
-      <span class="badge">Quiénes</span>
-      <h2>Autores</h2>
-      <p class="lead">Un proyecto de casa, construido a dos manos (con asistencia de IA vía Lovable).</p>
+      <span class="badge" data-i18n="authors.badge">Who</span>
+      <h2 data-i18n="authors.title">Authors</h2>
+      <p class="lead" data-i18n="authors.lead">A home project, built by two hands (with AI assistance via Lovable).</p>
       <div class="authors">
         <div class="author">
           <div class="avatar">F</div>
-          <div><div class="n">Fernando Perez</div><div class="r">Desarrollo · producto</div></div>
+          <div><div class="n">Fernando Perez</div><div class="r" data-i18n="authors.r1">Development · product</div></div>
         </div>
         <div class="author">
           <div class="avatar">D</div>
-          <div><div class="n">Debora Edelberg</div><div class="r">Producto · diseño</div></div>
+          <div><div class="n">Debora Edelberg</div><div class="r" data-i18n="authors.r2">Product · design</div></div>
         </div>
       </div>
     </div>
@@ -356,9 +384,118 @@
 
   <footer>
     <div class="wrap">
-      Hecho con 🍽️ y ⚡ · <a href="https://github.com/feragusper/comidas-perez-edelberg" target="_blank" rel="noopener">github.com/feragusper/comidas-perez-edelberg</a>
+      <span data-i18n="footer.made">Made with 🍽️ and ⚡</span> · <a href="https://github.com/feragusper/comidas-perez-edelberg" target="_blank" rel="noopener">github.com/feragusper/comidas-perez-edelberg</a>
     </div>
   </footer>
+
+  <script>
+    const I18N = {
+      es: {
+        "nav.product": "Producto",
+        "nav.features": "Funciones",
+        "nav.tech": "Técnica",
+        "nav.status": "Estado",
+        "nav.authors": "Autores",
+        "hero.badge": "Privado · familia Perez-Edelberg",
+        "hero.h1": "El menú de la semana, <span class=\"gold\">resuelto</span>.",
+        "hero.sub": "Un planificador de comidas privado para una familia de tres. Convierte las reglas de casa — lo que sobra de la cena se almuerza al otro día, algunas comidas keto, y lo que el más chico puede y no puede comer — en un plan semanal que simplemente funciona.",
+        "hero.ctaApp": "Abrir la app",
+        "hero.ctaGithub": "Ver en GitHub",
+        "why.badge": "La motivación",
+        "why.title": "¿Por qué existe?",
+        "why.lead": "Somos una familia de tres, con un niño pequeño. Decidir qué comer cada día es un rompecabezas con reglas: lo que sobra de la cena se almuerza al día siguiente, algunas comidas son keto, y hay cosas que el más chico todavía puede y no puede comer. Planificar la semana con esas reglas resuelve el día a día — y nos deja tener un backlog de ideas según lo que ya hay en la despensa, así compramos solo lo que falta.",
+        "why.c1t": "Reglas de la casa",
+        "why.c1p": "Sobras, keto, apto para el niño — el plan respeta las reglas de casa en vez de pelearse con ellas.",
+        "why.c2t": "Planificá desde la despensa",
+        "why.c2p": "Mantené un backlog de ideas de comida según lo que ya tenés en casa, y planificá mejor la semana alrededor de eso.",
+        "why.c3t": "Solo lo que falta",
+        "why.c3p": "El plan semanal se convierte en una lista de compras solo con lo que te falta.",
+        "feat.badge": "Requisitos funcionales",
+        "feat.title": "Qué hace",
+        "feat.lead": "Cinco secciones, cada una resuelve un pedazo del ciclo de comer en casa.",
+        "feat.f1t": "Menú semanal",
+        "feat.f1p": "Completa cena, desayuno y merienda de toda la semana, respetando las reglas de la familia (sobras como almuerzo del día siguiente, keto, apto para el niño). Combina tu historial con ideas nuevas de IA. Reordená con drag &amp; drop y navegá entre semanas.",
+        "feat.f2t": "Mis comidas",
+        "feat.f2p": "Catálogo propio de comidas: nombre, ícono y los ingredientes que la componen. Etiquetas (keto, etc.) y orden por uso.",
+        "feat.f3t": "Don Bacilio (despensa)",
+        "feat.f3p": "Registrá lo que tenés en casa y pedile a la IA qué cocinar con eso — sin salir a comprar.",
+        "feat.f4t": "Súper",
+        "feat.f4p": "Lista de compras generada desde el menú, agrupada por categoría, con check de comprados y copia al portapapeles.",
+        "feat.f5t": "Reportes",
+        "feat.f5p": "Analítica de tus hábitos: comidas más usadas, proporción keto, tendencias por semana con gráficos.",
+        "nf.badge": "Requisitos no funcionales",
+        "nf.title": "Cómo se comporta",
+        "nf.i1": "<b>Mobile-first.</b> Pensada para el celular, con navegación adaptada y manejo del teclado en móvil.",
+        "nf.i2": "<b>Autenticación.</b> Acceso protegido por login (Supabase Auth + Google vía Lovable).",
+        "nf.i3": "<b>Multi-entorno.</b> Stage y prod comparten base de datos, separados por prefijo de clave.",
+        "nf.i4": "<b>IA con límites.</b> Sugerencias con control de rate-limit y créditos, con mensajes claros.",
+        "nf.i5": "<b>Historial inmutable.</b> Cada semana guarda un snapshot que nunca se reescribe.",
+        "nf.i6": "<b>Deploy continuo.</b> Cambios integrados y publicados automáticamente vía Lovable.",
+        "arch.badge": "Bajo el capó",
+        "arch.title": "Arquitectura",
+        "arch.lead": "Una SPA en el cliente contra un backend gestionado (Supabase). La IA vive en edge functions.",
+        "arch.b1t": "🖥️ Cliente (SPA)",
+        "arch.b1d": "React + TypeScript + Vite. Estado de servidor con TanStack Query, ruteo con React Router.",
+        "arch.b2t": "🔐 Supabase Auth",
+        "arch.b2d": "Login y sesión. Rutas protegidas en el cliente.",
+        "arch.b3t": "🗄️ Postgres",
+        "arch.b3d": "Comidas, ingredientes, despensa y snapshots de menú por semana.",
+        "arch.b4t": "⚡ Edge Functions",
+        "arch.b4d": "Sugerencias de IA con rate-limit y créditos.",
+        "arch.note": "📌 <b>Modelo de datos:</b> las comidas son combinaciones de ingredientes. El plan semanal guarda un snapshot que se resuelve por id contra el catálogo vivo al leer, así el historial nunca se corrompe cuando editás una comida.",
+        "stack.title": "Stack &amp; tooling",
+        "stack.g1": "Lenguaje &amp; framework",
+        "stack.g3": "Datos &amp; formularios",
+        "stack.g4": "Backend &amp; plataforma",
+        "ux.badge": "Experiencia",
+        "ux.title": "UX &amp; diseño",
+        "ux.c1t": "Primero el celular",
+        "ux.c1p": "Se usa parado en la cocina o haciendo el súper. Todo pensado para el pulgar.",
+        "ux.c2t": "Detalle cálido",
+        "ux.c2p": "Íconos y emojis por comida, acento dorado, animaciones sutiles. Práctico sin ser frío.",
+        "ux.c3t": "Pocos toques",
+        "ux.c3p": "Drag &amp; drop para reordenar, copiar la lista de un botón, autocompletado por semana.",
+        "status.badge": "Dónde está hoy",
+        "status.title": "Estado actual",
+        "status.lead": "En uso real en casa. Iterando sobre features y refinando la experiencia.",
+        "status.i1t": "Menú, Mis comidas, Despensa, Súper, Reportes",
+        "status.i1s": "Funcionando y en uso semanal.",
+        "status.i2t": "Sugerencias de IA",
+        "status.i2s": "Activas, con manejo de créditos y rate-limit.",
+        "status.i3t": "Esta landing en GitHub Pages",
+        "status.i3s": "La home del producto. La app real vive en Lovable.",
+        "closed.t": "Un producto cerrado — por ahora",
+        "closed.p": "Este es un producto privado hecho para la familia Perez-Edelberg. Eventualmente se contemplará abrirlo para uso público en el futuro.",
+        "authors.badge": "Quiénes",
+        "authors.title": "Autores",
+        "authors.lead": "Un proyecto de casa, construido a dos manos (con asistencia de IA vía Lovable).",
+        "authors.r1": "Desarrollo · producto",
+        "authors.r2": "Producto · diseño",
+        "footer.made": "Hecho con 🍽️ y ⚡"
+      }
+    };
+    // English is the source of truth already in the HTML; capture it as the "en" dict.
+    const EN = {};
+    document.querySelectorAll('[data-i18n]').forEach(el => { EN[el.getAttribute('data-i18n')] = el.innerHTML; });
+    I18N.en = EN;
+
+    function setLang(lang) {
+      const dict = I18N[lang] || I18N.en;
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k] !== undefined) el.innerHTML = dict[k];
+      });
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+      try { localStorage.setItem('lang', lang); } catch (e) {}
+    }
+
+    let saved = null;
+    try { saved = localStorage.getItem('lang'); } catch (e) {}
+    setLang(saved === 'es' ? 'es' : 'en');
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+  </script>
 
 </body>
 </html>

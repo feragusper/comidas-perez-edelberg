@@ -5,9 +5,6 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // GitHub Pages serves the app under /comidas-perez-edelberg/.
-  // Local dev and Lovable keep the root base.
-  base: process.env.GITHUB_PAGES ? "/comidas-perez-edelberg/" : "/",
   server: {
     host: "::",
     port: 8080,

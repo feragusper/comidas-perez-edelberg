@@ -77,7 +77,7 @@ export function TopNav() {
           <button
             onClick={() => setOpen((o) => !o)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            className="flex items-center justify-center h-11 w-11 -mr-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="flex items-center justify-center h-11 w-11 -mr-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             {open ? <X size={20} /> : <MenuIcon size={20} />}
           </button>

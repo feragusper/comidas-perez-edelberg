@@ -6,6 +6,8 @@ import { Meal } from "@/data/meals";
 import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Leaf, ChevronDown, ChevronRight, Tag, Carrot, TriangleAlert } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { TopNav } from "@/components/TopNav";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
@@ -272,7 +274,7 @@ export default function Reports() {
       <TopNav />
       <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto space-y-6 pb-20">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-foreground">Reportes</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Reportes</h1>
           <span className="text-xs text-muted-foreground ml-auto">
             {weeksCount} semana{weeksCount !== 1 ? "s" : ""} de datos
           </span>
@@ -297,31 +299,20 @@ export default function Reports() {
                 <Utensils size={14} className="text-primary" /> Adultos
               </label>
 
-              <div className="flex gap-1 bg-muted/60 rounded-xl p-1 flex-wrap">
-              {SECTION_ORDER.map((key) => {
-                const cfg = SECTION_LABELS[key];
-                const Icon = cfg.icon;
-                const disabled = sectionDisabled(key);
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setSection(key)}
-                    disabled={disabled}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
-                      disabled
-                        ? "text-muted-foreground/50 cursor-not-allowed"
-                        : activeSection === key
-                          ? "bg-card shadow-sm text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <Icon size={13} />
-                    {cfg.label}
-                  </button>
-                );
-              })}
-              </div>
+              <Tabs value={activeSection} onValueChange={(v) => setSection(v as Section)}>
+                <TabsList className="h-auto flex-wrap">
+                  {SECTION_ORDER.map((key) => {
+                    const cfg = SECTION_LABELS[key];
+                    const Icon = cfg.icon;
+                    return (
+                      <TabsTrigger key={key} value={key} disabled={sectionDisabled(key)} className="gap-1.5">
+                        <Icon size={13} />
+                        {cfg.label}
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
             </div>
 
             {/* Summary cards */}
@@ -348,7 +339,7 @@ export default function Reports() {
 
             {/* Keto detailed bar (only for "us") */}
             {showKeto && total > 0 && (
-              <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+              <div className="rounded-xl border bg-card shadow-sm p-4 space-y-2">
                 <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Leaf size={14} className="text-secondary" /> Adherencia keto
                 </h2>
@@ -370,7 +361,7 @@ export default function Reports() {
             )}
 
             {/* Tipo de comida (taxonomía) */}
-            <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+            <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
               <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Tag size={14} className="text-primary" /> Por tipo de comida
                 <span className="text-[10px] font-normal text-muted-foreground ml-1">
@@ -389,7 +380,7 @@ export default function Reports() {
             </div>
 
             {/* Category breakdown (legacy meal categories) */}
-            <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+            <div className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
               <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <PieChart size={14} className="text-primary" /> Por grupo de plato
               </h2>
@@ -407,7 +398,7 @@ export default function Reports() {
             </div>
 
             {/* Ingredient ranking */}
-            <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+            <div className="rounded-xl border bg-card shadow-sm p-4 space-y-2">
               <CollapsibleGroup
                 id="reports:ingredientes"
                 count={ingredientRanking.length}
@@ -458,7 +449,7 @@ export default function Reports() {
             </div>
 
             {/* Meal ranking */}
-            <div className="bg-card rounded-xl border border-border p-4 space-y-2">
+            <div className="rounded-xl border bg-card shadow-sm p-4 space-y-2">
               <CollapsibleGroup
                 id="reports:platos"
                 count={meals.length}
@@ -515,13 +506,13 @@ export default function Reports() {
 
 function SummaryCard({ icon, label, value, subtitle }: { icon: React.ReactNode; label: string; value: string | number; subtitle?: string }) {
   return (
-    <div className="bg-card rounded-xl border border-border p-3 space-y-1">
+    <Card className="p-3 space-y-1">
       <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] font-medium uppercase tracking-wide">
         {icon} {label}
       </div>
-      <div className="text-xl font-bold text-foreground">{value}</div>
+      <div className="text-xl font-semibold tracking-tight text-foreground">{value}</div>
       {subtitle && <div className="text-[10px] text-muted-foreground truncate">{subtitle}</div>}
-    </div>
+    </Card>
   );
 }
 

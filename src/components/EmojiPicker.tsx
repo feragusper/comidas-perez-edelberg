@@ -15,7 +15,7 @@ export function EmojiPicker({
   value,
   onSelect,
   gridClassName = "grid grid-cols-6 sm:grid-cols-8 gap-1.5",
-  buttonClassName = "text-2xl p-2 rounded-xl transition-all hover:bg-muted",
+  buttonClassName = "text-2xl p-2 rounded-lg transition-all hover:bg-muted",
   placeholder = "Buscar (ej: pollo, queso)...",
 }: EmojiPickerProps) {
   const [query, setQuery] = useState("");
@@ -30,7 +30,7 @@ export function EmojiPicker({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full pl-8 pr-3 py-2 rounded-lg bg-muted border-0 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+          className="w-full pl-8 pr-3 py-2 rounded-xl bg-muted border-0 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
         />
       </div>
       {results.length === 0 ? (

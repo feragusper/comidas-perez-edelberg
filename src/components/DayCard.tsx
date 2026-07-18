@@ -75,7 +75,7 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
         <div
           ref={provided.innerRef}
           {...provided.droppableProps}
-          className={cn("rounded-xl transition-colors", snapshot.isDraggingOver && "ring-2 ring-primary/40 bg-primary/5")}
+          className={cn("rounded-lg transition-colors", snapshot.isDraggingOver && "ring-2 ring-primary/40 bg-primary/5")}
         >
           {hasMeal ? (
             <Draggable draggableId={droppableId} index={0}>
@@ -83,7 +83,7 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
                 <div
                   ref={dragProvided.innerRef}
                   {...dragProvided.draggableProps}
-                  className={cn("rounded-xl border border-border/60 bg-card/50 p-1.5", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
+                  className={cn("rounded-lg border border-border/60 bg-card/50 p-1.5", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
                 >
                   <div className="flex items-start gap-1">
                     <div {...dragProvided.dragHandleProps} className="pt-1 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0" title="Mover">
@@ -119,7 +119,7 @@ function SimpleMealSlot({
   extras?: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-xl px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
+    <div className={cn("rounded-lg px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
       <div className="flex items-center gap-2">
         <span className={cn("text-xs font-semibold uppercase tracking-wider", accent)}>{label}</span>
       </div>
@@ -129,7 +129,7 @@ function SimpleMealSlot({
             <div
               onClick={onPickMain}
               title="Tocar para cambiar"
-              className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+              className="flex items-center gap-2 bg-muted/60 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
             >
               <span className="text-base shrink-0">{meal.emoji}</span>
               <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
@@ -175,7 +175,7 @@ function MealDisplay({
       <div
         onClick={onChangeMeal}
         title="Tocar para cambiar"
-        className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+        className="flex items-center gap-2 bg-muted/60 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
       >
         <span className="text-base shrink-0">{meal.emoji}</span>
         <p className={cn("text-xs flex-1 break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
@@ -200,7 +200,7 @@ function MealDisplay({
         <div
           onClick={onChangeSide}
           title="Tocar para cambiar"
-          className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+          className="flex items-center gap-2 bg-muted/60 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
         >
           <span className="text-base shrink-0">{side.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{side.name}</p>
@@ -229,7 +229,7 @@ function ExtraItems({
           key={idx}
           onClick={() => onEdit(idx)}
           title="Tocar para cambiar"
-          className="flex items-center gap-2 bg-muted/60 rounded-lg px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
+          className="flex items-center gap-2 bg-muted/60 rounded-xl px-2.5 py-1.5 cursor-pointer hover:bg-muted transition-colors"
         >
           <span className="text-base shrink-0">{m.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
@@ -330,10 +330,10 @@ export function DayCard({
   return (
     <>
       <div className={cn(
-        "rounded-2xl border overflow-hidden shadow-card transition-all",
+        "rounded-xl border overflow-hidden shadow-sm transition-all",
         isPast && "opacity-50",
         isEatingOut ? "border-warning/40 bg-warning/5"
-          : isToday ? "border-accent/30 bg-card ring-4 ring-accent/10"
+          : isToday ? "border-gold/30 bg-card ring-4 ring-gold/10"
           : "border-border bg-card hover:border-stone-300"
       )}>
         {/* Header */}
@@ -341,19 +341,19 @@ export function DayCard({
           className={cn(
             "flex items-center justify-between px-4 py-3 cursor-pointer select-none",
             isEatingOut ? "bg-warning/10"
-              : isToday ? "bg-accent/5"
+              : isToday ? "bg-gold/5"
               : "bg-card hover:bg-muted/40"
           )}
           onClick={() => onToggleExpanded()}
         >
           <div className="flex items-center gap-2">
-            <span className={cn("text-lg font-bold", isEatingOut ? "text-warning" : isToday ? "text-foreground" : "text-foreground")}>
+            <span className={cn("text-lg font-semibold tracking-tight", isEatingOut ? "text-warning" : isToday ? "text-foreground" : "text-foreground")}>
               {dayPlan.day}
             </span>
             {isEatingOut && <span className="text-base leading-none">{dinnerEmoji}</span>}
             {isPasta && !isEatingOut && <span className="text-base leading-none" title="Noche de pasta">🍝</span>}
             {isToday && (
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-accent text-accent-foreground">
+              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-gold text-white">
                 Hoy
               </span>
             )}
@@ -387,7 +387,7 @@ export function DayCard({
             />
 
             {/* ── LUNCH ── */}
-            <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
+            <div className="rounded-lg bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-foreground">Almuerzo</span>
                 {!dayPlan.lunchOverridden && dayPlan.lunch && (
@@ -491,7 +491,7 @@ export function DayCard({
             />
 
             {/* ── DINNER ── */}
-            <div className="rounded-xl bg-muted/40 p-3 border border-border space-y-3">
+            <div className="rounded-lg bg-muted/40 p-3 border border-border space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
                   {isEatingOut ? `${dinnerEmoji} ${dinnerLabel}` : "Cena"}
@@ -522,7 +522,7 @@ export function DayCard({
                   </div>
                 ) : dinnerSuggestion ? (
                   /* ── Suggested dinner + side chip ── */
-                  <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+                  <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
                     <div className="flex items-center gap-1.5">
                       <Sparkles size={12} className="text-primary/60" />
                       <span className="text-xs text-primary/70 font-medium italic">
@@ -531,7 +531,7 @@ export function DayCard({
                       <button
                         onClick={() => onRegenerateSuggestion?.()}
                         disabled={loadingSuggestion}
-                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors disabled:opacity-40"
+                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
                         title="Otra sugerencia"
                       >
                         {loadingSuggestion
@@ -553,14 +553,14 @@ export function DayCard({
                       </div>
                       <button
                         onClick={() => onDismissSuggestion?.()}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                         title="Descartar sugerencia"
                       >
                         <X size={13} />
                       </button>
                       <button
                         onClick={() => onAcceptSuggestion?.(dinnerSuggestion)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
                         title="Aceptar sugerencia"
                       >
                         <Check size={12} /> Aceptar
@@ -568,7 +568,7 @@ export function DayCard({
                     </div>
                     <button
                       onClick={() => openMainPicker("dinner")}
-                      className="text-xs text-muted-foreground hover:text-primary underline underline-offset-2 transition-colors"
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
                     >
                       Elegir otra cena
                     </button>

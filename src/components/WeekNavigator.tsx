@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { addWeeks, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { toWeekKey, weekKeyToDate, currentWeekKey } from "@/lib/env";
 import { format } from "date-fns";
@@ -39,32 +40,23 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
   return (
     <div className="flex items-center gap-1">
       {/* Prev week */}
-      <button
-        onClick={goBack}
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-        aria-label="Semana anterior"
-      >
+      <Button variant="outline" size="icon" className="h-8 w-8" onClick={goBack} aria-label="Semana anterior">
         <ChevronLeft size={16} />
-      </button>
+      </Button>
 
       {/* Label / calendar trigger */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button
-            className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition-all w-44 bg-muted/60 text-foreground hover:bg-muted"
-          >
+          <Button variant="outline" size="sm" className="w-44 gap-1.5 font-medium">
             <CalendarDays size={14} className="shrink-0" />
             <span className="truncate">{label}</span>
-          </button>
+          </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <div className="p-2 border-b border-border">
-            <button
-              onClick={() => { goToday(); setOpen(false); }}
-              className="w-full text-xs text-center py-1.5 px-3 rounded-lg bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
-            >
+            <Button size="sm" variant="secondary" className="w-full" onClick={() => { goToday(); setOpen(false); }}>
               Ir a semana actual
-            </button>
+            </Button>
           </div>
           <Calendar
             mode="single"
@@ -86,22 +78,15 @@ export function WeekNavigator({ weekKey, onChange }: WeekNavigatorProps) {
       </Popover>
 
       {/* Next week */}
-      <button
-        onClick={goForward}
-        className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-        aria-label="Semana siguiente"
-      >
+      <Button variant="outline" size="icon" className="h-8 w-8" onClick={goForward} aria-label="Semana siguiente">
         <ChevronRight size={16} />
-      </button>
+      </Button>
 
       {/* "Hoy" shortcut when not on current week */}
       {!isCurrentWeek && (
-        <button
-          onClick={goToday}
-          className="ml-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
-        >
+        <Button variant="secondary" size="sm" className="ml-1" onClick={goToday}>
           Hoy
-        </button>
+        </Button>
       )}
     </div>
   );

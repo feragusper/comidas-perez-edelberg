@@ -8,6 +8,7 @@ import { useMealPlanUsage } from "@/hooks/useMealPlanUsage";
 import { usageCount } from "@/lib/mealPlanUsage";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export type PickerMode = "adult" | "baby";
 export type PickerStep = "main" | "side";
@@ -148,7 +149,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
       style={kbInset > 0 ? { paddingBottom: kbInset } : undefined}
     >
       <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
+      <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
 
         {/* Header */}
         <div className="flex items-center justify-between p-5 pb-3">
@@ -201,8 +202,8 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
         <div className="px-5 pb-3">
           <div className="relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+            <Input
+              className="pl-9"
               placeholder={ingredientsOnly ? "Buscar ingrediente..." : isSide ? "Buscar guarnición..." : "Buscar comida o ingrediente..."}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -218,7 +219,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           {isSide && onSkipSide && (
             <button
               onClick={onSkipSide}
-              className="w-full text-xs text-muted-foreground border border-dashed border-border rounded-xl px-3 py-2.5 hover:bg-muted transition-all"
+              className="w-full text-xs text-muted-foreground border border-dashed border-border rounded-lg px-3 py-2.5 hover:bg-muted transition-all"
             >
               Sin guarnición
             </button>
@@ -233,7 +234,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
               </p>
               <button
                 onClick={openWizard}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
               >
                 Usar &ldquo;{search.trim()}&rdquo;
               </button>
@@ -244,7 +245,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           {hasSearch && !noResults && (
             <button
               onClick={openWizard}
-              className="w-full text-left px-3 py-2.5 rounded-xl border border-dashed border-border hover:bg-muted transition-all flex items-center gap-3"
+              className="w-full text-left px-3 py-2.5 rounded-lg border border-dashed border-border hover:bg-muted transition-all flex items-center gap-3"
             >
               <span className="text-2xl">🍽️</span>
               <div>
@@ -362,7 +363,7 @@ function MealRow({ meal, onSelect, onClose, isBaby }: {
   return (
     <button
       onClick={() => { onSelect(meal); onClose(); }}
-      className="w-full text-left p-3 rounded-xl border border-border hover:border-primary/40 hover:bg-dinner-bg transition-all"
+      className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent transition-all"
     >
       <div className="flex items-start gap-3">
         <span className="text-2xl">{meal.emoji}</span>

@@ -11,6 +11,7 @@ import { UsageChips } from "@/components/UsageChips";
 import { Usage, usageCount } from "@/lib/mealPlanUsage";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search, Leaf, ArrowUpDown, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
@@ -160,7 +161,7 @@ export default function CustomMeals() {
       <div key={meal.id}>
         <div
           className={cn(
-            "flex items-start gap-3 p-4 rounded-xl border border-border bg-card transition-all",
+            "flex items-start gap-3 p-4 rounded-xl border bg-card shadow-sm transition-all",
             emojiOpen && "rounded-b-none border-b-0"
           )}
         >
@@ -196,7 +197,7 @@ export default function CustomMeals() {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setWizard({ kind: "meal", isEdit: true, initial: meal })}
-              className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+              className="p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
               title="Editar comida (nombre, ícono, ingredientes)"
             >
               <Pencil size={14} />
@@ -205,14 +206,14 @@ export default function CustomMeals() {
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleDelete(meal.id)}
-                  className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                  className="p-2 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                   title="Confirmar"
                 >
                   <Check size={14} />
                 </button>
                 <button
                   onClick={() => setConfirmDeleteId(null)}
-                  className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+                  className="p-2 rounded-xl hover:bg-muted text-muted-foreground transition-colors"
                   title="Cancelar"
                 >
                   <X size={14} />
@@ -221,7 +222,7 @@ export default function CustomMeals() {
             ) : (
               <button
                 onClick={() => setConfirmDeleteId(meal.id)}
-                className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                className="p-2 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                 title="Eliminar"
               >
                 <Trash2 size={14} />
@@ -237,7 +238,7 @@ export default function CustomMeals() {
               value={meal.emoji}
               onSelect={(emoji) => handleEmojiSelect(meal.id, emoji)}
               gridClassName="grid grid-cols-10 sm:grid-cols-12 gap-1"
-              buttonClassName="text-xl p-1.5 rounded-lg transition-all hover:bg-card"
+              buttonClassName="text-xl p-1.5 rounded-xl transition-all hover:bg-card"
             />
           </div>
         )}
@@ -248,9 +249,9 @@ export default function CustomMeals() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
+      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Mis comidas
           </h1>
           <Button
@@ -277,7 +278,7 @@ export default function CustomMeals() {
           id="catalog:comidas"
           chevronSize={16}
           count={filteredMeals.length}
-          headerClassName="text-lg font-bold text-foreground mb-3"
+          headerClassName="text-lg font-semibold tracking-tight text-foreground mb-3"
           title={
             <span className="inline-flex items-center gap-2">
               <ChefHat size={18} className="text-primary" /> Comidas
@@ -286,8 +287,8 @@ export default function CustomMeals() {
         >
         <div className="relative mb-3">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+          <Input
+            className="pl-9"
             placeholder="Buscar comida..."
             value={mealSearch}
             onChange={(e) => setMealSearch(e.target.value)}
@@ -296,13 +297,13 @@ export default function CustomMeals() {
 
         {/* Filtros + orden */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
-          <div className="inline-flex rounded-lg bg-muted p-0.5">
+          <div className="inline-flex rounded-xl bg-muted p-0.5">
             {(["all", "meal", "side"] as MealTypeFilter[]).map((val) => (
               <button
                 key={val}
                 onClick={() => setMealType(val)}
                 className={cn(
-                  "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                  "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
                   mealType === val ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -333,7 +334,7 @@ export default function CustomMeals() {
             <select
               value={mealSort}
               onChange={(e) => setMealSort(e.target.value as MealSort)}
-              className="appearance-none pl-7 pr-3 py-1 rounded-lg bg-muted text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
+              className="appearance-none pl-7 pr-3 py-1 rounded-xl bg-muted text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 cursor-pointer"
             >
               <option value="mas-usadas">Más usadas</option>
               <option value="menos-usadas">Menos usadas</option>
@@ -388,7 +389,7 @@ export default function CustomMeals() {
             id="catalog:ingredientes"
             chevronSize={16}
             count={ingredients.length}
-            headerClassName="text-lg font-bold text-foreground mb-3"
+            headerClassName="text-lg font-semibold tracking-tight text-foreground mb-3"
             title={
               <span className="inline-flex items-center gap-2">
                 <Carrot size={18} className="text-secondary" /> Ingredientes
@@ -397,8 +398,8 @@ export default function CustomMeals() {
           >
           <div className="relative mb-3">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+            <Input
+              className="pl-9"
               placeholder="Buscar ingrediente..."
               value={ingredientSearch}
               onChange={(e) => setIngredientSearch(e.target.value)}
@@ -406,11 +407,11 @@ export default function CustomMeals() {
           </div>
 
           {filteredIngredients.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8 border border-dashed border-border rounded-xl">
+            <p className="text-sm text-muted-foreground text-center py-8 border border-dashed border-border rounded-lg">
               {ingredients.length === 0 ? "Todavía no hay ingredientes." : "Nada que coincida con la búsqueda."}
             </p>
           ) : (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
               <ul className="divide-y divide-border">
                 {filteredIngredients.map((ing) => {
                   const usedInMeals = mealsByIngredient.get(ing.id) ?? [];
@@ -462,7 +463,7 @@ export default function CustomMeals() {
                     </div>
                     <button
                       onClick={() => setWizard({ kind: "ingredient", isEdit: true, initial: ing })}
-                      className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+                      className="p-2 rounded-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                       title="Editar ingrediente"
                     >
                       <Pencil size={14} />
@@ -471,14 +472,14 @@ export default function CustomMeals() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={async () => { await deleteIngredient(ing.id); setConfirmDeleteIngredientId(null); }}
-                          className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                          className="p-2 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                           title="Confirmar"
                         >
                           <Check size={14} />
                         </button>
                         <button
                           onClick={() => setConfirmDeleteIngredientId(null)}
-                          className="p-2 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
+                          className="p-2 rounded-xl hover:bg-muted text-muted-foreground transition-colors"
                           title="Cancelar"
                         >
                           <X size={14} />
@@ -487,7 +488,7 @@ export default function CustomMeals() {
                     ) : (
                       <button
                         onClick={() => setConfirmDeleteIngredientId(ing.id)}
-                        className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                        className="p-2 rounded-xl hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                         title="Eliminar"
                       >
                         <Trash2 size={14} />

@@ -108,7 +108,7 @@ export function FoodWizard({
         style={kbInset > 0 ? { paddingBottom: kbInset } : undefined}
       >
         <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
+        <div className="relative z-10 bg-card rounded-t-3xl sm:rounded-xl shadow-2xl w-full sm:max-w-lg max-h-[min(85dvh,100%)] flex flex-col overflow-hidden border border-border">
 
           {/* Header */}
           <div className="flex items-center justify-between p-5 pb-3">
@@ -153,7 +153,7 @@ export function FoodWizard({
 
           <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-4">
             {/* Preview + nombre */}
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/60 border border-border">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/60 border border-border">
               <span className="text-3xl">{emoji}</span>
               <input
                 className="flex-1 bg-transparent text-sm font-medium text-foreground focus:outline-none placeholder:text-muted-foreground"
@@ -253,7 +253,7 @@ export function FoodWizard({
             <button
               onClick={handleSave}
               disabled={!canSave}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isEdit ? "Guardar cambios" : `Confirmar ${emoji} ${name.trim() || "…"}`}
             </button>

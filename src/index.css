@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Geist:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,42 +6,41 @@
 
 @layer base {
   :root {
-    /* Editorial Moderno — warm stone neutrals, slate ink, indigo accent */
+    /* shadcn/ui default (slate) — primary conserva el slate ink de siempre;
+       background cálido para que las cards blancas se despeguen */
     --background: 40 20% 97%;
-    --foreground: 222 47% 11%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    /* Slate ink primary */
-    --primary: 222 47% 11%;
-    --primary-foreground: 40 20% 98%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
     --primary-glow: 222 30% 30%;
 
-    /* Soft stone secondary */
-    --secondary: 30 10% 94%;
-    --secondary-foreground: 222 40% 18%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 30 8% 95%;
-    --muted-foreground: 215 16% 43%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 16% 43%; /* shadcn usa 46.9%; oscurecido para WCAG AA */
 
-    /* Indigo accent (today / highlights) */
-    --accent: 243 75% 59%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent = superficie sutil de hover (semántica shadcn); los destacados usan primary */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --gold: 243 75% 59%;
     --gold-soft: 226 100% 96%;
 
-    --destructive: 0 72% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 45%; /* shadcn usa 0 84% 60%; oscurecido para WCAG AA */
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 24 8% 90%;
-    --input: 24 8% 90%;
-    --ring: 243 75% 59%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
-    --radius: 0.85rem;
+    --radius: 0.5rem;
 
     /* Warning / stage badge */
     --warning: 35 90% 30%;
@@ -90,8 +89,8 @@
   }
 
   h1, h2, h3 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
+    font-family: 'Geist', 'Inter', sans-serif;
+    font-weight: 600;
     letter-spacing: -0.01em;
   }
 }

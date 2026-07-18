@@ -55,7 +55,7 @@ export function TagPicker({ value, onChange, compact = false }: Props) {
           const isOpen = openCat === cat.id;
           const selectedInCat = value.filter((t) => t.startsWith(cat.id + "/")).length;
           return (
-            <div key={cat.id} className="border border-border rounded-lg overflow-hidden">
+            <div key={cat.id} className="border border-border rounded-xl overflow-hidden">
               <button
                 type="button"
                 onClick={() => setOpenCat(isOpen ? null : cat.id)}

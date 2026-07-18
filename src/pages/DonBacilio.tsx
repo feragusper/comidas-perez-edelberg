@@ -58,7 +58,7 @@ export default function DonBacilio() {
   const hasIngredients = INGREDIENT_SUBGROUPS.some((g) => (grouped.get(g)?.length ?? 0) > 0);
 
   const renderRow = (it: PantryItem) => (
-    <div key={it.name} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-muted/50">
+    <div key={it.name} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-muted/50">
       <span className="shrink-0">{it.emoji}</span>
       <span className="text-sm text-foreground min-w-0 truncate">{it.name}</span>
       <button
@@ -103,8 +103,8 @@ export default function DonBacilio() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">
+      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
           Don Bacilio
         </h1>
         <p className="text-sm text-muted-foreground mb-5">
@@ -145,7 +145,7 @@ export default function DonBacilio() {
 
         <div className="mt-5">
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8 border border-dashed border-border rounded-xl">
+            <p className="text-sm text-muted-foreground text-center py-8 border border-dashed border-border rounded-lg">
               Todavía no cargaste nada. Agregá lo que tenés en la despensa o el freezer.
             </p>
           ) : (
@@ -193,7 +193,7 @@ export default function DonBacilio() {
           <div className="mt-6 space-y-3">
             <h2 className="text-sm font-semibold text-foreground">Ideas con la despensa</h2>
             {suggestions.map((s, idx) => (
-              <div key={idx} className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card">
+              <div key={idx} className="flex items-start gap-3 p-4 rounded-xl border bg-card shadow-sm">
                 <span className="text-2xl shrink-0">{s.emoji}</span>
                 <div className="min-w-0">
                   <p className="font-medium text-foreground">{s.name}</p>

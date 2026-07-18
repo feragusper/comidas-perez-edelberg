@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Sparkles, Loader2, Plus, X, Check, Search, History, Trash2, Carrot } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 
 /**
@@ -200,14 +201,14 @@ export default function Normalize() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">Normalizar comidas</h1>
+      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">Normalizar comidas</h1>
         <p className="text-sm text-muted-foreground mb-5">
           Asigná ingredientes a las comidas que todavía no los tienen. Sección temporal: cuando llegues al 100% desaparece.
         </p>
 
         {/* Progreso */}
-        <div className="rounded-xl border border-border bg-card p-4 mb-5 space-y-2">
+        <div className="rounded-xl border bg-card shadow-sm p-4 mb-5 space-y-2">
           <div className="flex justify-between text-xs">
             <span className="text-foreground font-medium">
               {done}/{normalizable.length} comidas con ingredientes
@@ -221,7 +222,7 @@ export default function Normalize() {
 
         {/* Purga de predefinidas sin uso */}
         {unusedSeeds.length > 0 && (
-          <div className="rounded-xl border border-border bg-card p-4 mb-5 flex items-center gap-3 flex-wrap">
+          <div className="rounded-xl border bg-card shadow-sm p-4 mb-5 flex items-center gap-3 flex-wrap">
             <div className="flex-1 min-w-[200px]">
               <p className="text-sm font-medium text-foreground">
                 {unusedSeeds.length} comidas predefinidas sin uso
@@ -243,7 +244,7 @@ export default function Normalize() {
 
         {/* Huérfanas del historial */}
         {orphans.length > 0 && (
-          <div className="rounded-xl border border-warning/40 bg-warning/5 overflow-hidden mb-5">
+          <div className="rounded-lg border border-warning/40 bg-warning/5 overflow-hidden mb-5">
             <div className="px-3 py-2 bg-warning/10 flex items-center gap-2">
               <History size={14} className="text-warning" />
               <span className="text-xs font-semibold text-foreground">
@@ -287,8 +288,8 @@ export default function Normalize() {
         {pending.length > 5 && (
           <div className="relative mb-4">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted border-0 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground"
+            <Input
+              className="pl-9"
               placeholder={`Buscar entre ${pending.length} pendientes...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -310,7 +311,7 @@ export default function Normalize() {
             {filteredPending.map((meal) => {
               const isEditing = editingId === meal.id;
               return (
-                <div key={meal.id} className="rounded-xl border border-border bg-card p-4">
+                <div key={meal.id} className="rounded-xl border bg-card shadow-sm p-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl shrink-0">{meal.emoji}</span>
                     <div className="flex-1 min-w-0">

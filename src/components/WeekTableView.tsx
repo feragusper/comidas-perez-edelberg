@@ -95,9 +95,9 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
     return (
       <button
         onClick={onPickMain}
-        className="w-full h-full min-h-[52px] flex items-center justify-center border border-dashed border-border/60 rounded-lg hover:border-primary/40 hover:bg-primary/5 transition-all group"
+        className="w-full h-full min-h-[52px] flex items-center justify-center border border-dashed border-border/60 rounded-xl hover:border-border hover:bg-accent transition-all group"
       >
-        <Plus size={13} className="text-muted-foreground/40 group-hover:text-primary/60 transition-colors" />
+        <Plus size={13} className="text-muted-foreground/40 group-hover:text-foreground/60 transition-colors" />
       </button>
     );
   }
@@ -252,7 +252,7 @@ export function WeekTableView({
 
   return (
     <>
-      <div className="rounded-2xl border border-border shadow-card overflow-x-auto">
+      <div className="rounded-xl border border-border shadow-sm overflow-x-auto">
         <table className="w-full border-collapse table-fixed">
           <thead>
             <tr>
@@ -275,7 +275,7 @@ export function WeekTableView({
                     <div className="flex flex-col items-center gap-0.5">
                       <div className="flex items-center gap-1 justify-center">
                         <span
-                          className={cn("text-xs font-bold uppercase tracking-wider",
+                          className={cn("text-xs font-semibold uppercase tracking-wider",
                             isDel ? "text-warning" : isToday ? "text-primary" : "text-foreground"
                           )}
                         >
@@ -327,7 +327,7 @@ export function WeekTableView({
                           <div
                             ref={provided.innerRef}
                             {...provided.droppableProps}
-                            className={cn("min-h-[52px] rounded-lg transition-colors", snapshot.isDraggingOver && "bg-primary/10 ring-2 ring-primary/30")}
+                            className={cn("min-h-[52px] rounded-xl transition-colors", snapshot.isDraggingOver && "bg-primary/10 ring-2 ring-primary/30")}
                           >
                             {meal ? (
                               <Draggable draggableId={`${idx}-${row.slot}`} index={0}>
@@ -335,7 +335,7 @@ export function WeekTableView({
                                   <div
                                     ref={dragProvided.innerRef}
                                     {...dragProvided.draggableProps}
-                                    className={cn("rounded-lg border border-border/50 bg-card/40 p-1 transition-shadow", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
+                                    className={cn("rounded-xl border border-border/50 bg-card/40 p-1 transition-shadow", dragSnapshot.isDragging && "shadow-lg bg-card border-border")}
                                   >
                                     <div className="flex items-start gap-0.5">
                                       <div {...dragProvided.dragHandleProps} className="pt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/40 hover:text-muted-foreground shrink-0" title="Mover">

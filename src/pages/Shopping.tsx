@@ -197,15 +197,15 @@ export default function Shopping() {
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <div className="px-4 sm:px-8 py-6 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-1">
+      <div className="px-4 sm:px-8 py-6 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1">
           Lista de supermercado
         </h1>
         <p className="text-sm text-muted-foreground mb-5">
           Ingredientes de las comidas planificadas desde hoy hasta el domingo. Tachá lo que ya tenés.
         </p>
 
-        <div className="rounded-xl border border-border bg-card p-4 mb-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="rounded-xl border bg-card shadow-sm p-4 mb-4 flex items-center justify-between gap-3 flex-wrap">
           <p className="text-xs text-muted-foreground">
             <span className="font-semibold text-foreground">{mealCount}</span> comida{mealCount === 1 ? "" : "s"} planificada{mealCount === 1 ? "" : "s"} ·{" "}
             <span className="font-semibold text-foreground">{list.length}</span> ingrediente{list.length === 1 ? "" : "s"} distintos
@@ -218,7 +218,7 @@ export default function Shopping() {
         </div>
 
         {list.length === 0 && unresolved.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-10 border border-dashed border-border rounded-xl">
+          <p className="text-sm text-muted-foreground text-center py-10 border border-dashed border-border rounded-lg">
             No hay comidas planificadas a futuro esta semana.
           </p>
         ) : (
@@ -238,7 +238,7 @@ export default function Shopping() {
                 const meta = categoryOf(cat);
                 const catAllHave = items.every(isHave);
                 return (
-                  <div key={cat} className="rounded-xl border border-border bg-card overflow-hidden">
+                  <div key={cat} className="rounded-xl border bg-card shadow-sm overflow-hidden">
                     <CollapsibleGroup
                       id={`shopping:${cat}`}
                       count={items.length}
@@ -300,7 +300,7 @@ export default function Shopping() {
 
             {/* Comidas sin componentizar */}
             {unresolved.length > 0 && (
-              <div className="mt-6 rounded-xl border border-warning/40 bg-warning/5 overflow-hidden">
+              <div className="mt-6 rounded-lg border border-warning/40 bg-warning/5 overflow-hidden">
                 <div className="px-3 py-2 bg-warning/10 flex items-center gap-2">
                   <TriangleAlert size={14} className="text-warning" />
                   <span className="text-xs font-semibold text-foreground">Sin ingredientes cargados</span>
@@ -323,7 +323,7 @@ export default function Shopping() {
             )}
 
             {allDone && unresolved.length === 0 && (
-              <div className="mt-6 rounded-xl border border-border bg-card p-6 text-center text-sm text-muted-foreground">
+              <div className="mt-6 rounded-xl border bg-card shadow-sm p-6 text-center text-sm text-muted-foreground">
                 <CheckCheck size={20} className="mx-auto mb-2 text-primary" />
                 ¡Ya tenés todo! No hace falta ir al super 🎉
               </div>

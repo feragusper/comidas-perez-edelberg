@@ -9,6 +9,8 @@ import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
 import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2, Wand2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";
@@ -85,7 +87,7 @@ export default function Index() {
       {/* Compact header: se funde con la barra de acciones de abajo */}
       <header className="bg-card/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-8 pt-5 pb-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Menú de la semana
           </h1>
         </div>
@@ -99,54 +101,41 @@ export default function Index() {
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
 
           {/* Suggestions toggle */}
-          <button
+          <Button
+            variant={suggestionsEnabled ? "secondary" : "outline"}
+            size="sm"
             onClick={toggleSuggestions}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
-              suggestionsEnabled
-                ? "bg-accent/10 border-accent/30 text-accent"
-                : "bg-muted/60 border-transparent text-muted-foreground hover:text-foreground"
-            )}
+            className="gap-1.5"
           >
             {loadingAI
-              ? <Loader2 size={12} className="animate-spin" />
-              : <Sparkles size={12} />
+              ? <Loader2 size={14} className="animate-spin" />
+              : <Sparkles size={14} />
             }
             {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
-          </button>
+          </Button>
 
           {/* Autocomplete whole week */}
-          <button
+          <Button
+            size="sm"
             onClick={runAutocomplete}
             disabled={loadingAutocomplete}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border",
-              "bg-primary/10 border-primary/30 text-primary hover:bg-primary/15 disabled:opacity-60 disabled:cursor-not-allowed"
-            )}
+            className="gap-1.5"
             title="Completa cena, desayuno y merienda de toda la semana según vuestro historial + ideas nuevas de IA"
           >
             {loadingAutocomplete
-              ? <Loader2 size={12} className="animate-spin" />
-              : <Wand2 size={12} />
+              ? <Loader2 size={14} className="animate-spin" />
+              : <Wand2 size={14} />
             }
             {loadingAutocomplete ? "Autocompletando…" : "Autocompletar semana"}
-          </button>
+          </Button>
 
           {/* View toggle */}
-          <div className="ml-auto flex items-center gap-1 bg-muted/60 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode("cards")}
-              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "cards" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
-            >
-              <LayoutList size={13} /> Lista
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all", viewMode === "table" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground")}
-            >
-              <Table2 size={13} /> Tabla
-            </button>
-          </div>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "cards" | "table")} className="ml-auto">
+            <TabsList>
+              <TabsTrigger value="cards" className="gap-1.5"><LayoutList size={14} /> Lista</TabsTrigger>
+              <TabsTrigger value="table" className="gap-1.5"><Table2 size={14} /> Tabla</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Stats bar */}
@@ -178,14 +167,14 @@ export default function Index() {
       {loading ? (
         <div className="px-4 sm:px-8 py-4 max-w-5xl mx-auto space-y-3 pb-20">
           {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div key={i} className="rounded-xl border bg-card shadow-sm p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <Skeleton className="h-5 w-24" />
                 <Skeleton className="h-4 w-16 ml-auto" />
               </div>
               <div className="space-y-2">
-                <Skeleton className="h-10 w-full rounded-xl" />
-                <Skeleton className="h-10 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-lg" />
+                <Skeleton className="h-10 w-full rounded-lg" />
               </div>
             </div>
           ))}
@@ -280,7 +269,7 @@ export default function Index() {
 
       {/* Stage badge — fixed bottom-right corner (no choca con la barra superior) */}
       {isStage && (
-        <div className="fixed bottom-3 right-3 z-50 flex items-center gap-1 px-2 py-0.5 rounded-md bg-warning text-white text-[10px] font-semibold pointer-events-none select-none shadow-sm">
+        <div className="fixed bottom-3 right-3 z-50 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-warning text-white text-[10px] font-semibold pointer-events-none select-none shadow-sm">
           <FlaskConical size={10} />
           STAGE
         </div>

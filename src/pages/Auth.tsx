@@ -35,14 +35,14 @@ export default function Auth() {
         {/* Gold ring accent */}
         <div className="absolute inset-0 rounded-[1.75rem] bg-gradient-gold opacity-60 blur-md" />
         <div className="relative rounded-[1.75rem] border border-white/15 bg-card/95 backdrop-blur-xl p-9 text-center shadow-luxe">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-emerald shadow-gold text-3xl">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-emerald shadow-gold text-3xl">
             🍽️
           </div>
 
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-gold mb-2">
             Acceso privado
           </p>
-          <h1 className="text-3xl font-bold text-foreground mb-1">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground mb-1">
             Menú de la semana
           </h1>
 
@@ -53,7 +53,7 @@ export default function Auth() {
               </p>
               <button
                 onClick={signOut}
-                className="w-full rounded-xl bg-muted px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted/70 transition-colors"
+                className="w-full rounded-lg bg-muted px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted/70 transition-colors"
               >
                 Salir e intentar con otra cuenta
               </button>
@@ -65,7 +65,7 @@ export default function Auth() {
               </p>
               <button
                 onClick={handleGoogle}
-                className="group w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-emerald px-4 py-3 text-sm font-semibold text-primary-foreground shadow-gold hover:opacity-95 transition-all hover:-translate-y-0.5"
+                className="group w-full flex items-center justify-center gap-2.5 rounded-lg bg-gradient-emerald px-4 py-3 text-sm font-semibold text-primary-foreground shadow-gold hover:opacity-95 transition-all hover:-translate-y-0.5"
               >
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white">
                   <GoogleIcon />

@@ -1,73 +1,180 @@
-# Welcome to your Lovable project
+# Comidas Perez-Edelberg
 
-## Project info
+A private weekly **meal planner** for a family of three. It turns the household's
+rules — dinner leftovers become the next day's lunch, some meals are keto, and
+there are things the small child can and can't eat — into a weekly plan, keeps a
+backlog of meal ideas based on what's in the pantry, and builds the shopping list
+from what's missing.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+> **Closed product.** Built for the Perez-Edelberg family. Access is restricted to
+> an allow-list of emails. Opening it for public use may be considered later.
 
-## How can I edit this code?
+🔗 **Product landing:** https://feragusper.github.io/comidas-perez-edelberg/
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+| Section | Route | What it does |
+|---|---|---|
+| **Weekly menu** | `/` | Plan dinner, breakfast and snack for the week, honoring the family rules. Mixes history with AI suggestions. Drag & drop reordering, week navigation. |
+| **My meals** | `/mis-comidas` | Personal meal catalog: name, emoji icon, ingredients, tags (keto, etc.), sorting by usage. |
+| **Don Bacilio** (pantry) | `/don-bacilio` | Track what's at home; ask the AI what to cook from it. |
+| **Shopping** | `/super` | Shopping list generated from the menu, grouped by category, with checkoff and copy-to-clipboard. |
+| **Reports** | `/reportes` | Usage analytics: most-used meals, keto ratio, weekly trends (charts). |
+| **Auth** | `/auth` | Email/Google login (allow-list gated). |
 
-Changes made via Lovable will be committed automatically to this repo.
+> `/normalizar` is a temporary internal tool used to migrate legacy meals to the
+> current meals+ingredients model. It will be removed once migration is complete.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Architecture
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Client-side **SPA** talking to a managed **Supabase** backend. The AI runs in
+Supabase **edge functions** behind the Lovable AI Gateway.
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+┌──────────────────────────────┐
+│  React SPA (Vite)            │  routing · TanStack Query · UI
+└──────────────┬───────────────┘
+               │ supabase-js / REST
+     ┌─────────┼───────────────────────────────┐
+     ▼         ▼                                ▼
+┌─────────┐ ┌───────────┐              ┌──────────────────┐
+│ Auth    │ │ Postgres  │              │ Edge Functions    │
+│ (allow- │ │ (RLS)     │              │ (Deno)            │
+│ list)   │ │           │              │  → Lovable AI GW  │
+└─────────┘ └───────────┘              │  → Gemini         │
+                                       └──────────────────┘
 ```
 
-**Edit a file directly in GitHub**
+### Data model
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Meals are combinations of ingredients.** `meals.ingredient_ids` references
+  `ingredients.ingredient_id`. An empty array means the meal is pending
+  normalization.
+- **`meal_plan` stores a full food snapshot per week.** Historical snapshots are
+  never rewritten — they're resolved by id against the live catalog at read time.
+  `kind: "ingredient"` marks a standalone ingredient in a slot; absence of `kind`
+  means meal (legacy).
+- **Stage vs prod share one database**, separated by key prefixes
+  (`stage_`/`prod_` in `meal_plan.week_key` and `pantry.env`). `localhost` counts
+  as stage.
 
-**Use GitHub Codespaces**
+Main tables: `meals`, `ingredients`, `custom_meals`, `meal_plan`, `pantry`,
+`allowed_emails` (+ `is_allowed_user()` for access control).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Edge functions (`supabase/functions/`)
 
-## What technologies are used for this project?
+- `suggest-meals` — meal ideas for the weekly plan
+- `suggest-from-ingredients` — what to cook from the pantry
+- `suggest-ingredients-for-meal` — ingredient suggestions for a meal
+- `autocomplete-week` — fill a whole week from history + AI
+- `generate-shopping-list` — build the shopping list from the plan
 
-This project is built with:
+All AI calls go through the Lovable AI Gateway (`ai.gateway.lovable.dev`) using
+`google/gemini-3-flash-preview`, with rate-limit and credit handling.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## Tech stack
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- **Language:** TypeScript
+- **Framework:** React 18 + Vite
+- **UI:** Tailwind CSS, shadcn/ui (Radix UI), lucide-react icons
+- **Data/state:** TanStack Query, React Router
+- **Forms/validation:** React Hook Form + Zod
+- **Charts:** Recharts
+- **Drag & drop:** @hello-pangea/dnd
+- **Backend:** Supabase (Postgres + RLS, Auth, Edge Functions on Deno)
+- **AI:** Lovable AI Gateway → Gemini
+- **Testing:** Vitest + Testing Library (jsdom)
+- **Platform:** Lovable (build & continuous deploy)
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## Project structure
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```
+src/
+├── pages/              # Route-level screens (Index, CustomMeals, DonBacilio, …)
+├── components/         # App components
+│   └── ui/             # shadcn/ui primitives
+├── hooks/              # Data + UI hooks (useMealPlan, useMeals, usePantry, useAuth, …)
+├── integrations/
+│   ├── supabase/       # client + generated types
+│   └── lovable/        # Lovable auth integration
+├── data/               # Static data (food taxonomy, emojis, seed meals)
+├── lib/                # Utilities (env, meal-plan usage helpers)
+└── test/               # Vitest setup + tests
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+supabase/
+├── functions/          # Deno edge functions (AI)
+└── migrations/         # SQL migrations
+
+docs/                   # Product landing page (served on GitHub Pages)
+.github/workflows/      # GitHub Pages deploy
+```
+
+---
+
+## Local development
+
+Requires **Node.js** and **npm**.
+
+```sh
+git clone https://github.com/feragusper/comidas-perez-edelberg.git
+cd comidas-perez-edelberg
+npm i
+npm run dev          # http://localhost:8080
+```
+
+### Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Dev server (Vite, port 8080) |
+| `npm run build` | Production build |
+| `npm run build:dev` | Development-mode build |
+| `npm run lint` | ESLint |
+| `npm run test` | Run tests (Vitest) |
+| `npm run test:watch` | Tests in watch mode |
+
+### Environment
+
+`.env` holds the Supabase connection (publishable/anon key only — safe to be
+public; security is enforced by Row Level Security):
+
+```
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PROJECT_ID=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+```
+
+Google OAuth starts at `/~oauth/initiate`, an endpoint that only exists on Lovable
+hosting; on localhost it's proxied to the Lovable project domain (see
+`vite.config.ts`).
+
+---
+
+## Backend & deployment
+
+The Supabase project is owned by **Lovable**; there is no local Supabase CLI.
+
+- **App:** Lovable builds and deploys the SPA continuously from `main`.
+- **Landing:** the static page in `docs/` is published to GitHub Pages via
+  `.github/workflows/deploy-pages.yml` on every push touching `docs/`.
+- **Migrations / edge functions** can't be applied locally — commit them, push,
+  and ask Lovable to apply them as-is.
+- Lovable also pushes commits to `main`; always
+  `git pull --rebase --autostash` before pushing.
+
+---
+
+## Authors
+
+- **Fernando Perez** — development · product
+- **Debora Edelberg** — product · design
+
+Built with AI assistance via Lovable.

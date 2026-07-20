@@ -45,7 +45,7 @@ export function usePantry() {
         { env: envKey(), items: next as unknown as never[] },
         { onConflict: "env" }
       );
-    if (error) console.error("Error saving pantry:", error);
+    if (error) console.error("Error saving pantry:", error.message, error.details, error.hint);
   }, []);
 
   const scheduleSave = useCallback((next: PantryItem[]) => {
@@ -73,10 +73,12 @@ export function usePantry() {
     return () => { cancelled = true; };
   }, []);
 
-  // Realtime
+  // Realtime. Channel name must be unique per hook instance: supabase.channel()
+  // returns the same channel object for a repeated name, and calling .on() on an
+  // already-subscribed channel throws (e.g. page + picker both using usePantry).
   useEffect(() => {
     const channel = supabase
-      .channel(`pantry_${envKey()}`)
+      .channel(`pantry_${envKey()}_${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "pantry", filter: `env=eq.${envKey()}` },

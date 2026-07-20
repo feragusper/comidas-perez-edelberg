@@ -391,6 +391,7 @@ export function WeekTableView({
           prevDinner={pickerPrevDinner}
           extraMeals={extraMeals}
           ingredients={ingredients}
+          highlightPantry
           onCustomMeal={onCustomMeal}
           onCustomIngredient={onCustomIngredient}
           onSelect={handlePickerSelect}

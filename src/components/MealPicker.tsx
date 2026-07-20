@@ -5,6 +5,7 @@ import { FoodWizard } from "@/components/FoodWizard";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { useKeyboardInset, useBodyScrollLock } from "@/hooks/useKeyboardInset";
 import { useMealPlanUsage } from "@/hooks/useMealPlanUsage";
+import { usePantry, normalizePantryName } from "@/hooks/usePantry";
 import { usageCount } from "@/lib/mealPlanUsage";
 import { cn } from "@/lib/utils";
 import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
@@ -30,6 +31,8 @@ interface MealPickerProps {
   categories?: string[];
   /** Solo ingredientes: oculta comidas y fuerza creación como ingrediente. */
   ingredientsOnly?: boolean;
+  /** Muestra arriba, destacado, lo que ya está en la despensa (Don Bacilio). */
+  highlightPantry?: boolean;
   /** Título del modal (p.ej. "Elegir desayuno" para el slot de desayuno). */
   title?: string;
 }
@@ -47,7 +50,7 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false, title: titleOverride }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false, highlightPantry = false, title: titleOverride }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
@@ -55,6 +58,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const kbInset = useKeyboardInset();
   useBodyScrollLock();
   const { mealUsages } = useMealPlanUsage();
+  const { items: pantryItems } = usePantry();
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && wizardName === null) onClose(); };
@@ -95,20 +99,30 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const hasSearch = search.trim().length > 0;
   const noResults = hasSearch && filtered.length === 0 && filteredIngredients.length === 0;
 
+  // "En Don Bacilio" group: catalog items whose name matches the pantry.
+  // Shown prominently on top; excluded from the groups below.
+  const pantryNames = new Set(pantryItems.map((p) => normalizePantryName(p.name)));
+  const inPantry = (name: string) => pantryNames.has(normalizePantryName(name));
+  const pantryPool: Meal[] = highlightPantry
+    ? [...filtered.filter((m) => inPantry(m.name)), ...filteredIngredients.filter((i) => inPantry(i.name))]
+    : [];
+  const pantryIds = new Set(pantryPool.map((f) => f.id));
+
   // "Con lo de anoche" group (only for main meals)
   const prevRelated: Meal[] = (!isSide && prevDinner)
-    ? filtered.filter((m) => m.category === prevDinner.category)
+    ? filtered.filter((m) => m.category === prevDinner.category && !pantryIds.has(m.id))
     : [];
   const prevRelatedIds = new Set(prevRelated.map((m) => m.id));
 
   // Custom meals group (in main step)
   const customPool = !isSide
-    ? filtered.filter((m) => m.id.startsWith("custom-") && !prevRelatedIds.has(m.id))
+    ? filtered.filter((m) => m.id.startsWith("custom-") && !prevRelatedIds.has(m.id) && !pantryIds.has(m.id))
     : [];
   const customIds = new Set(customPool.map((m) => m.id));
 
   // Rest grouped by category
-  const rest = filtered.filter((m) => !prevRelatedIds.has(m.id) && !customIds.has(m.id));
+  const rest = filtered.filter((m) => !prevRelatedIds.has(m.id) && !customIds.has(m.id) && !pantryIds.has(m.id));
+  const restIngredients = filteredIngredients.filter((i) => !pantryIds.has(i.id));
   const grouped = (categories ?? MEAL_CATEGORIES).reduce<Record<string, Meal[]>>((acc, cat) => {
     const meals = rest.filter((m) => m.category === cat);
     if (meals.length) acc[cat] = meals;
@@ -255,6 +269,20 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             </button>
           )}
 
+          {/* Pantry group: what's already at home (Don Bacilio) */}
+          {!noResults && pantryPool.length > 0 && (
+            <div className="rounded-xl border-2 border-baby-safe/30 bg-baby-safe-bg p-3">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-baby-safe mb-2">
+                🏠 Ya en casa (Don Bacilio)
+              </h4>
+              <div className="space-y-2">
+                {pantryPool.map((food) => (
+                  <MealRow key={food.id} meal={food} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Prev dinner related group (main only) */}
           {!noResults && prevRelated.length > 0 && (
             <CollapsibleGroup
@@ -315,16 +343,16 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           ))}
 
           {/* Sides list */}
-          {isSide && !noResults && filtered.length > 0 && (
+          {isSide && !noResults && rest.length > 0 && (
             <CollapsibleGroup
               id="picker:guarniciones"
               forceOpen={hasSearch}
-              count={filtered.length}
+              count={rest.length}
               title="Guarniciones"
               headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
             >
               <div className="space-y-2">
-                {filtered.map((meal) => (
+                {rest.map((meal) => (
                   <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>
@@ -332,16 +360,16 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
           )}
 
           {/* Ingredients group (both steps) */}
-          {!noResults && filteredIngredients.length > 0 && (
+          {!noResults && restIngredients.length > 0 && (
             <CollapsibleGroup
               id="picker:ingredientes"
               forceOpen={hasSearch}
-              count={filteredIngredients.length}
+              count={restIngredients.length}
               title="🥕 Ingredientes"
               headerClassName="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
             >
               <div className="space-y-2">
-                {filteredIngredients.map((ing) => (
+                {restIngredients.map((ing) => (
                   <MealRow key={ing.id} meal={ing} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
                 ))}
               </div>

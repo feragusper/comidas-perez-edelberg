@@ -55,16 +55,47 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
   const [wizardName, setWizardName] = useState<string | null>(null);
+  // Comida elegida que está en la despensa y espera respuesta a "¿es la última?"
+  const [confirmFood, setConfirmFood] = useState<Meal | null>(null);
   const kbInset = useKeyboardInset();
   useBodyScrollLock();
   const { mealUsages } = useMealPlanUsage();
-  const { items: pantryItems } = usePantry();
+  const { items: pantryItems, setDepleteOnUse } = usePantry();
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && wizardName === null) onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (confirmFood) setConfirmFood(null);
+      else if (wizardName === null) onClose();
+    };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onClose, wizardName]);
+  }, [onClose, wizardName, confirmFood]);
+
+  /**
+   * Selección final de un alimento. Si está en la despensa y todavía no sabemos
+   * si es lo último que queda, primero se pregunta (ver overlay de confirmación).
+   */
+  const handlePick = (food: Meal) => {
+    if (highlightPantry) {
+      const match = pantryItems.find((p) => normalizePantryName(p.name) === normalizePantryName(food.name));
+      if (match && match.depleteOnUse === undefined) {
+        setConfirmFood(food);
+        return;
+      }
+    }
+    onSelect(food);
+    onClose();
+  };
+
+  const answerConfirm = (isLast: boolean) => {
+    if (!confirmFood) return;
+    setDepleteOnUse(confirmFood.name, isLast);
+    const food = confirmFood;
+    setConfirmFood(null);
+    onSelect(food);
+    onClose();
+  };
 
   const isBaby = mode === "baby";
   const isSide = step === "side";
@@ -277,7 +308,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
               </h4>
               <div className="space-y-2">
                 {pantryPool.map((food) => (
-                  <MealRow key={food.id} meal={food} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={food.id} meal={food} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </div>
@@ -301,7 +332,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             >
               <div className="space-y-2">
                 {prevRelated.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={meal.id} meal={meal} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </CollapsibleGroup>
@@ -318,7 +349,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             >
               <div className="space-y-2">
                 {customPool.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={meal.id} meal={meal} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </CollapsibleGroup>
@@ -336,7 +367,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             >
               <div className="space-y-2">
                 {meals.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={meal.id} meal={meal} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </CollapsibleGroup>
@@ -353,7 +384,7 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             >
               <div className="space-y-2">
                 {rest.map((meal) => (
-                  <MealRow key={meal.id} meal={meal} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={meal.id} meal={meal} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </CollapsibleGroup>
@@ -370,27 +401,61 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
             >
               <div className="space-y-2">
                 {restIngredients.map((ing) => (
-                  <MealRow key={ing.id} meal={ing} onSelect={onSelect} onClose={onClose} isBaby={isBaby} />
+                  <MealRow key={ing.id} meal={ing} onPick={handlePick} isBaby={isBaby} />
                 ))}
               </div>
             </CollapsibleGroup>
           )}
 
         </div>
+
+        {/* Confirmación: la comida elegida está en Don Bacilio, ¿es lo último que queda? */}
+        {confirmFood && (
+          <div className="absolute inset-0 z-20 bg-card/95 backdrop-blur-sm flex items-center justify-center p-6">
+            <div className="text-center space-y-4 max-w-sm">
+              <p className="text-4xl">{confirmFood.emoji}</p>
+              <p className="text-base font-medium text-foreground">
+                {confirmFood.name} está en Don Bacilio
+              </p>
+              <p className="text-sm text-muted-foreground">
+                ¿Es lo último que queda? Si es lo último, cuando pase el día se saca solo de Don Bacilio.
+              </p>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => answerConfirm(true)}
+                  className="w-full px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all"
+                >
+                  ⚠ Sí, es lo último
+                </button>
+                <button
+                  onClick={() => answerConfirm(false)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted transition-all"
+                >
+                  Hay más en casa
+                </button>
+                <button
+                  onClick={() => setConfirmFood(null)}
+                  className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors mt-1"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function MealRow({ meal, onSelect, onClose, isBaby }: {
+function MealRow({ meal, onPick, isBaby }: {
   meal: Meal;
-  onSelect: (m: Meal) => void;
-  onClose: () => void;
+  onPick: (m: Meal) => void;
   isBaby: boolean;
 }) {
   return (
     <button
-      onClick={() => { onSelect(meal); onClose(); }}
+      onClick={() => onPick(meal)}
       className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent transition-all"
     >
       <div className="flex items-start gap-3">

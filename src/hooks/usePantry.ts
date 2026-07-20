@@ -16,6 +16,12 @@ export interface PantryItem {
    * despensa pero no se borra, así vuelve si se cambia la comida de ese día.
    */
   usedOn?: PantryUsedOn;
+  /**
+   * Respuesta a "¿es lo último que queda?" al elegirlo en el menú:
+   * true = se consume al comerlo (sale de la despensa cuando pasa el día);
+   * false = queda más en casa (nunca sale solo); undefined = todavía no se preguntó.
+   */
+  depleteOnUse?: boolean;
 }
 
 function envKey(): string {
@@ -108,7 +114,7 @@ export function usePantry() {
       const n = normalizePantryName(item.name);
       const existing = prev.find((p) => normalizePantryName(p.name) === n);
       if (existing) {
-        // Si estaba marcado como usado, re-agregarlo lo revive.
+        // Si estaba marcado como usado, re-agregarlo lo revive (y resetea "última").
         if (!existing.usedOn) return prev;
         const next = prev.map((p) => (p === existing ? { name: p.name, emoji: p.emoji } : p));
         scheduleSave(next);
@@ -144,6 +150,22 @@ export function usePantry() {
     });
   }, [scheduleSave]);
 
+  /** Setea la respuesta a "¿es lo último que queda?" de un ítem. */
+  const setDepleteOnUse = useCallback((name: string, value: boolean) => {
+    setItems((prev) => {
+      const n = normalizePantryName(name);
+      let changed = false;
+      const next = prev.map((p) => {
+        if (normalizePantryName(p.name) !== n || p.depleteOnUse === value) return p;
+        changed = true;
+        return { ...p, depleteOnUse: value };
+      });
+      if (!changed) return prev;
+      scheduleSave(next);
+      return next;
+    });
+  }, [scheduleSave]);
+
   /** Devuelve un ítem usado a la despensa (se cambió la comida que lo consumía). */
   const clearUsed = useCallback((name: string) => {
     setItems((prev) => {
@@ -152,7 +174,9 @@ export function usePantry() {
       const next = prev.map((p) => {
         if (!p.usedOn || normalizePantryName(p.name) !== n) return p;
         changed = true;
-        return { name: p.name, emoji: p.emoji };
+        // Mantiene depleteOnUse: sigue siendo lo último que queda.
+        const { usedOn: _drop, ...rest } = p;
+        return rest;
       });
       if (!changed) return prev;
       scheduleSave(next);
@@ -164,5 +188,5 @@ export function usePantry() {
   // `allItems`: incluye los consumidos, para reconciliar contra el menú.
   const visibleItems = items.filter((p) => !p.usedOn);
 
-  return { items: visibleItems, allItems: items, loading, addItem, removeItem, markUsed, clearUsed };
+  return { items: visibleItems, allItems: items, loading, addItem, removeItem, markUsed, clearUsed, setDepleteOnUse };
 }

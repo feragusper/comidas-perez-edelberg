@@ -7,7 +7,7 @@ import { useIngredients } from "@/hooks/useIngredients";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2, Wand2 } from "lucide-react";
+import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +15,6 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
 import { TopNav } from "@/components/TopNav";
 
-import { useWeekAutocomplete } from "@/hooks/useWeekAutocomplete";
 import { usePantry, normalizePantryName } from "@/hooks/usePantry";
 import { syncPantryWithPlan } from "@/lib/pantryPlan";
 import { cn } from "@/lib/utils";
@@ -52,7 +51,6 @@ export default function Index() {
     addExtra, setExtraAt, removeExtraAt,
     removeMainOnly,
     swapSlots,
-    autocompleteWeek,
   } = useMealPlan(activeWeek);
 
   const handleDragEnd = (result: DropResult) => {
@@ -73,7 +71,9 @@ export default function Index() {
 
   // Despensa (Don Bacilio): badges en los slots + consumo automático al pasar el día.
   const { allItems: pantryAll, loading: pantryLoading, markUsed: pantryMarkUsed, clearUsed: pantryClearUsed } = usePantry();
-  const pantryNames = new Set(pantryAll.map((p) => normalizePantryName(p.name)));
+  const pantryStatus = new Map(
+    pantryAll.map((p) => [normalizePantryName(p.name), p.depleteOnUse ? "last" : "stocked"] as const)
+  );
   useEffect(() => {
     // Nunca reconciliar contra un plan que no cargó: parecería vacío y
     // devolvería a la despensa ítems que sí están usados.
@@ -83,10 +83,6 @@ export default function Index() {
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan, mealsCatalog);
-
-  const { run: runAutocomplete, loading: loadingAutocomplete } =
-    useWeekAutocomplete(plan, activeWeek, autocompleteWeek, mealsCatalog);
-
 
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;
@@ -124,21 +120,6 @@ export default function Index() {
               : <Sparkles size={14} />
             }
             {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
-          </Button>
-
-          {/* Autocomplete whole week */}
-          <Button
-            size="sm"
-            onClick={runAutocomplete}
-            disabled={loadingAutocomplete}
-            className="gap-1.5"
-            title="Completa cena, desayuno y merienda de toda la semana según vuestro historial + ideas nuevas de IA"
-          >
-            {loadingAutocomplete
-              ? <Loader2 size={14} className="animate-spin" />
-              : <Wand2 size={14} />
-            }
-            {loadingAutocomplete ? "Autocompletando…" : "Autocompletar semana"}
           </Button>
 
           {/* View toggle */}
@@ -239,7 +220,7 @@ export default function Index() {
                   onRemoveMain={(slot) => removeMainOnly(idx, slot)}
                   extraMeals={mealsCatalog}
                   ingredients={ingredients}
-                  pantryNames={pantryNames}
+                  pantryStatus={pantryStatus}
                   onCustomMeal={saveMeal}
                   onCustomIngredient={(ing) => void addIngredient(ing)}
                 />
@@ -272,7 +253,7 @@ export default function Index() {
                 onRemoveMain={removeMainOnly}
                 extraMeals={mealsCatalog}
                 ingredients={ingredients}
-                pantryNames={pantryNames}
+                pantryStatus={pantryStatus}
                 onCustomMeal={saveMeal}
                 onCustomIngredient={(ing) => void addIngredient(ing)}
               />

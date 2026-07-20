@@ -25,7 +25,7 @@ const INGREDIENT_SUBGROUPS = ["Carnes", "Verdura", "Fruta", "Otros"] as const;
 type PantryGroup = (typeof INGREDIENT_SUBGROUPS)[number] | "Comidas";
 
 export default function DonBacilio() {
-  const { items, allItems, addItem, removeItem, markUsed, clearUsed, loading: pantryLoading } = usePantry();
+  const { items, allItems, addItem, removeItem, markUsed, clearUsed, setDepleteOnUse, loading: pantryLoading } = usePantry();
   const { meals } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -89,6 +89,17 @@ export default function DonBacilio() {
         >
           🗓 {day}
         </span>
+      )}
+      {it.depleteOnUse && (
+        <button
+          onClick={() => setDepleteOnUse(it.name, false)}
+          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-warning bg-warning/10 border border-warning/30 rounded-full px-2 py-0.5 hover:bg-warning/20 transition-colors"
+          title={day
+            ? "Es lo último que queda: cuando pase el día del menú se saca solo de acá. Tocar si en realidad hay más."
+            : "Es lo último que queda: se sacará solo cuando se coma. Tocar si en realidad hay más."}
+        >
+          ⚠ Última
+        </button>
       )}
       <button
         onClick={() => removeItem(it.name)}

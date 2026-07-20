@@ -35,7 +35,9 @@ export function dayPassed(weekKey: string, day: number): boolean {
 
 /**
  * Reconcilia la despensa contra el plan de una semana:
- * - Ítem disponible cuyo día planificado ya pasó → se marca como usado (sale de la despensa).
+ * - Ítem marcado "última unidad" (depleteOnUse) cuyo día planificado ya pasó →
+ *   se marca como usado (sale de la despensa). Los que tienen stock de sobra
+ *   (depleteOnUse false/undefined) nunca salen solos.
  * - Ítem usado por un slot de esta semana que ya no tiene esa comida → vuelve a la despensa.
  * Idempotente; se puede correr en cada render/carga.
  */
@@ -49,6 +51,7 @@ export function syncPantryWithPlan(opts: {
   const { allItems, plan, weekKey, markUsed, clearUsed } = opts;
   for (const it of allItems) {
     if (!it.usedOn) {
+      if (!it.depleteOnUse) continue;
       const passed = matchedDays(plan, it.name).filter((d) => dayPassed(weekKey, d));
       if (passed.length > 0) markUsed(it.name, { week: weekKey, day: passed[0] });
     } else if (it.usedOn.week === weekKey) {

@@ -8,7 +8,7 @@ import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
 import { Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
 import { AddMealButton } from "./AddMealButton";
-import { PantryBadge } from "./PantryBadge";
+import { PantryBadge, type PantryStatus } from "./PantryBadge";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface DayCardProps {
@@ -26,8 +26,8 @@ interface DayCardProps {
   loadingSuggestion?: boolean;
   extraMeals?: Meal[];
   ingredients?: Ingredient[];
-  /** Nombres normalizados de la despensa (Don Bacilio) para marcar alimentos en casa. */
-  pantryNames?: Set<string>;
+  /** Estado en la despensa (Don Bacilio) por nombre normalizado, para marcar alimentos. */
+  pantryStatus?: Map<string, PantryStatus>;
   onCustomMeal?: (meal: Meal) => void;
   onCustomIngredient?: (ing: Ingredient) => void;
   onSetDinner: (meal: Meal | null) => void;
@@ -121,7 +121,7 @@ function SimpleMealSlot({
   droppableId: string;
   dayIndex: number;
   extras?: React.ReactNode;
-  inPantry?: (m: Meal) => boolean;
+  inPantry?: (m: Meal) => PantryStatus | undefined;
 }) {
   return (
     <div className={cn("rounded-lg px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
@@ -138,7 +138,7 @@ function SimpleMealSlot({
             >
               <span className="text-base shrink-0">{meal.emoji}</span>
               <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
-              {inPantry?.(meal) && <PantryBadge />}
+              <PantryBadge status={inPantry?.(meal)} />
               <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
                 <Trash2 size={11} />
               </button>
@@ -169,7 +169,7 @@ function MealDisplay({
   babySafety?: boolean;
   isBaby?: boolean;
   showSide?: boolean;
-  inPantry?: (m: Meal) => boolean;
+  inPantry?: (m: Meal) => PantryStatus | undefined;
 }) {
   const isDelivery = isDeliveryMeal(meal);
   const isTakeaway = isTakeawayMeal(meal);
@@ -186,7 +186,7 @@ function MealDisplay({
       >
         <span className="text-base shrink-0">{meal.emoji}</span>
         <p className={cn("text-xs flex-1 break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
-        {inPantry?.(meal) && <PantryBadge />}
+        <PantryBadge status={inPantry?.(meal)} />
         <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
           <Trash2 size={11} />
         </button>
@@ -212,7 +212,7 @@ function MealDisplay({
         >
           <span className="text-base shrink-0">{side.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{side.name}</p>
-          {inPantry?.(side) && <PantryBadge />}
+          <PantryBadge status={inPantry?.(side)} />
           <button onClick={(e) => { e.stopPropagation(); onRemoveSide?.(); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
@@ -230,7 +230,7 @@ function ExtraItems({
   onEdit: (idx: number) => void;
   onRemove: (idx: number) => void;
   onAdd: () => void;
-  inPantry?: (m: Meal) => boolean;
+  inPantry?: (m: Meal) => PantryStatus | undefined;
 }) {
   return (
     <div className="space-y-1">
@@ -243,7 +243,7 @@ function ExtraItems({
         >
           <span className="text-base shrink-0">{m.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
-          {inPantry?.(m) && <PantryBadge />}
+          <PantryBadge status={inPantry?.(m)} />
           <button onClick={(e) => { e.stopPropagation(); onRemove(idx); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
@@ -259,7 +259,7 @@ export function DayCard({
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
-  extraMeals = [], ingredients = [], pantryNames, onCustomMeal, onCustomIngredient,
+  extraMeals = [], ingredients = [], pantryStatus, onCustomMeal, onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
@@ -270,8 +270,8 @@ export function DayCard({
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
-  // Marca 🏠 en alimentos que están en la despensa (Don Bacilio).
-  const inPantry = pantryNames ? (m: Meal) => pantryNames.has(normalizePantryName(m.name)) : undefined;
+  // Estado en la despensa (Don Bacilio) de un alimento, para la marquita 🏠.
+  const inPantry = pantryStatus ? (m: Meal) => pantryStatus.get(normalizePantryName(m.name)) : undefined;
   // When set, the picker is choosing an "extra" food for the target slot.
   // idx === null means adding a new extra; a number means editing that extra.
   const [extraEdit, setExtraEdit] = useState<{ idx: number | null } | null>(null);

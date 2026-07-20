@@ -8,7 +8,7 @@ import { Baby, Plus, Trash2, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { AddMealButton } from "./AddMealButton";
-import { PantryBadge } from "./PantryBadge";
+import { PantryBadge, type PantryStatus } from "./PantryBadge";
 
 type SlotKey = "breakfast" | "lunch" | "babyLunch" | "snack" | "dinner" | "babyDinner";
 
@@ -17,8 +17,8 @@ interface WeekTableViewProps {
   todayIdx?: number;
   extraMeals?: Meal[];
   ingredients?: Ingredient[];
-  /** Nombres normalizados de la despensa (Don Bacilio) para marcar alimentos en casa. */
-  pantryNames?: Set<string>;
+  /** Estado en la despensa (Don Bacilio) por nombre normalizado, para marcar alimentos. */
+  pantryStatus?: Map<string, PantryStatus>;
   onCustomMeal?: (meal: Meal) => void;
   onCustomIngredient?: (ing: Ingredient) => void;
   onSetDinner: (i: number, meal: Meal | null) => void;
@@ -89,7 +89,7 @@ interface CellProps {
   onAddExtra: () => void;
   onEditExtra: (idx: number) => void;
   onRemoveExtra: (idx: number) => void;
-  inPantry?: (m: Meal) => boolean;
+  inPantry?: (m: Meal) => PantryStatus | undefined;
 }
 
 
@@ -121,7 +121,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         <div className="flex-1 min-w-0">
           <p className={cn("text-xs leading-tight break-words", textColor)}>{meal.name}</p>
         </div>
-        {inPantry?.(meal) && <PantryBadge />}
+        <PantryBadge status={inPantry?.(meal)} />
         <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
           <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
             <Trash2 size={10} />
@@ -138,7 +138,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         >
           <span className="text-sm shrink-0">{side.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{side.name}</span>
-          {inPantry?.(side) && <PantryBadge />}
+          <PantryBadge status={inPantry?.(side)} />
           <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={(e) => { e.stopPropagation(); onRemoveSide(); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
               <Trash2 size={10} />
@@ -157,7 +157,7 @@ function EditableCell({ meal, side, extras, note, isBaby, hasSideSlot, onPickMai
         >
           <span className="text-sm shrink-0">{ex.emoji}</span>
           <span className={cn("text-xs leading-tight break-words flex-1 min-w-0", textColor)}>{ex.name}</span>
-          {inPantry?.(ex) && <PantryBadge />}
+          <PantryBadge status={inPantry?.(ex)} />
           <div className="flex items-center gap-0.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
             <button onClick={(e) => { e.stopPropagation(); onRemoveExtra(exIdx); }} className="p-0.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors">
               <Trash2 size={10} />
@@ -179,7 +179,7 @@ export function WeekTableView({
   todayIdx = -1,
   extraMeals = [],
   ingredients = [],
-  pantryNames,
+  pantryStatus,
   onCustomMeal,
   onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
@@ -194,8 +194,8 @@ export function WeekTableView({
   const [pickerSlot, setPickerSlot] = useState<SlotKey | null>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
   const [extraEdit, setExtraEdit] = useState<number | null | undefined>(undefined);
-  // Marca 🏠 en alimentos que están en la despensa (Don Bacilio).
-  const inPantry = pantryNames ? (m: Meal) => pantryNames.has(normalizePantryName(m.name)) : undefined;
+  // Estado en la despensa (Don Bacilio) de un alimento, para la marquita 🏠.
+  const inPantry = pantryStatus ? (m: Meal) => pantryStatus.get(normalizePantryName(m.name)) : undefined;
 
   const openMain = (dayIdx: number, slot: SlotKey) => {
     setExtraEdit(undefined);

@@ -2,9 +2,20 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 
+/** Slot del menú que consumió el ítem (semana ISO + día 0=Lunes…6=Domingo). */
+export interface PantryUsedOn {
+  week: string;
+  day: number;
+}
+
 export interface PantryItem {
   name: string;
   emoji: string;
+  /**
+   * Presente cuando el ítem ya se usó en el menú y ese día pasó: se oculta de la
+   * despensa pero no se borra, así vuelve si se cambia la comida de ese día.
+   */
+  usedOn?: PantryUsedOn;
 }
 
 function envKey(): string {
@@ -93,8 +104,16 @@ export function usePantry() {
 
   const addItem = useCallback((item: PantryItem) => {
     setItems((prev) => {
-      const exists = prev.some((p) => normalizePantryName(p.name) === normalizePantryName(item.name));
-      if (exists || !item.name.trim()) return prev;
+      if (!item.name.trim()) return prev;
+      const n = normalizePantryName(item.name);
+      const existing = prev.find((p) => normalizePantryName(p.name) === n);
+      if (existing) {
+        // Si estaba marcado como usado, re-agregarlo lo revive.
+        if (!existing.usedOn) return prev;
+        const next = prev.map((p) => (p === existing ? { name: p.name, emoji: p.emoji } : p));
+        scheduleSave(next);
+        return next;
+      }
       const next = [...prev, { name: item.name.trim(), emoji: item.emoji || "🥫" }];
       scheduleSave(next);
       return next;
@@ -109,5 +128,41 @@ export function usePantry() {
     });
   }, [scheduleSave]);
 
-  return { items, loading, addItem, removeItem };
+  /** Marca un ítem como consumido por un slot del menú (no-op si ya está usado). */
+  const markUsed = useCallback((name: string, usedOn: PantryUsedOn) => {
+    setItems((prev) => {
+      const n = normalizePantryName(name);
+      let changed = false;
+      const next = prev.map((p) => {
+        if (p.usedOn || normalizePantryName(p.name) !== n) return p;
+        changed = true;
+        return { ...p, usedOn };
+      });
+      if (!changed) return prev;
+      scheduleSave(next);
+      return next;
+    });
+  }, [scheduleSave]);
+
+  /** Devuelve un ítem usado a la despensa (se cambió la comida que lo consumía). */
+  const clearUsed = useCallback((name: string) => {
+    setItems((prev) => {
+      const n = normalizePantryName(name);
+      let changed = false;
+      const next = prev.map((p) => {
+        if (!p.usedOn || normalizePantryName(p.name) !== n) return p;
+        changed = true;
+        return { name: p.name, emoji: p.emoji };
+      });
+      if (!changed) return prev;
+      scheduleSave(next);
+      return next;
+    });
+  }, [scheduleSave]);
+
+  // `items`: lo disponible en casa (lo que se muestra y se usa para matchear).
+  // `allItems`: incluye los consumidos, para reconciliar contra el menú.
+  const visibleItems = items.filter((p) => !p.usedOn);
+
+  return { items: visibleItems, allItems: items, loading, addItem, removeItem, markUsed, clearUsed };
 }

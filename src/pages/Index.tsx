@@ -16,6 +16,8 @@ import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import { TopNav } from "@/components/TopNav";
 
 import { useWeekAutocomplete } from "@/hooks/useWeekAutocomplete";
+import { usePantry, normalizePantryName } from "@/hooks/usePantry";
+import { syncPantryWithPlan } from "@/lib/pantryPlan";
 import { cn } from "@/lib/utils";
 import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
@@ -41,7 +43,7 @@ export default function Index() {
     setExpandedDays(Array.from({ length: 7 }, (_, i) => idx === -1 || i >= idx));
   }, [activeWeek]);
   const {
-    plan, loading,
+    plan, loading, loadError,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,
@@ -68,6 +70,16 @@ export default function Index() {
 
   const { meals: mealsCatalog, saveMeal } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
+
+  // Despensa (Don Bacilio): badges en los slots + consumo automático al pasar el día.
+  const { allItems: pantryAll, loading: pantryLoading, markUsed: pantryMarkUsed, clearUsed: pantryClearUsed } = usePantry();
+  const pantryNames = new Set(pantryAll.map((p) => normalizePantryName(p.name)));
+  useEffect(() => {
+    // Nunca reconciliar contra un plan que no cargó: parecería vacío y
+    // devolvería a la despensa ítems que sí están usados.
+    if (loading || loadError || pantryLoading) return;
+    syncPantryWithPlan({ allItems: pantryAll, plan, weekKey: activeWeek, markUsed: pantryMarkUsed, clearUsed: pantryClearUsed });
+  });
 
   const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
     useDinnerSuggestions(plan, mealsCatalog);
@@ -227,6 +239,7 @@ export default function Index() {
                   onRemoveMain={(slot) => removeMainOnly(idx, slot)}
                   extraMeals={mealsCatalog}
                   ingredients={ingredients}
+                  pantryNames={pantryNames}
                   onCustomMeal={saveMeal}
                   onCustomIngredient={(ing) => void addIngredient(ing)}
                 />
@@ -259,6 +272,7 @@ export default function Index() {
                 onRemoveMain={removeMainOnly}
                 extraMeals={mealsCatalog}
                 ingredients={ingredients}
+                pantryNames={pantryNames}
                 onCustomMeal={saveMeal}
                 onCustomIngredient={(ing) => void addIngredient(ing)}
               />

@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { usePantry, normalizePantryName, type PantryItem } from "@/hooks/usePantry";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
+import { useMealPlan } from "@/hooks/useMealPlan";
+import { syncPantryWithPlan, matchedDays, dayPassed } from "@/lib/pantryPlan";
+import { currentWeekKey } from "@/lib/env";
 import { parseTag } from "@/data/foodTaxonomy";
 import { supabase } from "@/integrations/supabase/client";
 import { MealPicker } from "@/components/MealPicker";
@@ -22,12 +25,29 @@ const INGREDIENT_SUBGROUPS = ["Carnes", "Verdura", "Fruta", "Otros"] as const;
 type PantryGroup = (typeof INGREDIENT_SUBGROUPS)[number] | "Comidas";
 
 export default function DonBacilio() {
-  const { items, addItem, removeItem } = usePantry();
+  const { items, allItems, addItem, removeItem, markUsed, clearUsed, loading: pantryLoading } = usePantry();
   const { meals } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  // Plan de la semana actual: para mostrar "elegida para tal día" y para
+  // consumir automáticamente lo ya usado cuando pasa el día.
+  const week = currentWeekKey();
+  const { plan, loading: planLoading, loadError: planLoadError } = useMealPlan(week);
+  useEffect(() => {
+    // Nunca reconciliar contra un plan que no cargó (parecería vacío).
+    if (pantryLoading || planLoading || planLoadError) return;
+    syncPantryWithPlan({ allItems, plan, weekKey: week, markUsed, clearUsed });
+  });
+
+  /** Día de esta semana (aún no pasado) para el que está elegido el ítem, si hay. */
+  const plannedDay = (item: PantryItem): string | null => {
+    if (planLoading) return null;
+    const upcoming = matchedDays(plan, item.name).filter((d) => !dayPassed(week, d));
+    return upcoming.length > 0 ? plan[upcoming[0]].day : null;
+  };
 
   /**
    * Clasifica un ítem de la despensa matcheando su nombre contra los catálogos:
@@ -56,10 +76,20 @@ export default function DonBacilio() {
   }
   const hasIngredients = INGREDIENT_SUBGROUPS.some((g) => (grouped.get(g)?.length ?? 0) > 0);
 
-  const renderRow = (it: PantryItem) => (
+  const renderRow = (it: PantryItem) => {
+    const day = plannedDay(it);
+    return (
     <div key={it.name} className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-muted/50">
       <span className="shrink-0">{it.emoji}</span>
       <span className="text-sm text-foreground min-w-0 truncate">{it.name}</span>
+      {day && (
+        <span
+          className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-baby-safe bg-baby-safe-bg border border-baby-safe/30 rounded-full px-2 py-0.5"
+          title={`Elegida en el menú para el ${day.toLowerCase()}`}
+        >
+          🗓 {day}
+        </span>
+      )}
       <button
         onClick={() => removeItem(it.name)}
         className="ml-auto shrink-0 p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
@@ -68,7 +98,8 @@ export default function DonBacilio() {
         <X size={14} />
       </button>
     </div>
-  );
+    );
+  };
 
   const handleGenerate = async () => {
     if (items.length === 0) {

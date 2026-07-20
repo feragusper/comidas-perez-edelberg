@@ -3,10 +3,12 @@ import { DayPlan, MealSlot, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, is
 import { Meal, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
 import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
+import { normalizePantryName } from "@/hooks/usePantry";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
 import { Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
 import { AddMealButton } from "./AddMealButton";
+import { PantryBadge } from "./PantryBadge";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 
 interface DayCardProps {
@@ -24,6 +26,8 @@ interface DayCardProps {
   loadingSuggestion?: boolean;
   extraMeals?: Meal[];
   ingredients?: Ingredient[];
+  /** Nombres normalizados de la despensa (Don Bacilio) para marcar alimentos en casa. */
+  pantryNames?: Set<string>;
   onCustomMeal?: (meal: Meal) => void;
   onCustomIngredient?: (ing: Ingredient) => void;
   onSetDinner: (meal: Meal | null) => void;
@@ -107,7 +111,7 @@ function DraggableMealSlot({ droppableId, hasMeal, children }: { droppableId: st
 function SimpleMealSlot({
   label, accent, bgClass, borderClass,
   meal, note, onPickMain, onChangeNote, onRemove, droppableId, dayIndex,
-  extras,
+  extras, inPantry,
 }: {
   label: string; accent: string; bgClass: string; borderClass: string;
   meal: Meal | null; note: string;
@@ -117,6 +121,7 @@ function SimpleMealSlot({
   droppableId: string;
   dayIndex: number;
   extras?: React.ReactNode;
+  inPantry?: (m: Meal) => boolean;
 }) {
   return (
     <div className={cn("rounded-lg px-3 py-2 border space-y-1.5", bgClass, borderClass)}>
@@ -133,6 +138,7 @@ function SimpleMealSlot({
             >
               <span className="text-base shrink-0">{meal.emoji}</span>
               <p className="text-xs text-foreground flex-1 break-words">{meal.name}</p>
+              {inPantry?.(meal) && <PantryBadge />}
               <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
                 <Trash2 size={11} />
               </button>
@@ -150,7 +156,7 @@ function SimpleMealSlot({
 function MealDisplay({
   meal, side, note,
   onChangeNote, onRemove, onChangeMeal, onChangeSide, onRemoveSide,
-  babySafety, isBaby, showSide,
+  babySafety, isBaby, showSide, inPantry,
 }: {
   meal: Meal;
   side?: Meal | null;
@@ -163,6 +169,7 @@ function MealDisplay({
   babySafety?: boolean;
   isBaby?: boolean;
   showSide?: boolean;
+  inPantry?: (m: Meal) => boolean;
 }) {
   const isDelivery = isDeliveryMeal(meal);
   const isTakeaway = isTakeawayMeal(meal);
@@ -179,6 +186,7 @@ function MealDisplay({
       >
         <span className="text-base shrink-0">{meal.emoji}</span>
         <p className={cn("text-xs flex-1 break-words", isEatingOut ? "text-warning" : "text-foreground")}>{meal.name}</p>
+        {inPantry?.(meal) && <PantryBadge />}
         <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors shrink-0">
           <Trash2 size={11} />
         </button>
@@ -204,6 +212,7 @@ function MealDisplay({
         >
           <span className="text-base shrink-0">{side.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{side.name}</p>
+          {inPantry?.(side) && <PantryBadge />}
           <button onClick={(e) => { e.stopPropagation(); onRemoveSide?.(); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
@@ -215,12 +224,13 @@ function MealDisplay({
 
 /** Renders extra food items for a meal slot + an "add" button. */
 function ExtraItems({
-  extras, onEdit, onRemove, onAdd,
+  extras, onEdit, onRemove, onAdd, inPantry,
 }: {
   extras: Meal[];
   onEdit: (idx: number) => void;
   onRemove: (idx: number) => void;
   onAdd: () => void;
+  inPantry?: (m: Meal) => boolean;
 }) {
   return (
     <div className="space-y-1">
@@ -233,6 +243,7 @@ function ExtraItems({
         >
           <span className="text-base shrink-0">{m.emoji}</span>
           <p className="text-xs text-foreground flex-1 break-words">{m.name}</p>
+          {inPantry?.(m) && <PantryBadge />}
           <button onClick={(e) => { e.stopPropagation(); onRemove(idx); }} className="p-1 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors shrink-0">
             <Trash2 size={11} />
           </button>
@@ -248,7 +259,7 @@ export function DayCard({
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
   dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
-  extraMeals = [], ingredients = [], onCustomMeal, onCustomIngredient,
+  extraMeals = [], ingredients = [], pantryNames, onCustomMeal, onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
   onSetBabyDinner, onSetBabyDinnerSide, onSetBabyDinnerNote, onHideBabyDinner, onResetBabyDinner,
@@ -259,6 +270,8 @@ export function DayCard({
 }: DayCardProps) {
   const [pickerTarget, setPickerTarget] = useState<PickerTarget>(null);
   const [pickerStep, setPickerStep] = useState<PickerStep>("main");
+  // Marca 🏠 en alimentos que están en la despensa (Don Bacilio).
+  const inPantry = pantryNames ? (m: Meal) => pantryNames.has(normalizePantryName(m.name)) : undefined;
   // When set, the picker is choosing an "extra" food for the target slot.
   // idx === null means adding a new extra; a number means editing that extra.
   const [extraEdit, setExtraEdit] = useState<{ idx: number | null } | null>(null);
@@ -375,6 +388,7 @@ export function DayCard({
               onChangeNote={onSetBreakfastNote}
               onRemove={() => onRemoveMain("breakfast")}
               droppableId={`${dayIndex}-breakfast`}
+              inPantry={inPantry}
               dayIndex={dayIndex}
               extras={
                 <ExtraItems
@@ -382,6 +396,7 @@ export function DayCard({
                   onEdit={(idx) => openExtraPicker("breakfast", idx)}
                   onRemove={(idx) => onRemoveExtra("breakfast", idx)}
                   onAdd={() => openExtraPicker("breakfast", null)}
+                  inPantry={inPantry}
                 />
               }
             />
@@ -406,7 +421,7 @@ export function DayCard({
                       onChangeMeal={() => openMainPicker("lunch")}
                       onChangeSide={() => openSidePicker("lunch")}
                       onRemoveSide={() => onSetLunchSide(null)}
-                      babySafety showSide
+                      babySafety showSide inPantry={inPantry}
                     />
                     {!isEatingOutMeal(dayPlan.lunch) && (
                       <ExtraItems
@@ -414,6 +429,7 @@ export function DayCard({
                         onEdit={(idx) => openExtraPicker("lunch", idx)}
                         onRemove={(idx) => onRemoveExtra("lunch", idx)}
                         onAdd={() => openExtraPicker("lunch", null)}
+                  inPantry={inPantry}
                       />
                     )}
                     {dayPlan.lunchOverridden && (
@@ -446,13 +462,14 @@ export function DayCard({
                         onChangeMeal={() => openMainPicker("babyLunch")}
                         onChangeSide={() => openSidePicker("babyLunch")}
                         onRemoveSide={() => onSetBabyLunchSide(null)}
-                        isBaby showSide
+                        isBaby showSide inPantry={inPantry}
                       />
                       <ExtraItems
                         extras={dayPlan.babyLunchExtras ?? []}
                         onEdit={(idx) => openExtraPicker("babyLunch", idx)}
                         onRemove={(idx) => onRemoveExtra("babyLunch", idx)}
                         onAdd={() => openExtraPicker("babyLunch", null)}
+                  inPantry={inPantry}
                       />
                       {dayPlan.babyLunchOverridden && (
                         <button onClick={onResetBabyLunch} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-1">
@@ -479,6 +496,7 @@ export function DayCard({
               onChangeNote={onSetSnackNote}
               onRemove={() => onRemoveMain("snack")}
               droppableId={`${dayIndex}-snack`}
+              inPantry={inPantry}
               dayIndex={dayIndex}
               extras={
                 <ExtraItems
@@ -486,6 +504,7 @@ export function DayCard({
                   onEdit={(idx) => openExtraPicker("snack", idx)}
                   onRemove={(idx) => onRemoveExtra("snack", idx)}
                   onAdd={() => openExtraPicker("snack", null)}
+                  inPantry={inPantry}
                 />
               }
             />
@@ -509,7 +528,7 @@ export function DayCard({
                       onChangeMeal={() => openMainPicker("dinner")}
                       onChangeSide={() => openSidePicker("dinner")}
                       onRemoveSide={() => onSetDinnerSide(null)}
-                      babySafety showSide
+                      babySafety showSide inPantry={inPantry}
                     />
                     {!isEatingOutMeal(dayPlan.dinner) && (
                       <ExtraItems
@@ -517,6 +536,7 @@ export function DayCard({
                         onEdit={(idx) => openExtraPicker("dinner", idx)}
                         onRemove={(idx) => onRemoveExtra("dinner", idx)}
                         onAdd={() => openExtraPicker("dinner", null)}
+                  inPantry={inPantry}
                       />
                     )}
                   </div>
@@ -597,13 +617,14 @@ export function DayCard({
                         onChangeMeal={() => openMainPicker("babyDinner")}
                         onChangeSide={() => openSidePicker("babyDinner")}
                         onRemoveSide={() => onSetBabyDinnerSide(null)}
-                        isBaby showSide
+                        isBaby showSide inPantry={inPantry}
                       />
                       <ExtraItems
                         extras={dayPlan.babyDinnerExtras ?? []}
                         onEdit={(idx) => openExtraPicker("babyDinner", idx)}
                         onRemove={(idx) => onRemoveExtra("babyDinner", idx)}
                         onAdd={() => openExtraPicker("babyDinner", null)}
+                  inPantry={inPantry}
                       />
                       {dayPlan.babyDinnerOverridden && (
                         <button onClick={onResetBabyDinner} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors pl-1">

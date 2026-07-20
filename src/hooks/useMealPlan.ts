@@ -160,6 +160,7 @@ const buildInitialPlan = (): DayPlan[] => {
 export function useMealPlan(weekKey: WeekKey) {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<{ weekKey: WeekKey; plan: DayPlan[] } | null>(null);
   const weekKeyRef = useRef(weekKey);
@@ -212,8 +213,9 @@ export function useMealPlan(weekKey: WeekKey) {
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
+        setLoadError(!!error);
         if (error) {
-          console.error("Error loading meal plan:", error);
+          console.error("Error loading meal plan:", error.message ?? error);
         } else if (data?.plan && Array.isArray(data.plan) && (data.plan as unknown[]).length > 0) {
           const raw = data.plan as unknown as (DayPlan & { isDelivery?: boolean })[];
           const migrated = raw.map((day) => {
@@ -626,6 +628,7 @@ export function useMealPlan(weekKey: WeekKey) {
   return {
     plan: planWithLunch,
     loading,
+    loadError,
     setDinner, setDinnerSide, setDinnerNote,
     setLunch, setLunchSide, setLunchNote, hideLunch, resetLunch,
     setBabyDinner, setBabyDinnerSide, setBabyDinnerNote, hideBabyDinner, resetBabyDinner,

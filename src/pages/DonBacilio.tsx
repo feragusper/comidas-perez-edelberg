@@ -26,7 +26,7 @@ type PantryGroup = (typeof INGREDIENT_SUBGROUPS)[number] | "Comidas";
 
 export default function DonBacilio() {
   const { items, allItems, addItem, removeItem, markUsed, clearUsed, setDepleteOnUse, loading: pantryLoading } = usePantry();
-  const { meals } = useMeals();
+  const { meals, saveMeal } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -162,6 +162,7 @@ export default function DonBacilio() {
             step="main"
             extraMeals={meals}
             ingredients={ingredients}
+            onCustomMeal={(meal) => void saveMeal(meal)}
             onCustomIngredient={(ing) => void addIngredient(ing)}
             onSelect={(food) => {
               // Tanto ingredientes sueltos como comidas van enteros a la despensa

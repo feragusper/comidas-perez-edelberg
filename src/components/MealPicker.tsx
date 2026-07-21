@@ -134,9 +134,10 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
   // Shown prominently on top; excluded from the groups below.
   const pantryNames = new Set(pantryItems.map((p) => normalizePantryName(p.name)));
   const inPantry = (name: string) => pantryNames.has(normalizePantryName(name));
-  const pantryPool: Meal[] = highlightPantry
-    ? [...filtered.filter((m) => inPantry(m.name)), ...filteredIngredients.filter((i) => inPantry(i.name))]
-    : [];
+  // Se separan comidas de ingredientes: dentro del grupo van comidas primero.
+  const pantryMeals: Meal[] = highlightPantry ? filtered.filter((m) => inPantry(m.name)) : [];
+  const pantryIngredients: Meal[] = highlightPantry ? filteredIngredients.filter((i) => inPantry(i.name)) : [];
+  const pantryPool: Meal[] = [...pantryMeals, ...pantryIngredients];
   const pantryIds = new Set(pantryPool.map((f) => f.id));
 
   // "Con lo de anoche" group (only for main meals)
@@ -306,11 +307,30 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
               <h4 className="text-xs font-semibold uppercase tracking-wider text-baby-safe mb-2">
                 🏠 Ya en casa (Don Bacilio)
               </h4>
-              <div className="space-y-2">
-                {pantryPool.map((food) => (
-                  <MealRow key={food.id} meal={food} onPick={handlePick} isBaby={isBaby} />
-                ))}
-              </div>
+              {pantryMeals.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    🍽️ Comidas ({pantryMeals.length})
+                  </p>
+                  <div className="space-y-2">
+                    {pantryMeals.map((food) => (
+                      <MealRow key={food.id} meal={food} onPick={handlePick} isBaby={isBaby} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {pantryIngredients.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
+                    🥕 Ingredientes ({pantryIngredients.length})
+                  </p>
+                  <div className="space-y-2">
+                    {pantryIngredients.map((food) => (
+                      <MealRow key={food.id} meal={food} onPick={handlePick} isBaby={isBaby} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

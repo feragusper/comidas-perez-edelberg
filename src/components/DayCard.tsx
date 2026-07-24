@@ -2,11 +2,10 @@ import { useState } from "react";
 import { DayPlan, MealSlot, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
-import { DinnerSuggestion } from "@/hooks/useDinnerSuggestions";
 import { normalizePantryName } from "@/hooks/usePantry";
 import { MealPicker, PickerMode, PickerStep } from "./MealPicker";
 import { cn } from "@/lib/utils";
-import { Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, Check, X, Sparkles, RefreshCw, Loader2, GripVertical } from "lucide-react";
+import { Baby, Trash2, Lock, ChevronDown, ChevronUp, RotateCcw, GripVertical } from "lucide-react";
 import { AddMealButton } from "./AddMealButton";
 import { PantryBadge, type PantryStatus } from "./PantryBadge";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
@@ -19,11 +18,6 @@ interface DayCardProps {
   prevDinner: Meal | null;
   expanded: boolean;
   onToggleExpanded: () => void;
-  dinnerSuggestion?: DinnerSuggestion | null;
-  onAcceptSuggestion?: (suggestion: DinnerSuggestion) => void;
-  onDismissSuggestion?: () => void;
-  onRegenerateSuggestion?: () => void;
-  loadingSuggestion?: boolean;
   extraMeals?: Meal[];
   ingredients?: Ingredient[];
   /** Estado en la despensa (Don Bacilio) por nombre normalizado, para marcar alimentos. */
@@ -258,7 +252,6 @@ export function DayCard({
   dayPlan, dayIndex, prevDinner,
   isToday = false, isPast = false,
   expanded, onToggleExpanded,
-  dinnerSuggestion, onAcceptSuggestion, onDismissSuggestion, onRegenerateSuggestion, loadingSuggestion,
   extraMeals = [], ingredients = [], pantryStatus, onCustomMeal, onCustomIngredient,
   onSetDinner, onSetDinnerSide, onSetDinnerNote,
   onSetLunch, onSetLunchSide, onSetLunchNote, onHideLunch, onResetLunch,
@@ -540,59 +533,6 @@ export function DayCard({
                       />
                     )}
                   </div>
-                ) : dinnerSuggestion ? (
-                  /* ── Suggested dinner + side chip ── */
-                  <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles size={12} className="text-primary/60" />
-                      <span className="text-xs text-primary/70 font-medium italic">
-                        {dinnerSuggestion.isAI ? "✨ Sugerencia IA keto" : "Sugerencia"}
-                      </span>
-                      <button
-                        onClick={() => onRegenerateSuggestion?.()}
-                        disabled={loadingSuggestion}
-                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                        title="Otra sugerencia"
-                      >
-                        {loadingSuggestion
-                          ? <Loader2 size={11} className="animate-spin" />
-                          : <RefreshCw size={11} />
-                        }
-                        Otra
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{dinnerSuggestion.meal.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground/80">{dinnerSuggestion.meal.name}</p>
-                        {dinnerSuggestion.side && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            + {dinnerSuggestion.side.emoji} {dinnerSuggestion.side.name}
-                          </p>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => onDismissSuggestion?.()}
-                        className="p-1.5 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        title="Descartar sugerencia"
-                      >
-                        <X size={13} />
-                      </button>
-                      <button
-                        onClick={() => onAcceptSuggestion?.(dinnerSuggestion)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity"
-                        title="Aceptar sugerencia"
-                      >
-                        <Check size={12} /> Aceptar
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => openMainPicker("dinner")}
-                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
-                    >
-                      Elegir otra cena
-                    </button>
-                  </div>
                 ) : (
                   <AddMealButton onClick={() => openMainPicker("dinner")} />
                 )}
@@ -650,6 +590,7 @@ export function DayCard({
           extraMeals={extraMeals}
           ingredients={ingredients}
           highlightPantry
+          suggestable={!extraEdit}
           onCustomMeal={onCustomMeal}
           onCustomIngredient={onCustomIngredient}
           onSelect={handlePickerSelect}

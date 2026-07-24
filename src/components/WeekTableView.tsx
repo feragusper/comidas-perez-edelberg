@@ -404,6 +404,7 @@ export function WeekTableView({
           extraMeals={extraMeals}
           ingredients={ingredients}
           highlightPantry
+          suggestable={extraEdit === undefined}
           onCustomMeal={onCustomMeal}
           onCustomIngredient={onCustomIngredient}
           onSelect={handlePickerSelect}

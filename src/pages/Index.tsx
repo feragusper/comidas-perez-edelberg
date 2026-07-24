@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMealPlan } from "@/hooks/useMealPlan";
-import { useDinnerSuggestions } from "@/hooks/useDinnerSuggestions";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { DayCard } from "@/components/DayCard";
 import { WeekTableView } from "@/components/WeekTableView";
 import { WeekNavigator } from "@/components/WeekNavigator";
-import { Baby, LayoutList, Table2, FlaskConical, Sparkles, Loader2 } from "lucide-react";
+import { Baby, LayoutList, Table2, FlaskConical } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 
@@ -81,9 +79,6 @@ export default function Index() {
     syncPantryWithPlan({ allItems: pantryAll, plan, weekKey: activeWeek, markUsed: pantryMarkUsed, clearUsed: pantryClearUsed });
   });
 
-  const { enabled: suggestionsEnabled, toggle: toggleSuggestions, suggestions, dismiss: dismissSuggestion, regenerateDay, loadingAI, loadingDayIndex } =
-    useDinnerSuggestions(plan, mealsCatalog);
-
   const adultDinners = plan.filter((d) => d.dinner !== null).length;
   const adultLunches = plan.filter((d) => d.lunch !== null).length;
   const babyDinners = plan.filter((d) => d.babyDinner !== null).length;
@@ -107,20 +102,6 @@ export default function Index() {
         <div className="max-w-5xl mx-auto px-4 sm:px-8 flex gap-1 pt-3 pb-2 flex-wrap items-center">
           {/* Week navigator */}
           <WeekNavigator weekKey={activeWeek} onChange={setActiveWeek} />
-
-          {/* Suggestions toggle */}
-          <Button
-            variant={suggestionsEnabled ? "secondary" : "outline"}
-            size="sm"
-            onClick={toggleSuggestions}
-            className="gap-1.5"
-          >
-            {loadingAI
-              ? <Loader2 size={14} className="animate-spin" />
-              : <Sparkles size={14} />
-            }
-            {loadingAI ? "Consultando IA…" : `Sugerencias IA ${suggestionsEnabled ? "on" : "off"}`}
-          </Button>
 
           {/* View toggle */}
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "cards" | "table")} className="ml-auto">
@@ -186,11 +167,6 @@ export default function Index() {
                   prevDinner={idx > 0 ? plan[idx - 1].dinner : null}
                   expanded={expandedDays[idx]}
                   onToggleExpanded={() => setExpandedDays(prev => prev.map((v, i) => i === idx ? !v : v))}
-                  dinnerSuggestion={suggestionsEnabled ? suggestions[idx] : null}
-                  onAcceptSuggestion={(s) => { setDinner(idx, s.meal); if (s.side) setDinnerSide(idx, s.side); }}
-                  onDismissSuggestion={() => dismissSuggestion(idx)}
-                  onRegenerateSuggestion={() => regenerateDay(idx)}
-                  loadingSuggestion={loadingDayIndex === idx}
                   onSetDinner={(meal) => setDinner(idx, meal)}
                   onSetDinnerSide={(meal) => setDinnerSide(idx, meal)}
                   onSetDinnerNote={(note) => setDinnerNote(idx, note)}

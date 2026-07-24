@@ -7,8 +7,10 @@ import { useKeyboardInset, useBodyScrollLock } from "@/hooks/useKeyboardInset";
 import { useMealPlanUsage } from "@/hooks/useMealPlanUsage";
 import { usePantry, normalizePantryName } from "@/hooks/usePantry";
 import { usageCount } from "@/lib/mealPlanUsage";
+import { suggestFromCatalog, suggestFromPantry, type PickerSuggestion } from "@/lib/mealSuggestions";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { X, Search, Baby, ChefHat, Leaf } from "lucide-react";
+import { X, Search, Baby, ChefHat, Leaf, Sparkles, Warehouse, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export type PickerMode = "adult" | "baby";
@@ -33,6 +35,8 @@ interface MealPickerProps {
   ingredientsOnly?: boolean;
   /** Muestra arriba, destacado, lo que ya está en la despensa (Don Bacilio). */
   highlightPantry?: boolean;
+  /** Habilita el botón de generar sugerencia (solo platos principales). */
+  suggestable?: boolean;
   /** Título del modal (p.ej. "Elegir desayuno" para el slot de desayuno). */
   title?: string;
 }
@@ -50,13 +54,16 @@ const safetyLabel: Record<BabySafety, string> = {
 };
 
 
-export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false, highlightPantry = false, title: titleOverride }: MealPickerProps) {
+export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredients = [], onSelect, onCustomMeal, onCustomIngredient, onClose, onSkipSide, categories, ingredientsOnly = false, highlightPantry = false, suggestable = false, title: titleOverride }: MealPickerProps) {
   const [search, setSearch] = useState("");
   const [dietFilter, setDietFilter] = useState<DietFilter>("all");
   // Nombre buscado que se está dando de alta en el wizard (null = wizard cerrado)
   const [wizardName, setWizardName] = useState<string | null>(null);
   // Comida elegida que está en la despensa y espera respuesta a "¿es la última?"
   const [confirmFood, setConfirmFood] = useState<Meal | null>(null);
+  // Sugerencias generadas por IA (null = no se pidió todavía).
+  const [suggestLoading, setSuggestLoading] = useState<"free" | "pantry" | null>(null);
+  const [suggestions, setSuggestions] = useState<PickerSuggestion[] | null>(null);
   const kbInset = useKeyboardInset();
   useBodyScrollLock();
   const { mealUsages } = useMealPlanUsage();
@@ -102,6 +109,45 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
 
   // Catálogo completo (viene de useMeals: DB con fallback estático)
   const allMeals = extraMeals;
+
+  // Sugerencia solo en platos principales (no guarniciones, ni desayuno/merienda, ni ingredientes).
+  const showSuggest = suggestable && !isSide && !ingredientsOnly && !categories;
+
+  const runSuggest = async (source: "free" | "pantry") => {
+    setSuggestLoading(source);
+    setSuggestions(null);
+    try {
+      if (source === "free") {
+        const s = await suggestFromCatalog(allMeals, isBaby);
+        setSuggestions(s ? [s] : []);
+      } else {
+        setSuggestions(await suggestFromPantry(pantryItems.map((p) => p.name)));
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      toast({
+        title: msg === "RATE_LIMITED" ? "Demasiadas peticiones"
+          : msg === "PAYMENT_REQUIRED" ? "Sin créditos disponibles"
+          : "Error generando sugerencia",
+        description: "Probá de nuevo en un rato.",
+        variant: "destructive",
+      });
+    } finally {
+      setSuggestLoading(null);
+    }
+  };
+
+  // Idea del catálogo → se elige directo (respeta el "¿es la última?" de la despensa).
+  // Idea de despensa → es comida nueva: se guarda y se elige.
+  const selectSuggestion = (s: PickerSuggestion) => {
+    if (s.isNew) {
+      onSelect(s.meal);
+      onCustomMeal?.(s.meal);
+      onClose();
+    } else {
+      handlePick(s.meal);
+    }
+  };
 
   // Custom meals (saved by the user) always appear in both steps,
   // regardless of whether they were saved as main or side.
@@ -299,6 +345,67 @@ export function MealPicker({ mode, step, prevDinner, extraMeals = [], ingredient
                 <p className="text-xs text-muted-foreground">Guardar y agregar como comida o ingrediente nuevo</p>
               </div>
             </button>
+          )}
+
+          {/* Generar sugerencia (solo platos principales) */}
+          {showSuggest && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 space-y-2.5">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={13} className="text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">Generar sugerencia</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => runSuggest("free")}
+                  disabled={suggestLoading !== null}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {suggestLoading === "free" ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  Sorprendeme
+                </button>
+                <button
+                  onClick={() => runSuggest("pantry")}
+                  disabled={suggestLoading !== null || pantryItems.length === 0}
+                  title={pantryItems.length === 0 ? "No hay nada en Don Bacilio todavía" : undefined}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-xs font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {suggestLoading === "pantry" ? <Loader2 size={13} className="animate-spin" /> : <Warehouse size={13} />}
+                  Con Don Bacilio
+                </button>
+              </div>
+              {suggestions && suggestLoading === null && suggestions.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-1">No se me ocurrió nada. Probá de nuevo.</p>
+              )}
+              {suggestions && suggestions.length > 0 && (
+                <div className="space-y-2">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.meal.id}
+                      onClick={() => selectSuggestion(s)}
+                      className="w-full text-left p-2.5 rounded-lg border border-border bg-card hover:bg-accent transition-colors flex items-start gap-2.5"
+                    >
+                      <span className="text-xl shrink-0">{s.meal.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-medium text-foreground">{s.meal.name}</p>
+                          {s.meal.isKeto && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-medium">
+                              <Leaf size={9} /> keto
+                            </span>
+                          )}
+                          {s.isNew && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">nueva</span>
+                          )}
+                        </div>
+                        {s.description && (
+                          <p className="text-xs text-muted-foreground mt-0.5 break-words">{s.description}</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Pantry group: what's already at home (Don Bacilio) */}

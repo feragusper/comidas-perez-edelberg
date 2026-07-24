@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Meal, DAYS, DELIVERY_DINNER, DELIVERY_LEFTOVERS, TAKEAWAY_LEFTOVERS } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
-import { envWeekKey } from "@/lib/env";
+import { envWeekKey, prevWeekKey } from "@/lib/env";
 
 export interface DayPlan {
   day: string;
@@ -161,6 +161,10 @@ export function useMealPlan(weekKey: WeekKey) {
   const [plan, setPlan] = useState<DayPlan[]>(buildInitialPlan);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  // Cena del domingo de la semana anterior, para que se herede como almuerzo del lunes.
+  const [prevSunday, setPrevSunday] = useState<
+    Pick<DayPlan, "dinner" | "dinnerSide" | "dinnerExtras" | "dinnerNote"> | null
+  >(null);
   const saveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<{ weekKey: WeekKey; plan: DayPlan[] } | null>(null);
   const weekKeyRef = useRef(weekKey);
@@ -267,6 +271,32 @@ export function useMealPlan(weekKey: WeekKey) {
     return () => { cancelled = true; };
   }, [weekKey]);
 
+  // Carga la cena del domingo de la semana anterior (para heredarla al almuerzo del lunes).
+  useEffect(() => {
+    let cancelled = false;
+    setPrevSunday(null);
+    supabase
+      .from("meal_plan")
+      .select("plan")
+      .eq("week_key", envWeekKey(prevWeekKey(weekKey)))
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled || error) return;
+        const raw = data?.plan as unknown as (DayPlan & { isDelivery?: boolean })[] | undefined;
+        const sunday = Array.isArray(raw) ? raw[6] : undefined; // Domingo = índice 6
+        if (!sunday) return;
+        const wasDelivery = sunday.isDelivery ?? false;
+        const dinner = wasDelivery && !sunday.dinner ? DELIVERY_DINNER : (sunday.dinner ?? null);
+        setPrevSunday({
+          dinner,
+          dinnerSide: sunday.dinnerSide ?? null,
+          dinnerExtras: Array.isArray(sunday.dinnerExtras) ? sunday.dinnerExtras : [],
+          dinnerNote: typeof sunday.dinnerNote === "string" ? sunday.dinnerNote : "",
+        });
+      });
+    return () => { cancelled = true; };
+  }, [weekKey]);
+
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
@@ -315,7 +345,9 @@ export function useMealPlan(weekKey: WeekKey) {
   }, [flushPendingSave]);
 
   const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
-    const prevDay = idx === 0 ? null : plan[idx - 1];
+    // El lunes hereda del domingo de la semana anterior (cross-semana).
+    const prevDay: Pick<DayPlan, "dinner" | "dinnerSide" | "dinnerExtras" | "dinnerNote"> | null =
+      idx === 0 ? prevSunday : plan[idx - 1];
     const prevDinner = prevDay?.dinner ?? null;
     const isPrevDelivery = isDeliveryMeal(prevDinner);
     const isPrevTakeaway = isTakeawayMeal(prevDinner);

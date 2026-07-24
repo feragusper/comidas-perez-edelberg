@@ -46,6 +46,11 @@ export function weekKeyToDate(weekKey: string): Date {
   return addWeeks(startOfYear, week - 1);
 }
 
+/** ISO week key of the week immediately before the given one. */
+export function prevWeekKey(weekKey: string): string {
+  return toWeekKey(addWeeks(weekKeyToDate(weekKey), -1));
+}
+
 /**
  * Returns a human-readable label for a week key.
  * e.g. "23 mar – 29 mar" or "Semana actual"

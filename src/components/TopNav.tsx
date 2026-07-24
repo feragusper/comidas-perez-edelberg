@@ -7,7 +7,6 @@ import {
   ShoppingCart,
   LogOut,
   Warehouse,
-  ListChecks,
   Menu as MenuIcon,
   X,
 } from "lucide-react";
@@ -20,8 +19,6 @@ const items = [
   { to: "/don-bacilio", label: "Don Bacilio", icon: Warehouse },
   { to: "/super", label: "Súper", icon: ShoppingCart },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
-  // Temporal: se elimina cuando todas las comidas tengan ingredientes
-  { to: "/normalizar", label: "Normalizar", icon: ListChecks },
 ];
 
 export function TopNav() {

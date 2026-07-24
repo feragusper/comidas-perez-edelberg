@@ -3,8 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isStageEnv } from "@/lib/env";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { Meal } from "@/data/meals";
-import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Leaf, ChevronDown, ChevronRight, Tag, Carrot, TriangleAlert } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BarChart3, PieChart, TrendingUp, Utensils, Baby, Coffee, Cookie, Layers, Leaf, ChevronDown, ChevronRight, Tag, Carrot } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,16 +28,14 @@ interface IngredientCount {
 /**
  * Expande las comidas contadas a sus ingredientes componentes.
  * Snapshots con kind "ingredient" cuentan directo; comidas se resuelven
- * contra el catálogo vivo. Devuelve también cuántas ocurrencias quedaron
- * sin expandir (comidas sin normalizar).
+ * contra el catálogo vivo.
  */
 function buildIngredientBreakdown(
   meals: MealCount[],
   catalogById: Map<string, Meal>,
   ingredientById: Map<string, Ingredient>,
-): { ranking: IngredientCount[]; unnormalizedCount: number } {
+): IngredientCount[] {
   const counts = new Map<string, IngredientCount>();
-  let unnormalized = 0;
 
   const add = (id: string, count: number) => {
     const existing = counts.get(id);
@@ -59,20 +56,15 @@ function buildIngredientBreakdown(
     const catalogMeal = catalogById.get(m.id);
     if (catalogMeal) {
       const ids = catalogMeal.ingredientIds ?? [];
-      if (ids.length === 0) { unnormalized += m.count; continue; }
       for (const iid of ids) add(iid, m.count);
       continue;
     }
     // Comida borrada del catálogo: si fue convertida a ingrediente, se resuelve por nombre
     const bySlug = ingredientById.get(ingredientSlug(m.name));
-    if (bySlug) { add(bySlug.id, m.count); continue; }
-    unnormalized += m.count;
+    if (bySlug) add(bySlug.id, m.count);
   }
 
-  return {
-    ranking: Array.from(counts.values()).sort((a, b) => b.count - a.count),
-    unnormalizedCount: unnormalized,
-  };
+  return Array.from(counts.values()).sort((a, b) => b.count - a.count);
 }
 
 interface MealCount {
@@ -246,18 +238,12 @@ export default function Reports() {
   const { ingredients } = useIngredients();
   const catalogById = useMemo(() => new Map(catalog.map((m) => [m.id, m])), [catalog]);
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
-  const { ranking: ingredientRanking, unnormalizedCount } = useMemo(
+  const ingredientRanking = useMemo(
     () => buildIngredientBreakdown(meals, catalogById, ingredientById),
     [meals, catalogById, ingredientById]
   );
   const ingredientTotal = ingredientRanking.reduce((s, i) => s + i.count, 0);
   const maxIngredientCount = ingredientRanking.length > 0 ? ingredientRanking[0].count : 1;
-  const isUnnormalizedMeal = (m: MealCount) => {
-    if (m.kind === "ingredient" || SENTINEL_IDS.has(m.id)) return false;
-    const catalogMeal = catalogById.get(m.id);
-    if (catalogMeal) return (catalogMeal.ingredientIds ?? []).length === 0;
-    return !ingredientById.has(ingredientSlug(m.name));
-  };
   const total = meals.reduce((s, m) => s + m.count, 0);
   const ketoCount = meals.reduce((s, m) => s + (m.isKeto ? m.count : 0), 0);
   const ketoPct = total ? Math.round((ketoCount / total) * 100) : 0;
@@ -409,13 +395,6 @@ export default function Reports() {
                   </span>
                 }
               >
-              {unnormalizedCount > 0 && (
-                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                  <TriangleAlert size={11} className="text-warning" />
-                  {unnormalizedCount} comida{unnormalizedCount === 1 ? "" : "s"} sin ingredientes cargados no se cuentan acá.{" "}
-                  <Link to="/normalizar" className="text-primary underline underline-offset-2">Normalizar →</Link>
-                </p>
-              )}
               {ingredientRanking.length === 0 && (
                 <p className="text-xs text-muted-foreground py-4 text-center">
                   Todavía no hay comidas con ingredientes cargados.
@@ -474,11 +453,6 @@ export default function Reports() {
                       {meal.isKeto && (
                         <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/15 text-secondary font-medium">
                           <Leaf size={9} /> keto
-                        </span>
-                      )}
-                      {isUnnormalizedMeal(meal) && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-warning/15 text-warning font-medium" title="Sin ingredientes cargados">
-                          <TriangleAlert size={9} /> sin normalizar
                         </span>
                       )}
                     </div>

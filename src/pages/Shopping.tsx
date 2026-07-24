@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,7 +11,7 @@ import { Meal } from "@/data/meals";
 import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
-import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, TriangleAlert } from "lucide-react";
+import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -21,13 +20,6 @@ interface ShoppingIngredient {
   name: string;
   emoji: string;
   category: string;
-  sources: string[];
-}
-
-interface UnresolvedMeal {
-  id: string;
-  name: string;
-  emoji: string;
   sources: string[];
 }
 
@@ -89,9 +81,8 @@ export default function Shopping() {
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
 
   /** Lista determinística: unión de ingredientes de las comidas planificadas desde hoy. */
-  const { list, unresolved, mealCount } = useMemo(() => {
+  const { list, mealCount } = useMemo(() => {
     const acc = new Map<string, ShoppingIngredient>();
-    const pending = new Map<string, UnresolvedMeal>();
     let count = 0;
 
     const addIngredientEntry = (id: string, fallbackName: string, fallbackEmoji: string, source: string) => {
@@ -134,20 +125,12 @@ export default function Shopping() {
           for (const iid of ids) addIngredientEntry(iid, iid, "🛒", `${d.day} · ${food.name}`);
         } else if (convertedIngredient) {
           addIngredientEntry(convertedIngredient.id, food.name, food.emoji, source);
-        } else {
-          const existing = pending.get(food.id);
-          if (existing) {
-            if (!existing.sources.includes(source)) existing.sources.push(source);
-          } else {
-            pending.set(food.id, { id: food.id, name: food.name, emoji: food.emoji, sources: [source] });
-          }
         }
       }
     }
 
     return {
       list: Array.from(acc.values()),
-      unresolved: Array.from(pending.values()),
       mealCount: count,
     };
   }, [plan, fromIdx, catalogById, ingredientById]);
@@ -217,7 +200,7 @@ export default function Shopping() {
           )}
         </div>
 
-        {list.length === 0 && unresolved.length === 0 ? (
+        {list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-10 border border-dashed border-border rounded-lg">
             No hay comidas planificadas a futuro esta semana.
           </p>
@@ -298,31 +281,7 @@ export default function Shopping() {
               })}
             </div>
 
-            {/* Comidas sin componentizar */}
-            {unresolved.length > 0 && (
-              <div className="mt-6 rounded-lg border border-warning/40 bg-warning/5 overflow-hidden">
-                <div className="px-3 py-2 bg-warning/10 flex items-center gap-2">
-                  <TriangleAlert size={14} className="text-warning" />
-                  <span className="text-xs font-semibold text-foreground">Sin ingredientes cargados</span>
-                  <Link to="/normalizar" className="ml-auto text-[11px] font-medium text-primary underline underline-offset-2">
-                    Normalizar →
-                  </Link>
-                </div>
-                <ul className="divide-y divide-border">
-                  {unresolved.map((m) => (
-                    <li key={m.id} className="flex items-start gap-3 px-3 py-2 text-sm">
-                      <span className="text-lg shrink-0">{m.emoji}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{m.name}</p>
-                        <p className="text-[11px] text-muted-foreground/80 mt-0.5 italic">{m.sources.join(" · ")}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {allDone && unresolved.length === 0 && (
+            {allDone && (
               <div className="mt-6 rounded-xl border bg-card shadow-sm p-6 text-center text-sm text-muted-foreground">
                 <CheckCheck size={20} className="mx-auto mb-2 text-primary" />
                 ¡Ya tenés todo! No hace falta ir al super 🎉

@@ -22,7 +22,7 @@ import { isStageEnv, currentWeekKey, todayDayIndex } from "@/lib/env";
 
 
 export default function Index() {
-  // Permite deep-links a una semana puntual (p.ej. desde /normalizar): /?week=2026-W23
+  // Permite deep-links a una semana puntual: /?week=2026-W23
   const [searchParams] = useSearchParams();
   const weekParam = searchParams.get("week");
   const [activeWeek, setActiveWeek] = useState<string>(() =>

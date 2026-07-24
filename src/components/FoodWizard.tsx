@@ -227,7 +227,7 @@ export function FoodWizard({
                   </div>
                   {ingredientIds.length === 0 && (
                     <p className="text-[11px] italic text-muted-foreground mt-1.5">
-                      Sin ingredientes la comida queda "sin normalizar" en reportes y súper.
+                      Sin ingredientes la comida no aparece en reportes ni súper.
                     </p>
                   )}
                 </div>

@@ -16,7 +16,7 @@ export interface Meal {
    * Los snapshots históricos de meal_plan no traen kind: ausente = comida.
    */
   kind?: "meal" | "ingredient";
-  /** Ingredientes que componen la comida (ingredients.ingredient_id). Vacío = sin normalizar. */
+  /** Ingredientes que componen la comida (ingredients.ingredient_id). */
   ingredientIds?: string[];
 }
 

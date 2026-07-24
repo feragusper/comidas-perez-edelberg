@@ -10,7 +10,7 @@ import { FoodWizard, WizardKind } from "@/components/FoodWizard";
 import { UsageChips } from "@/components/UsageChips";
 import { Usage, usageCount } from "@/lib/mealPlanUsage";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
-import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search, Leaf, ArrowUpDown, AlertTriangle } from "lucide-react";
+import { Pencil, Trash2, X, Check, RotateCcw, Plus, ChefHat, Carrot, Search, Leaf, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TopNav } from "@/components/TopNav";
@@ -51,7 +51,6 @@ export default function CustomMeals() {
   const [mealSort, setMealSort] = useState<MealSort>("mas-usadas");
   const [mealType, setMealType] = useState<MealTypeFilter>("all");
   const [ketoOnly, setKetoOnly] = useState(false);
-  const [unnormalizedOnly, setUnnormalizedOnly] = useState(false);
 
   const allMeals = useMemo(
     () => meals.filter((m) => !SENTINEL_IDS.has(m.id)),
@@ -74,7 +73,7 @@ export default function CustomMeals() {
     }
   }, [mealSort, countOf]);
 
-  // Filtro (búsqueda + tipo + keto + sin normalizar), aún sin ordenar ni partir.
+  // Filtro (búsqueda + tipo + keto), aún sin ordenar ni partir.
   const filteredMeals = useMemo(() => {
     const q = mealSearch.trim().toLowerCase();
     return allMeals.filter((m) => {
@@ -82,10 +81,9 @@ export default function CustomMeals() {
       if (mealType === "meal" && m.isSide) return false;
       if (mealType === "side" && !m.isSide) return false;
       if (ketoOnly && !m.isKeto) return false;
-      if (unnormalizedOnly && (m.ingredientIds ?? []).length > 0) return false;
       return true;
     });
-  }, [allMeals, mealSearch, mealType, ketoOnly, unnormalizedOnly]);
+  }, [allMeals, mealSearch, mealType, ketoOnly]);
 
   // Partición: ya usadas (con historial) vs backlog (sin usar). Cada una ordenada.
   const usedMeals = useMemo(
@@ -189,9 +187,7 @@ export default function CustomMeals() {
                   </span>
                 ))}
               </div>
-            ) : (
-              <p className="text-[11px] italic text-warning mb-1">Sin ingredientes (sin normalizar)</p>
-            )}
+            ) : null}
             <UsageChips usages={mealUsages.get(meal.id) ?? []} currentEnv={currentEnv} />
           </div>
           <div className="flex items-center gap-1">
@@ -319,15 +315,6 @@ export default function CustomMeals() {
             )}
           >
             <Leaf size={12} /> Keto
-          </button>
-          <button
-            onClick={() => setUnnormalizedOnly((v) => !v)}
-            className={cn(
-              "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors",
-              unnormalizedOnly ? "bg-warning/15 text-warning border-warning/30" : "bg-muted text-muted-foreground border-transparent hover:text-foreground"
-            )}
-          >
-            <AlertTriangle size={12} /> Sin normalizar
           </button>
           <div className="relative ml-auto inline-flex items-center">
             <ArrowUpDown size={13} className="absolute left-2.5 text-muted-foreground pointer-events-none" />

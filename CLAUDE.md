@@ -15,5 +15,5 @@ Guidance for AI agents working on this repo.
 
 ## Data model notes
 
-- Meals are combinations of ingredients: `meals.ingredient_ids` references `ingredients.ingredient_id`. An empty array means the meal is pending normalization (see `/normalizar`, temporary page).
+- Meals are combinations of ingredients: `meals.ingredient_ids` references `ingredients.ingredient_id`. Empty arrays are not expected anymore (all meals are normalized); a meal with no ingredients simply won't appear in ingredient reports or the shopping list.
 - `meal_plan` stores full food snapshots per week. Historical snapshots are never rewritten; they are resolved by id against the live catalog at read time. `kind: "ingredient"` marks a standalone ingredient in a slot; absence of `kind` means meal (legacy).

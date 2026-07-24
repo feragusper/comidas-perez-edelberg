@@ -8,7 +8,6 @@ import Reports from "./pages/Reports";
 import CustomMeals from "./pages/CustomMeals";
 import DonBacilio from "./pages/DonBacilio";
 import Shopping from "./pages/Shopping";
-import Normalize from "./pages/Normalize";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -30,7 +29,6 @@ const App = () => (
             <Route path="/mis-comidas" element={<ProtectedRoute><CustomMeals /></ProtectedRoute>} />
             <Route path="/don-bacilio" element={<ProtectedRoute><DonBacilio /></ProtectedRoute>} />
             <Route path="/super" element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
-            <Route path="/normalizar" element={<ProtectedRoute><Normalize /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -3,14 +3,15 @@ import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
-import { useMealPlan, DayPlan } from "@/hooks/useMealPlan";
+import { DayPlan } from "@/hooks/useMealPlan";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { usePantry, pantryHasName } from "@/hooks/usePantry";
-import { Meal } from "@/data/meals";
+import { supabase } from "@/integrations/supabase/client";
+import { Meal, DELIVERY_DINNER } from "@/data/meals";
 import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
-import { currentWeekKey, todayDayIndex } from "@/lib/env";
+import { currentWeekKey, todayDayIndex, isStageEnv, weekKeyLabel } from "@/lib/env";
 import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -51,14 +52,79 @@ function slotFoods(d: DayPlan): [string, Meal | null][] {
   ];
 }
 
+const arr = (v: unknown): Meal[] => (Array.isArray(v) ? (v as Meal[]) : []);
+
+/**
+ * Normaliza un día crudo de `meal_plan` a los campos que usa la lista del súper.
+ * Los almuerzos/cenas heredados (no overridden) se guardan null: sus ingredientes
+ * ya vienen de la cena original, así que no hace falta contarlos aparte.
+ */
+function normalizeStoredDay(day: DayPlan & { isDelivery?: boolean }): DayPlan {
+  const wasDelivery = day.isDelivery ?? false;
+  const dinner = wasDelivery && !day.dinner ? DELIVERY_DINNER : (day.dinner ?? null);
+  const lunchOn = !!day.lunchOverridden && day.lunch != null;
+  const babyLunchOn = !!day.babyLunchOverridden && day.babyLunch != null;
+  const babyDinnerOn = !!day.babyDinnerOverridden && day.babyDinner != null;
+  return {
+    ...day,
+    dinner,
+    dinnerSide: day.dinnerSide ?? null,
+    dinnerExtras: arr(day.dinnerExtras),
+    lunch: lunchOn ? day.lunch : null,
+    lunchSide: lunchOn ? (day.lunchSide ?? null) : null,
+    lunchExtras: lunchOn ? arr(day.lunchExtras) : [],
+    babyLunch: babyLunchOn ? day.babyLunch : null,
+    babyLunchSide: babyLunchOn ? (day.babyLunchSide ?? null) : null,
+    babyLunchExtras: babyLunchOn ? arr(day.babyLunchExtras) : [],
+    babyDinner: babyDinnerOn ? day.babyDinner : null,
+    babyDinnerSide: babyDinnerOn ? (day.babyDinnerSide ?? null) : null,
+    babyDinnerExtras: babyDinnerOn ? arr(day.babyDinnerExtras) : [],
+    breakfast: typeof day.breakfast === "object" ? (day.breakfast ?? null) : null,
+    breakfastExtras: arr(day.breakfastExtras),
+    snack: typeof day.snack === "object" ? (day.snack ?? null) : null,
+    snackExtras: arr(day.snackExtras),
+  } as DayPlan;
+}
+
+interface WeekDays {
+  weekKey: string;
+  isCurrent: boolean;
+  days: DayPlan[];
+}
+
 export default function Shopping() {
   const weekKey = currentWeekKey();
-  const { plan } = useMealPlan(weekKey);
   const { meals: catalog } = useMeals();
   const { ingredients } = useIngredients();
   const { items: pantryItems } = usePantry();
   const todayIdx = todayDayIndex(weekKey);
   const fromIdx = todayIdx === -1 ? 0 : todayIdx;
+
+  // Todas las semanas planificadas desde la actual en adelante (no solo esta).
+  const [weeks, setWeeks] = useState<WeekDays[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    const prefix = isStageEnv() ? "stage_" : "prod_";
+    supabase
+      .from("meal_plan")
+      .select("plan, week_key")
+      .like("week_key", `${prefix}%`)
+      .then(({ data, error }) => {
+        if (cancelled || error || !data) return;
+        const out: WeekDays[] = [];
+        for (const row of data) {
+          const iso = (row.week_key as string).slice(prefix.length);
+          // Solo esta semana y las futuras (comparación lexicográfica de ISO week keys).
+          if (iso < weekKey) continue;
+          const raw = row.plan as unknown as (DayPlan & { isDelivery?: boolean })[];
+          if (!Array.isArray(raw) || raw.length === 0) continue;
+          out.push({ weekKey: iso, isCurrent: iso === weekKey, days: raw.map(normalizeStoredDay) });
+        }
+        out.sort((a, b) => a.weekKey.localeCompare(b.weekKey));
+        setWeeks(out);
+      });
+    return () => { cancelled = true; };
+  }, [weekKey]);
 
   const [have, setHave] = useState<Record<string, boolean>>({});
 
@@ -103,28 +169,33 @@ export default function Shopping() {
       });
     };
 
-    for (let i = fromIdx; i < plan.length; i++) {
-      const d = plan[i];
-      for (const [slot, food] of slotFoods(d)) {
-        if (!food || SENTINEL_IDS.has(food.id)) continue;
-        count++;
-        const source = `${d.day} · ${slot}`;
+    for (const wk of weeks) {
+      // La semana actual arranca hoy; las futuras, día 0.
+      const start = wk.isCurrent ? fromIdx : 0;
+      const wkTag = wk.isCurrent ? "" : ` (${weekKeyLabel(wk.weekKey, weekKey)})`;
+      for (let i = start; i < wk.days.length; i++) {
+        const d = wk.days[i];
+        for (const [slot, food] of slotFoods(d)) {
+          if (!food || SENTINEL_IDS.has(food.id)) continue;
+          count++;
+          const source = `${d.day}${wkTag} · ${slot}`;
 
-        // Ingrediente suelto en el slot
-        if (isIngredient(food)) {
-          addIngredientEntry(food.id, food.name, food.emoji, source);
-          continue;
-        }
+          // Ingrediente suelto en el slot
+          if (isIngredient(food)) {
+            addIngredientEntry(food.id, food.name, food.emoji, source);
+            continue;
+          }
 
-        // Comida: expandir por catálogo (el snapshot puede ser viejo)
-        const catalogMeal = catalogById.get(food.id);
-        const ids = catalogMeal?.ingredientIds ?? [];
-        // Comida borrada que fue convertida a ingrediente: resolver por nombre
-        const convertedIngredient = !catalogMeal ? ingredientById.get(ingredientSlug(food.name)) : undefined;
-        if (ids.length > 0) {
-          for (const iid of ids) addIngredientEntry(iid, iid, "🛒", `${d.day} · ${food.name}`);
-        } else if (convertedIngredient) {
-          addIngredientEntry(convertedIngredient.id, food.name, food.emoji, source);
+          // Comida: expandir por catálogo (el snapshot puede ser viejo)
+          const catalogMeal = catalogById.get(food.id);
+          const ids = catalogMeal?.ingredientIds ?? [];
+          // Comida borrada que fue convertida a ingrediente: resolver por nombre
+          const convertedIngredient = !catalogMeal ? ingredientById.get(ingredientSlug(food.name)) : undefined;
+          if (ids.length > 0) {
+            for (const iid of ids) addIngredientEntry(iid, iid, "🛒", `${d.day}${wkTag} · ${food.name}`);
+          } else if (convertedIngredient) {
+            addIngredientEntry(convertedIngredient.id, food.name, food.emoji, source);
+          }
         }
       }
     }
@@ -133,7 +204,7 @@ export default function Shopping() {
       list: Array.from(acc.values()),
       mealCount: count,
     };
-  }, [plan, fromIdx, catalogById, ingredientById]);
+  }, [weeks, fromIdx, weekKey, catalogById, ingredientById]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, ShoppingIngredient[]>();
@@ -185,7 +256,7 @@ export default function Shopping() {
           Lista de supermercado
         </h1>
         <p className="text-sm text-muted-foreground mb-5">
-          Ingredientes de las comidas planificadas desde hoy hasta el domingo. Tachá lo que ya tenés.
+          Ingredientes de todas las comidas planificadas desde hoy en adelante. Tachá lo que ya tenés.
         </p>
 
         <div className="rounded-xl border bg-card shadow-sm p-4 mb-4 flex items-center justify-between gap-3 flex-wrap">
@@ -202,7 +273,7 @@ export default function Shopping() {
 
         {list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-10 border border-dashed border-border rounded-lg">
-            No hay comidas planificadas a futuro esta semana.
+            No hay comidas planificadas a futuro.
           </p>
         ) : (
           <>

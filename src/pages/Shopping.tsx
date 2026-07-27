@@ -186,6 +186,9 @@ export default function Shopping() {
             continue;
           }
 
+          // Comida entera en Don Bacilio: está cubierta, no se compran sus ingredientes.
+          if (pantryHasName(pantryItems, food.name)) continue;
+
           // Comida: expandir por catálogo (el snapshot puede ser viejo)
           const catalogMeal = catalogById.get(food.id);
           const ids = catalogMeal?.ingredientIds ?? [];
@@ -204,7 +207,7 @@ export default function Shopping() {
       list: Array.from(acc.values()),
       mealCount: count,
     };
-  }, [weeks, fromIdx, weekKey, catalogById, ingredientById]);
+  }, [weeks, fromIdx, weekKey, catalogById, ingredientById, pantryItems]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, ShoppingIngredient[]>();

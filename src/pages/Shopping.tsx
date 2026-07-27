@@ -12,7 +12,8 @@ import { Meal, DELIVERY_DINNER } from "@/data/meals";
 import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex, isStageEnv, weekKeyLabel } from "@/lib/env";
-import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse } from "lucide-react";
+import { MealPicker } from "@/components/MealPicker";
+import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, Plus, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +26,24 @@ interface ShoppingIngredient {
 }
 
 const STORAGE_KEY = "shopping_list_v2";
+const MANUAL_KEY = "shopping_manual_v1";
+const MANUAL_SOURCE = "Agregado a mano";
 
 interface StoredHave {
   weekKey: string;
   have: Record<string, boolean>; // key = ingredient id
+}
+
+/** Ingrediente sumado a mano a la lista (no viene de una comida planificada). */
+interface ManualItem {
+  id: string;
+  name: string;
+  emoji: string;
+}
+
+interface StoredManual {
+  weekKey: string;
+  items: ManualItem[];
 }
 
 function slotFoods(d: DayPlan): [string, Meal | null][] {
@@ -94,9 +109,10 @@ interface WeekDays {
 
 export default function Shopping() {
   const weekKey = currentWeekKey();
-  const { meals: catalog } = useMeals();
-  const { ingredients } = useIngredients();
+  const { meals: catalog, saveMeal } = useMeals();
+  const { ingredients, addIngredient } = useIngredients();
   const { items: pantryItems } = usePantry();
+  const [pickerOpen, setPickerOpen] = useState(false);
   const todayIdx = todayDayIndex(weekKey);
   const fromIdx = todayIdx === -1 ? 0 : todayIdx;
 
@@ -142,6 +158,20 @@ export default function Shopping() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ weekKey, have } satisfies StoredHave));
   }, [have, weekKey]);
+
+  // Ingredientes agregados a mano a la lista.
+  const [manual, setManual] = useState<ManualItem[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(MANUAL_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as StoredManual;
+      if (parsed.weekKey === weekKey) setManual(parsed.items ?? []);
+    } catch { /* estado corrupto: se arranca de cero */ }
+  }, [weekKey]);
+  useEffect(() => {
+    localStorage.setItem(MANUAL_KEY, JSON.stringify({ weekKey, items: manual } satisfies StoredManual));
+  }, [manual, weekKey]);
 
   const catalogById = useMemo(() => new Map(catalog.map((m) => [m.id, m])), [catalog]);
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
@@ -226,11 +256,14 @@ export default function Shopping() {
       }
     }
 
+    // Ingredientes agregados a mano (una comida se expandió a sus ingredientes al elegirla).
+    for (const m of manual) addIngredientEntry(m.id, m.name, m.emoji, MANUAL_SOURCE);
+
     return {
       list: Array.from(acc.values()),
       mealCount: count,
     };
-  }, [weeks, fromIdx, weekKey, catalogById, ingredientById, pantryMealNameSet]);
+  }, [weeks, fromIdx, weekKey, catalogById, ingredientById, pantryMealNameSet, manual]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, ShoppingIngredient[]>();
@@ -255,6 +288,48 @@ export default function Shopping() {
       for (const it of items) next[it.id] = value;
       return next;
     });
+  };
+
+  const manualIds = useMemo(() => new Set(manual.map((m) => m.id)), [manual]);
+
+  /** Suma a la lista lo elegido en el picker: ingrediente suelto, o los ingredientes de una comida. */
+  const addManual = (food: Meal) => {
+    const picked: ManualItem[] = [];
+    const push = (id: string, name: string, emoji: string) => {
+      if (!picked.some((p) => p.id === id)) picked.push({ id, name, emoji });
+    };
+    if (isIngredient(food)) {
+      push(food.id, food.name, food.emoji);
+    } else {
+      const cm = catalogById.get(food.id);
+      const ids = cm?.ingredientIds ?? [];
+      if (ids.length > 0) {
+        for (const iid of ids) {
+          const ing = ingredientById.get(iid);
+          push(iid, ing?.name ?? iid, ing?.emoji ?? "🛒");
+        }
+      } else {
+        const conv = ingredientById.get(ingredientSlug(food.name));
+        if (conv) push(conv.id, conv.name, conv.emoji);
+        else push(food.id, food.name, food.emoji);
+      }
+    }
+    if (picked.length === 0) return;
+    setManual((prev) => {
+      const existing = new Set(prev.map((m) => m.id));
+      return [...prev, ...picked.filter((p) => !existing.has(p.id))];
+    });
+    setHave((prev) => {
+      // Al re-agregar algo, destildarlo para que vuelva a la lista de faltantes.
+      const next = { ...prev };
+      for (const p of picked) delete next[p.id];
+      return next;
+    });
+    toast({ title: picked.length === 1 ? "Agregado a la lista" : `${picked.length} ingredientes agregados` });
+  };
+
+  const removeManual = (id: string) => {
+    setManual((prev) => prev.filter((m) => m.id !== id));
   };
 
   const toBuy = list.filter((it) => !isHave(it));
@@ -297,9 +372,27 @@ export default function Shopping() {
           )}
         </div>
 
+        <Button variant="outline" className="w-full mb-4" onClick={() => setPickerOpen(true)}>
+          <Plus size={16} className="mr-1" /> Agregar a la lista
+        </Button>
+
+        {pickerOpen && (
+          <MealPicker
+            mode="adult"
+            step="main"
+            extraMeals={catalog}
+            ingredients={ingredients}
+            onCustomMeal={(meal) => void saveMeal(meal)}
+            onCustomIngredient={(ing) => void addIngredient(ing)}
+            onSelect={(food) => addManual(food)}
+            onClose={() => setPickerOpen(false)}
+            title="Agregar a la lista"
+          />
+        )}
+
         {list.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-10 border border-dashed border-border rounded-lg">
-            No hay comidas planificadas a futuro.
+            No hay comidas planificadas a futuro. Agregá algo a la lista con el botón de arriba.
           </p>
         ) : (
           <>
@@ -338,6 +431,7 @@ export default function Shopping() {
                       {items.map((it) => {
                         const got = isHave(it);
                         const inPantry = pantryHasName(pantryIngredientItems, it.name);
+                        const isManualOnly = manualIds.has(it.id) && it.sources.length === 1 && it.sources[0] === MANUAL_SOURCE;
                         return (
                           <li
                             key={it.id}
@@ -368,6 +462,15 @@ export default function Shopping() {
                                 </p>
                               )}
                             </div>
+                            {isManualOnly && (
+                              <button
+                                onClick={() => removeManual(it.id)}
+                                className="shrink-0 p-1 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors no-underline"
+                                aria-label={`Quitar ${it.name}`}
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
                           </li>
                         );
                       })}

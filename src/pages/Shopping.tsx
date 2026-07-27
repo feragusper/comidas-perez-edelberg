@@ -6,7 +6,7 @@ import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
-import { usePantry, pantryHasName } from "@/hooks/usePantry";
+import { usePantry, pantryHasName, normalizePantryName } from "@/hooks/usePantry";
 import { supabase } from "@/integrations/supabase/client";
 import { Meal, DELIVERY_DINNER } from "@/data/meals";
 import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from "@/data/food";
@@ -146,6 +146,29 @@ export default function Shopping() {
   const catalogById = useMemo(() => new Map(catalog.map((m) => [m.id, m])), [catalog]);
   const ingredientById = useMemo(() => new Map(ingredients.map((i) => [i.id, i])), [ingredients]);
 
+  // Nombres de comidas del catálogo, para saber qué ítems de la despensa son comidas.
+  const mealNameSet = useMemo(
+    () => new Set(catalog.map((m) => normalizePantryName(m.name))),
+    [catalog]
+  );
+  // Ítems de despensa que son ingredientes sueltos (no comidas). Sólo estos marcan
+  // un ingrediente como "ya lo tengo": una comida en Don Bacilio cubre esa comida
+  // entera, no sus ingredientes por separado (ej: "milanesa de pollo" no da "pollo").
+  const pantryIngredientItems = useMemo(
+    () => pantryItems.filter((p) => !mealNameSet.has(normalizePantryName(p.name))),
+    [pantryItems, mealNameSet]
+  );
+  // Nombres (normalizados) de las comidas que están en Don Bacilio: una comida
+  // planificada cuyo nombre coincide exacto está cubierta y no se expande.
+  const pantryMealNameSet = useMemo(
+    () => new Set(
+      pantryItems
+        .map((p) => normalizePantryName(p.name))
+        .filter((n) => mealNameSet.has(n))
+    ),
+    [pantryItems, mealNameSet]
+  );
+
   /** Lista determinística: unión de ingredientes de las comidas planificadas desde hoy. */
   const { list, mealCount } = useMemo(() => {
     const acc = new Map<string, ShoppingIngredient>();
@@ -187,7 +210,7 @@ export default function Shopping() {
           }
 
           // Comida entera en Don Bacilio: está cubierta, no se compran sus ingredientes.
-          if (pantryHasName(pantryItems, food.name)) continue;
+          if (pantryMealNameSet.has(normalizePantryName(food.name))) continue;
 
           // Comida: expandir por catálogo (el snapshot puede ser viejo)
           const catalogMeal = catalogById.get(food.id);
@@ -207,7 +230,7 @@ export default function Shopping() {
       list: Array.from(acc.values()),
       mealCount: count,
     };
-  }, [weeks, fromIdx, weekKey, catalogById, ingredientById, pantryItems]);
+  }, [weeks, fromIdx, weekKey, catalogById, ingredientById, pantryMealNameSet]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, ShoppingIngredient[]>();
@@ -220,7 +243,7 @@ export default function Shopping() {
     return Array.from(map.entries());
   }, [list]);
 
-  const isHave = (it: ShoppingIngredient) => have[it.id] ?? pantryHasName(pantryItems, it.name);
+  const isHave = (it: ShoppingIngredient) => have[it.id] ?? pantryHasName(pantryIngredientItems, it.name);
 
   const toggleHave = (it: ShoppingIngredient) => {
     setHave((prev) => ({ ...prev, [it.id]: !isHave(it) }));
@@ -314,7 +337,7 @@ export default function Shopping() {
                     <ul className="divide-y divide-border">
                       {items.map((it) => {
                         const got = isHave(it);
-                        const inPantry = pantryHasName(pantryItems, it.name);
+                        const inPantry = pantryHasName(pantryIngredientItems, it.name);
                         return (
                           <li
                             key={it.id}

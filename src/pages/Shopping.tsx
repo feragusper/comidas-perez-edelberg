@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { CollapsibleGroup } from "@/components/CollapsibleGroup";
 import { DayPlan } from "@/hooks/useMealPlan";
 import { useMeals } from "@/hooks/useMeals";
@@ -332,6 +333,21 @@ export default function Shopping() {
     setManual((prev) => prev.filter((m) => m.id !== id));
   };
 
+  const [freeText, setFreeText] = useState("");
+  /** Agrega un texto libre a la lista, sin vínculo con comida ni ingrediente. */
+  const addFreeText = () => {
+    const name = freeText.trim();
+    if (!name) return;
+    const id = `free:${normalizePantryName(name).replace(/\s+/g, "-") || Date.now()}`;
+    setManual((prev) => (prev.some((m) => m.id === id) ? prev : [...prev, { id, name, emoji: "🛒" }]));
+    setHave((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setFreeText("");
+  };
+
   const toBuy = list.filter((it) => !isHave(it));
   const haveCount = list.length - toBuy.length;
   const allDone = list.length > 0 && toBuy.length === 0;
@@ -372,9 +388,23 @@ export default function Shopping() {
           )}
         </div>
 
-        <Button variant="outline" className="w-full mb-4" onClick={() => setPickerOpen(true)}>
-          <Plus size={16} className="mr-1" /> Agregar a la lista
+        <Button variant="outline" className="w-full mb-3" onClick={() => setPickerOpen(true)}>
+          <Plus size={16} className="mr-1" /> Agregar del catálogo
         </Button>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); addFreeText(); }}
+          className="flex gap-2 mb-4"
+        >
+          <Input
+            value={freeText}
+            onChange={(e) => setFreeText(e.target.value)}
+            placeholder="Agregar algo suelto (ej: servilletas)"
+          />
+          <Button type="submit" variant="outline" disabled={!freeText.trim()}>
+            <Plus size={16} className="mr-1" /> Agregar
+          </Button>
+        </form>
 
         {pickerOpen && (
           <MealPicker

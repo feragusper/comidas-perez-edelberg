@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +14,8 @@ import { isIngredient, SENTINEL_MEAL_IDS as SENTINEL_IDS, ingredientSlug } from 
 import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex, isStageEnv, weekKeyLabel } from "@/lib/env";
 import { MealPicker } from "@/components/MealPicker";
-import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, Plus, X } from "lucide-react";
+import { PhotoImportWizard } from "@/components/PhotoImportWizard";
+import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, Plus, X, Camera, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -106,6 +107,32 @@ interface WeekDays {
   weekKey: string;
   isCurrent: boolean;
   days: DayPlan[];
+}
+
+/** Redimensiona y comprime una imagen a un data URL JPEG chico para mandar al modelo. */
+function fileToCompressedDataUrl(file: File, maxSide = 1600, quality = 0.7): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Imagen inválida"));
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas no disponible"));
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function Shopping() {
@@ -335,8 +362,8 @@ export default function Shopping() {
 
   const [freeText, setFreeText] = useState("");
   /** Agrega un texto libre a la lista, sin vínculo con comida ni ingrediente. */
-  const addFreeText = () => {
-    const name = freeText.trim();
+  const addFree = (raw: string) => {
+    const name = raw.trim();
     if (!name) return;
     const id = `free:${normalizePantryName(name).replace(/\s+/g, "-") || Date.now()}`;
     setManual((prev) => (prev.some((m) => m.id === id) ? prev : [...prev, { id, name, emoji: "🛒" }]));
@@ -345,7 +372,50 @@ export default function Shopping() {
       delete next[id];
       return next;
     });
+  };
+  const addFreeText = () => {
+    addFree(freeText);
     setFreeText("");
+  };
+
+  // Foto de la pizarra → interpretación → wizard de revisión.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [photoLoading, setPhotoLoading] = useState(false);
+  const [photoItems, setPhotoItems] = useState<string[] | null>(null);
+
+  const onPhotoPicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite volver a elegir la misma foto
+    if (!file) return;
+    setPhotoLoading(true);
+    try {
+      const image = await fileToCompressedDataUrl(file);
+      const { data, error } = await supabase.functions.invoke("read-shopping-photo", { body: { image } });
+      if (error) throw error;
+      if (data?.error) {
+        toast({
+          title: data.error === "RATE_LIMITED"
+            ? "Demasiadas peticiones"
+            : data.error === "PAYMENT_REQUIRED"
+              ? "Sin créditos disponibles"
+              : "Error leyendo la foto",
+          description: "Probá de nuevo en un rato.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const items = Array.isArray(data?.items) ? (data.items as string[]).filter(Boolean) : [];
+      if (items.length === 0) {
+        toast({ title: "No pude leer nada de la pizarra", description: "Probá con más luz o más de cerca." });
+        return;
+      }
+      setPhotoItems(items);
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error leyendo la foto", variant: "destructive" });
+    } finally {
+      setPhotoLoading(false);
+    }
   };
 
   const toBuy = list.filter((it) => !isHave(it));
@@ -388,6 +458,27 @@ export default function Shopping() {
           )}
         </div>
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={onPhotoPicked}
+        />
+        <Button
+          variant="outline"
+          className="w-full mb-3"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={photoLoading}
+        >
+          {photoLoading ? (
+            <><Loader2 size={16} className="mr-1.5 animate-spin" /> Leyendo la pizarra…</>
+          ) : (
+            <><Camera size={16} className="mr-1.5" /> Sacar foto de la pizarra</>
+          )}
+        </Button>
+
         <Button variant="outline" className="w-full mb-3" onClick={() => setPickerOpen(true)}>
           <Plus size={16} className="mr-1" /> Agregar del catálogo
         </Button>
@@ -417,6 +508,17 @@ export default function Shopping() {
             onSelect={(food) => addManual(food)}
             onClose={() => setPickerOpen(false)}
             title="Agregar a la lista"
+          />
+        )}
+
+        {photoItems && (
+          <PhotoImportWizard
+            items={photoItems}
+            meals={catalog}
+            ingredients={ingredients}
+            onAddFood={addManual}
+            onAddFree={addFree}
+            onClose={() => setPhotoItems(null)}
           />
         )}
 

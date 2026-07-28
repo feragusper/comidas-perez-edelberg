@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { TopNav } from "@/components/TopNav";
 import { Button } from "@/components/ui/button";
 import { usePantry, normalizePantryName, type PantryItem } from "@/hooks/usePantry";
 import { useMeals } from "@/hooks/useMeals";
 import { useIngredients } from "@/hooks/useIngredients";
 import { useMealPlan } from "@/hooks/useMealPlan";
-import { syncPantryWithPlan, matchedDays, dayPassed } from "@/lib/pantryPlan";
+import { syncPantryWithPlan, matchedDays, dayPassed, type FoodExpander } from "@/lib/pantryPlan";
 import { currentWeekKey } from "@/lib/env";
 import { parseTag } from "@/data/foodTaxonomy";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,16 +36,37 @@ export default function DonBacilio() {
   // consumir automáticamente lo ya usado cuando pasa el día.
   const week = currentWeekKey();
   const { plan, loading: planLoading, loadError: planLoadError } = useMealPlan(week);
+
+  // Un ingrediente comprado queda ligado a la comida planificada que lo usa: se
+  // expande cada comida del plan a los nombres de sus ingredientes (ingredient_ids).
+  const ingredientNameById = useMemo(
+    () => new Map(ingredients.map((i) => [i.id, i.name])),
+    [ingredients]
+  );
+  const mealById = useMemo(() => new Map(meals.map((m) => [m.id, m])), [meals]);
+  const expandFood: FoodExpander = useCallback(
+    (f) => {
+      const names = [f.name];
+      const m = mealById.get(f.id);
+      for (const iid of m?.ingredientIds ?? []) {
+        const nm = ingredientNameById.get(iid);
+        if (nm) names.push(nm);
+      }
+      return names;
+    },
+    [mealById, ingredientNameById]
+  );
+
   useEffect(() => {
     // Nunca reconciliar contra un plan que no cargó (parecería vacío).
     if (pantryLoading || planLoading || planLoadError) return;
-    syncPantryWithPlan({ allItems, plan, weekKey: week, markUsed, clearUsed });
+    syncPantryWithPlan({ allItems, plan, weekKey: week, markUsed, clearUsed, expand: expandFood });
   });
 
   /** Día de esta semana (aún no pasado) para el que está elegido el ítem, si hay. */
   const plannedDay = (item: PantryItem): string | null => {
     if (planLoading) return null;
-    const upcoming = matchedDays(plan, item.name).filter((d) => !dayPassed(week, d));
+    const upcoming = matchedDays(plan, item.name, expandFood).filter((d) => !dayPassed(week, d));
     return upcoming.length > 0 ? plan[upcoming[0]].day : null;
   };
 

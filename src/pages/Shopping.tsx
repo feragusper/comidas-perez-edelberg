@@ -15,7 +15,7 @@ import { parseTag, categoryOf } from "@/data/foodTaxonomy";
 import { currentWeekKey, todayDayIndex, isStageEnv, weekKeyLabel } from "@/lib/env";
 import { MealPicker } from "@/components/MealPicker";
 import { PhotoImportWizard } from "@/components/PhotoImportWizard";
-import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, Plus, X, Camera, Loader2 } from "lucide-react";
+import { ClipboardCopy, RotateCcw, CheckCheck, Warehouse, Plus, X, Camera, Loader2, PackagePlus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -139,7 +139,7 @@ export default function Shopping() {
   const weekKey = currentWeekKey();
   const { meals: catalog, saveMeal } = useMeals();
   const { ingredients, addIngredient } = useIngredients();
-  const { items: pantryItems } = usePantry();
+  const { items: pantryItems, addItem: addToPantry } = usePantry();
   const [pickerOpen, setPickerOpen] = useState(false);
   const todayIdx = todayDayIndex(weekKey);
   const fromIdx = todayIdx === -1 ? 0 : todayIdx;
@@ -316,6 +316,27 @@ export default function Shopping() {
       for (const it of items) next[it.id] = value;
       return next;
     });
+  };
+
+  /**
+   * "Ya lo compré": mete el ingrediente en Don Bacilio (despensa compartida) y lo
+   * marca como tenido. Desde la despensa, el ingrediente queda ligado a las comidas
+   * planificadas que lo usan (badge de día, consumo al pasar) y desaparece de los
+   * faltantes acá — todo vía `pantryHasName` y la reconciliación despensa↔plan.
+   */
+  const buy = (it: ShoppingIngredient) => {
+    addToPantry({ name: it.name, emoji: it.emoji });
+    setHave((prev) => ({ ...prev, [it.id]: true }));
+  };
+
+  const buyAll = (items: ShoppingIngredient[]) => {
+    let n = 0;
+    for (const it of items) {
+      if (pantryHasName(pantryIngredientItems, it.name)) continue;
+      buy(it);
+      n++;
+    }
+    if (n > 0) toast({ title: n === 1 ? "Agregado a Don Bacilio" : `${n} agregados a Don Bacilio` });
   };
 
   const manualIds = useMemo(() => new Set(manual.map((m) => m.id)), [manual]);
@@ -542,6 +563,7 @@ export default function Shopping() {
               {grouped.map(([cat, items]) => {
                 const meta = categoryOf(cat);
                 const catAllHave = items.every(isHave);
+                const buyable = items.filter((it) => !pantryHasName(pantryIngredientItems, it.name));
                 return (
                   <div key={cat} className="rounded-xl border bg-card shadow-sm overflow-hidden">
                     <CollapsibleGroup
@@ -551,12 +573,23 @@ export default function Shopping() {
                       headerClassName="text-xs font-semibold text-foreground"
                       title={`${meta?.emoji ?? "🛒"} ${meta?.label ?? cat}`}
                       headerRight={
-                        <button
-                          onClick={() => markAllHave(items, !catAllHave)}
-                          className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium shrink-0"
-                        >
-                          {catAllHave ? "Desmarcar todo" : "Ya tengo todo"}
-                        </button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {buyable.length > 0 && (
+                            <button
+                              onClick={() => buyAll(items)}
+                              className="inline-flex items-center gap-1 text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-colors font-medium"
+                              title="Agregar todos los faltantes a Don Bacilio"
+                            >
+                              <PackagePlus size={12} /> Compré todo
+                            </button>
+                          )}
+                          <button
+                            onClick={() => markAllHave(items, !catAllHave)}
+                            className="text-[10px] px-2 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors font-medium"
+                          >
+                            {catAllHave ? "Desmarcar todo" : "Ya tengo todo"}
+                          </button>
+                        </div>
                       }
                     >
                     <ul className="divide-y divide-border">
@@ -594,6 +627,16 @@ export default function Shopping() {
                                 </p>
                               )}
                             </div>
+                            {!inPantry && (
+                              <button
+                                onClick={() => buy(it)}
+                                className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full border border-border text-[10px] font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-colors no-underline"
+                                title="Ya lo compré: agregar a Don Bacilio"
+                                aria-label={`Compré ${it.name}`}
+                              >
+                                <PackagePlus size={12} /> Compré
+                              </button>
+                            )}
                             {isManualOnly && (
                               <button
                                 onClick={() => removeManual(it.id)}

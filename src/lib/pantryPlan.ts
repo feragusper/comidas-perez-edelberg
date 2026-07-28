@@ -2,8 +2,19 @@ import type { DayPlan } from "@/hooks/useMealPlan";
 import { normalizePantryName, type PantryItem, type PantryUsedOn } from "@/hooks/usePantry";
 import { currentWeekKey, todayDayIndex } from "@/lib/env";
 
+/**
+ * Expande un alimento del plan a los nombres que "cuenta" para matchear con la
+ * despensa. Por defecto sólo su propio nombre; DonBacilio pasa una versión que
+ * además incluye los ingredientes de la comida (por `ingredient_ids`), así un
+ * ingrediente comprado (ej: "pollo") queda ligado a la comida planificada que lo
+ * usa (ej: "Milanesa de pollo") aunque el slot no se llame igual.
+ */
+export type FoodExpander = (food: { id: string; name: string }) => string[];
+
+const defaultExpander: FoodExpander = (f) => [f.name];
+
 /** Todos los alimentos (principal, guarnición y extras) de un día del plan. */
-function dayFoods(d: DayPlan): { name: string }[] {
+function dayFoods(d: DayPlan): { id: string; name: string }[] {
   return [
     d.dinner, d.dinnerSide, ...(d.dinnerExtras ?? []),
     d.lunch, d.lunchSide, ...(d.lunchExtras ?? []),
@@ -14,15 +25,15 @@ function dayFoods(d: DayPlan): { name: string }[] {
   ].filter((f): f is NonNullable<typeof f> => f != null);
 }
 
-/** ¿Algún slot de este día tiene un alimento con este nombre? */
-export function dayHasFood(d: DayPlan, name: string): boolean {
+/** ¿Algún slot de este día tiene un alimento con este nombre (o que lo contenga)? */
+export function dayHasFood(d: DayPlan, name: string, expand: FoodExpander = defaultExpander): boolean {
   const n = normalizePantryName(name);
-  return dayFoods(d).some((f) => normalizePantryName(f.name) === n);
+  return dayFoods(d).some((f) => expand(f).some((nm) => normalizePantryName(nm) === n));
 }
 
 /** Índices de días (0=Lunes…6=Domingo) donde el plan usa este nombre. */
-export function matchedDays(plan: DayPlan[], name: string): number[] {
-  return plan.map((d, i) => (dayHasFood(d, name) ? i : -1)).filter((i) => i >= 0);
+export function matchedDays(plan: DayPlan[], name: string, expand: FoodExpander = defaultExpander): number[] {
+  return plan.map((d, i) => (dayHasFood(d, name, expand) ? i : -1)).filter((i) => i >= 0);
 }
 
 /** ¿Ese día de esa semana ya pasó? (las claves ISO ordenan lexicográficamente) */
@@ -47,16 +58,17 @@ export function syncPantryWithPlan(opts: {
   weekKey: string;
   markUsed: (name: string, usedOn: PantryUsedOn) => void;
   clearUsed: (name: string) => void;
+  expand?: FoodExpander;
 }): void {
-  const { allItems, plan, weekKey, markUsed, clearUsed } = opts;
+  const { allItems, plan, weekKey, markUsed, clearUsed, expand = defaultExpander } = opts;
   for (const it of allItems) {
     if (!it.usedOn) {
       if (!it.depleteOnUse) continue;
-      const passed = matchedDays(plan, it.name).filter((d) => dayPassed(weekKey, d));
+      const passed = matchedDays(plan, it.name, expand).filter((d) => dayPassed(weekKey, d));
       if (passed.length > 0) markUsed(it.name, { week: weekKey, day: passed[0] });
     } else if (it.usedOn.week === weekKey) {
       const day = plan[it.usedOn.day];
-      if (!day || !dayHasFood(day, it.name)) clearUsed(it.name);
+      if (!day || !dayHasFood(day, it.name, expand)) clearUsed(it.name);
     }
   }
 }

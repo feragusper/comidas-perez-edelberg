@@ -22,6 +22,7 @@ from what's missing.
 | **Don Bacilio** (pantry) | `/don-bacilio` | Track what's at home; ask the AI what to cook from it. |
 | **Shopping** | `/super` | Shopping list generated from the menu, grouped by category, with checkoff and copy-to-clipboard. |
 | **Reports** | `/reportes` | Usage analytics: most-used meals, keto ratio, weekly trends (charts). |
+| **Settings** | `/ajustes` | Toggle the planning rules that auto-fill slots (our lunch = previous dinner, Nico's lunch/dinner source). Stored per env in `app_settings`. |
 | **Auth** | `/auth` | Email/Google login (allow-list gated). |
 
 > `/normalizar` is a temporary internal tool used to migrate legacy meals to the
@@ -62,7 +63,7 @@ Supabase **edge functions** behind the Lovable AI Gateway.
   (`stage_`/`prod_` in `meal_plan.week_key` and `pantry.env`). `localhost` counts
   as stage.
 
-Main tables: `meals`, `ingredients`, `custom_meals`, `meal_plan`, `pantry`,
+Main tables: `meals`, `ingredients`, `custom_meals`, `meal_plan`, `pantry`, `app_settings`,
 `allowed_emails` (+ `is_allowed_user()` for access control).
 
 ### Edge functions (`supabase/functions/`)

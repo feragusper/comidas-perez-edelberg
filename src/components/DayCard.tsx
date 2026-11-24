@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { usePlanRules } from "@/hooks/usePlanRules";
+import { suggestedLabel } from "@/lib/planRules";
 import { DayPlan, MealSlot, isDeliveryMeal, isTakeawayMeal, isRestaurantMeal, isEatingOutMeal } from "@/hooks/useMealPlan";
 import { Meal, BabySafety } from "@/data/meals";
 import { Ingredient } from "@/data/food";
@@ -269,6 +271,7 @@ export function DayCard({
   // idx === null means adding a new extra; a number means editing that extra.
   const [extraEdit, setExtraEdit] = useState<{ idx: number | null } | null>(null);
   const isSunday = dayPlan.day === "Domingo";
+  const { rules: planRules } = usePlanRules();
   const isDelivery = isDeliveryMeal(dayPlan.dinner);
   const isTakeaway = isTakeawayMeal(dayPlan.dinner);
   const isRestaurant = isRestaurantMeal(dayPlan.dinner);
@@ -544,7 +547,7 @@ export function DayCard({
                   <Baby size={12} className="text-muted-foreground" />
                   <span className="text-xs font-semibold text-muted-foreground">Nico</span>
                   {!dayPlan.babyDinnerOverridden && dayPlan.babyDinner && (
-                    <span className="text-xs text-muted-foreground italic">sugerido de anoche</span>
+                    <span className="text-xs text-muted-foreground italic">{suggestedLabel(planRules.babyDinner)}</span>
                   )}
                 </div>
                 <DraggableMealSlot droppableId={`${dayIndex}-babyDinner`} hasMeal={!!dayPlan.babyDinner}>

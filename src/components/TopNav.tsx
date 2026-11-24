@@ -9,6 +9,7 @@ import {
   Warehouse,
   Menu as MenuIcon,
   X,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,7 @@ const items = [
   { to: "/don-bacilio", label: "Don Bacilio", icon: Warehouse },
   { to: "/super", label: "Súper", icon: ShoppingCart },
   { to: "/reportes", label: "Reportes", icon: BarChart3 },
+  { to: "/ajustes", label: "Ajustes", icon: SettingsIcon },
 ];
 
 export function TopNav() {

@@ -9,6 +9,7 @@ import CustomMeals from "./pages/CustomMeals";
 import DonBacilio from "./pages/DonBacilio";
 import Shopping from "./pages/Shopping";
 import Auth from "./pages/Auth";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/mis-comidas" element={<ProtectedRoute><CustomMeals /></ProtectedRoute>} />
             <Route path="/don-bacilio" element={<ProtectedRoute><DonBacilio /></ProtectedRoute>} />
             <Route path="/super" element={<ProtectedRoute><Shopping /></ProtectedRoute>} />
+            <Route path="/ajustes" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

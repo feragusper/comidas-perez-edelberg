@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Meal, DAYS, DELIVERY_DINNER, DELIVERY_LEFTOVERS, TAKEAWAY_LEFTOVERS } from "@/data/meals";
+import { Meal, DAYS, DELIVERY_DINNER } from "@/data/meals";
 import { supabase } from "@/integrations/supabase/client";
 import { envWeekKey, prevWeekKey } from "@/lib/env";
+import { applyPlanRules } from "@/lib/planRules";
+import { usePlanRules } from "@/hooks/usePlanRules";
 
 export interface DayPlan {
   day: string;
@@ -344,90 +346,8 @@ export function useMealPlan(weekKey: WeekKey) {
     };
   }, [flushPendingSave]);
 
-  const planWithLunch: DayPlan[] = plan.map((dayPlan, idx) => {
-    // El lunes hereda del domingo de la semana anterior (cross-semana).
-    const prevDay: Pick<DayPlan, "dinner" | "dinnerSide" | "dinnerExtras" | "dinnerNote"> | null =
-      idx === 0 ? prevSunday : plan[idx - 1];
-    const prevDinner = prevDay?.dinner ?? null;
-    const isPrevDelivery = isDeliveryMeal(prevDinner);
-    const isPrevTakeaway = isTakeawayMeal(prevDinner);
-    const isPrevRestaurant = isRestaurantMeal(prevDinner);
-    const prevHasLeftovers = isPrevDelivery || isPrevTakeaway;
-    const isPrevBabySafe = prevDinner?.babySafety !== "unsafe";
-
-    let effectivePrevDinner: Meal | null;
-    let effectivePrevSide: Meal | null;
-    let effectivePrevExtras: Meal[];
-    let effectivePrevNote: string;
-    if (isPrevDelivery) {
-      effectivePrevDinner = DELIVERY_LEFTOVERS;
-      effectivePrevSide = null;
-      effectivePrevExtras = [];
-      effectivePrevNote = "";
-    } else if (isPrevTakeaway) {
-      effectivePrevDinner = TAKEAWAY_LEFTOVERS;
-      effectivePrevSide = null;
-      effectivePrevExtras = [];
-      effectivePrevNote = "";
-    } else if (isPrevRestaurant) {
-      // Restaurant doesn't produce leftovers — no inheritance
-      effectivePrevDinner = null;
-      effectivePrevSide = null;
-      effectivePrevExtras = [];
-      effectivePrevNote = "";
-    } else {
-      effectivePrevDinner = prevDinner;
-      effectivePrevSide = prevDay?.dinnerSide ?? null;
-      effectivePrevExtras = prevDay?.dinnerExtras ?? [];
-      effectivePrevNote = prevDay?.dinnerNote ?? "";
-    }
-
-    let adultLunch: Pick<DayPlan, "lunch" | "lunchSide" | "lunchExtras" | "lunchNote">;
-    if (dayPlan.lunchOverridden) {
-      adultLunch = { lunch: dayPlan.lunch, lunchSide: dayPlan.lunchSide, lunchExtras: dayPlan.lunchExtras, lunchNote: dayPlan.lunchNote };
-    } else if (dayPlan.lunchHidden) {
-      adultLunch = { lunch: null, lunchSide: null, lunchExtras: [], lunchNote: "" };
-    } else {
-      adultLunch = {
-        lunch: effectivePrevDinner ?? null,
-        lunchSide: effectivePrevDinner ? effectivePrevSide : null,
-        lunchExtras: effectivePrevDinner ? effectivePrevExtras : [],
-        lunchNote: effectivePrevDinner ? effectivePrevNote : "",
-      };
-    }
-
-    let babyDinnerSuggested: Pick<DayPlan, "babyDinner" | "babyDinnerSide" | "babyDinnerExtras" | "babyDinnerNote">;
-    if (dayPlan.babyDinnerOverridden) {
-      babyDinnerSuggested = { babyDinner: dayPlan.babyDinner, babyDinnerSide: dayPlan.babyDinnerSide, babyDinnerExtras: dayPlan.babyDinnerExtras, babyDinnerNote: dayPlan.babyDinnerNote };
-    } else if (dayPlan.babyDinnerHidden) {
-      babyDinnerSuggested = { babyDinner: null, babyDinnerSide: null, babyDinnerExtras: [], babyDinnerNote: "" };
-    } else {
-      const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
-      babyDinnerSuggested = {
-        babyDinner: babyPrev,
-        babyDinnerSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
-        babyDinnerExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
-        babyDinnerNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
-      };
-    }
-
-    let babyLunchSuggested: Pick<DayPlan, "babyLunch" | "babyLunchSide" | "babyLunchExtras" | "babyLunchNote">;
-    if (dayPlan.babyLunchOverridden) {
-      babyLunchSuggested = { babyLunch: dayPlan.babyLunch, babyLunchSide: dayPlan.babyLunchSide, babyLunchExtras: dayPlan.babyLunchExtras, babyLunchNote: dayPlan.babyLunchNote };
-    } else if (dayPlan.babyLunchHidden) {
-      babyLunchSuggested = { babyLunch: null, babyLunchSide: null, babyLunchExtras: [], babyLunchNote: "" };
-    } else {
-      const babyPrev = (prevDinner && !prevHasLeftovers && !isPrevRestaurant && isPrevBabySafe) ? prevDinner : null;
-      babyLunchSuggested = {
-        babyLunch: babyPrev,
-        babyLunchSide: babyPrev ? (prevDay?.dinnerSide ?? null) : null,
-        babyLunchExtras: babyPrev ? (prevDay?.dinnerExtras ?? []) : [],
-        babyLunchNote: babyPrev ? (prevDay?.dinnerNote ?? "") : "",
-      };
-    }
-
-    return { ...dayPlan, ...adultLunch, ...babyDinnerSuggested, ...babyLunchSuggested };
-  });
+  const { rules } = usePlanRules();
+  const planWithLunch: DayPlan[] = applyPlanRules(plan, prevSunday, rules);
 
   // Keep latest computed plan (with inherited values) accessible to setters
   const planWithLunchRef = useRef(planWithLunch);
